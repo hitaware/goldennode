@@ -14,7 +14,8 @@ USAGE
 			
 	3) You can use the List above just as any other list implementation.
 			
-			
+		clusteredList.add("This is the first entry");
+		
 	4) If you would like to use this list within the cluster. That is, if you want this list to be distributed first set the owner, then set the name and then attach it to the cluster as below :
 			
 		((ClusteredList<String>) clusteredList).setOwnerId(c.getOwner().getId());
