@@ -48,13 +48,13 @@ USAGE
       
 		Cluster c = ClusterFactory.getCluster();
      
-        2) Load ClusteredObject which is going to be loaded by the first process.
+	2) Load ClusteredObject which is going to be loaded by the first process.
 
-    		ClusteredObject co = c.getClusteredObject("list1");
+    	ClusteredObject co = c.getClusteredObject("list1");
     					
-    	3) The object loaded from the previous step is a ClustedList. So Let's cast it and print its size.			
+    3) The object loaded from the previous step is a ClustedList. So Let's cast it and print its size.			
     				
-    		System.out.println(((ClusteredList) co).size());
+    	System.out.println(((ClusteredList) co).size());
     				
     
 	
