@@ -214,17 +214,17 @@ public class ReplicatedMemoryCluster implements Cluster {
 
 	/*
 	 * @Override public void attachObject(ClusteredObject obj) {
-	 * 
+	 *
 	 * safeMulticast(new Operation(null, "createClusteredObject",
 	 * obj.getPublicName(), obj.getClass(), obj.getOwnerId()));
-	 * 
+	 *
 	 * }
-	 * 
+	 *
 	 * @Override public void detachObject(ClusteredObject obj) {
-	 * 
+	 *
 	 * safeMulticast(new Operation(null, "removeClusteredObject",
 	 * obj.getPublicName()));
-	 * 
+	 *
 	 * }
 	 */
 
@@ -232,7 +232,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 	 * @Override public Lock createLock() { try { ClusteredLock cl = new
 	 * ClusteredLock("ClusteredLock" + UUID.randomUUID().toString(),
 	 * getOwner().getId()); attachObject(cl); } catch (ClusterException e) { //
-	 * TODO Auto-generated catch block e.printStackTrace(); } return null; }
+	 * TODO e.printStackTrace(); } return null; }
 	 */
 
 	@Override
@@ -308,14 +308,14 @@ public class ReplicatedMemoryCluster implements Cluster {
 
 			/*
 			 * if (ClusteredList.class.isAssignableFrom(co.getClass())) {
-			 * 
+			 *
 			 * safeMulticast(new Operation(null, "createClusteredObject",
 			 * co.getPublicName(), co.getClass(), co.getOwnerId()));
-			 * 
+			 *
 			 * Iterator iterNew = ((ClusteredList) co).iterator(); while
 			 * (iterNew.hasNext()) { safeMulticast(new
 			 * Operation(co.getPublicName(), "add", iterNew.next()));
-			 * 
+			 *
 			 * } } else {
 			 */
 
@@ -339,7 +339,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 
 			safeMulticast(
 
-			new Operation(null, "removeClusteredObject", obj.getPublicName()));
+					new Operation(null, "removeClusteredObject", obj.getPublicName()));
 			obj.setOwnerId(null);
 			obj.setPublicName(null);
 			obj.setCluster(null);

@@ -2,13 +2,24 @@ package com.goldennode.api.test;
 
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.goldennode.api.cluster.ClusteredList;
-import com.goldennode.api.cluster.OperationException;
 
 public class TestUndo {
-	static List<String> list = new ClusteredList<String>();
+	List<String> list;
 
-	public static void main(String[] args) {
+	@Before
+	public void init() {
+		list = new ClusteredList<String>();
+
+	}
+
+	@Test
+	public void undoOperations() {
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 1);
 
 		System.out.println("Adding 5 items");
 		list.add("bir");
@@ -16,71 +27,71 @@ public class TestUndo {
 		list.add("uc");
 		list.add("dort");
 		list.add("bes");
-		printList();
+		Assert.assertEquals(list.size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 6);
+
 		System.out.println("Removing 2nd index");
 		list.remove(2);
-		printList();
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(1);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		printList();
+		Assert.assertEquals(list.size(), 4);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 6);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 7);
+
+		System.out.println("undo");
+		((ClusteredList) list).undoLatest(7);
+		Assert.assertEquals(list.size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 6);
+
 		System.out.println("Adding alti");
 		list.add("alti");
-		printList();
+		Assert.assertEquals(list.size(), 6);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 6);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 7);
 
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(2);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		printList();
+		System.out.println("undo");
+		((ClusteredList) list).undoLatest(7);
+		Assert.assertEquals(list.size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 6);
+
 		System.out.println("clear");
 		list.clear();
-		printList();
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(3);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		printList();
+		Assert.assertEquals(list.size(), 0);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 6);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 7);
 
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(4);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(5);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(6);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		printList();
+		System.out.println("undo");
+		((ClusteredList) list).undoLatest(7);
+		Assert.assertEquals(list.size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 5);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 6);
 
+		System.out.println("3 undos");
+		((ClusteredList) list).undoLatest(6);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 5);
+		((ClusteredList) list).undoLatest(5);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 4);
+		((ClusteredList) list).undoLatest(4);
+		Assert.assertEquals(list.size(), 2);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 2);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 3);
+
+		System.out.println("Setting first element to on");
 		((ClusteredList) list).set(0, "on");
-		printList();
-		try {
-			System.out.println("undo");
-			((ClusteredList) list).undoLatest(7);
-		} catch (OperationException e) {
-			e.printStackTrace();
-		}
-		printList();
+		Assert.assertEquals(list.size(), 2);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 3);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 4);
+
+		System.out.println("undo");
+		((ClusteredList) list).undoLatest(4);
+		Assert.assertEquals(list.size(), 2);
+		Assert.assertEquals(((ClusteredList) list).getHistory().size(), 2);
+		Assert.assertEquals(((ClusteredList) list).getVersion(), 3);
+
 	}
 
-	public static void printList() {
+	private void printList() {
 		System.out.println("-----------");
 		System.out.println("List Size:" + list.size());
 		System.out.println("List Hist Size:"

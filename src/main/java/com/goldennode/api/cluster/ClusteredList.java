@@ -173,10 +173,10 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	}
 
 	public void _clear() {
-
-		_u_clear();
 		createUndoRecord(new Operation(getPublicName(), "u_addAll",
 				cloneInnerList()));
+
+		_u_clear();
 	}
 
 	public void _u_clear() {
@@ -185,7 +185,8 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	}
 
 	@Override
-	public boolean remove(Object o) {
+	public boolean remove(Object o) {// TODO check conflict with Integer version
+										// of the method
 
 		if (getCluster() != null) {
 
@@ -200,7 +201,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	public Boolean _remove(Object o) {
 		Boolean b = _u_remove(o);
-		createUndoRecord(new Operation(getPublicName(), "u_remove", o));
+		createUndoRecord(new Operation(getPublicName(), "u_add", o));
 		return b;
 
 	}
@@ -215,6 +216,12 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	public boolean addAll(Collection<? extends E> c) {
 
 		throw new UnsupportedOperationException();
+
+	}
+
+	public void _u_addAll(Collection<? extends E> c) {
+
+		innerList.addAll(c);
 
 	}
 
@@ -240,6 +247,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	}
 
 	private Collection<? extends E> cloneInnerList() {
+		// TODO find other way to clone
 		List<E> lst = new ArrayList<E>();
 		for (int i = 0; i < innerList.size(); i++) {
 			lst.add(innerList.get(i));

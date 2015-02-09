@@ -207,10 +207,10 @@ public class GoldenNodeServer extends Server {
 						&& ((Request) receivedObject).getServerFrom().equals(
 								GoldenNodeServer.this)
 
-						&& (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST || ((Request) receivedObject)
+								&& (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST || ((Request) receivedObject)
 								.getRequestType() == RequestType.MULTICAST)
 
-				)
+						)
 
 				{
 
@@ -347,7 +347,7 @@ public class GoldenNodeServer extends Server {
 					if (receivedObject instanceof Response) {
 						Logger.debug("Receiving "
 								+ ((Response) receivedObject).getRequest()
-										.getRequestType() + " "
+								.getRequestType() + " "
 								+ receivedObject);
 
 						if (((Response) receivedObject).getRequest()
@@ -359,7 +359,7 @@ public class GoldenNodeServer extends Server {
 							if (lock != null) {
 								htUnicastResponse.put(
 										((Response) receivedObject)
-												.getRequest().getId(),
+										.getRequest().getId(),
 										(Response) receivedObject);
 								synchronized (lock) {
 									lock.notifyAll();
@@ -367,7 +367,7 @@ public class GoldenNodeServer extends Server {
 							} else {
 								Logger.debug("Ignoring "
 										+ ((Response) receivedObject)
-												.getRequest().getRequestType()
+										.getRequest().getRequestType()
 										+ " " + receivedObject);
 							}
 
@@ -381,7 +381,7 @@ public class GoldenNodeServer extends Server {
 							if (lock != null) {
 								htUnicastResponse.put(
 										((Response) receivedObject)
-												.getRequest().getId(),
+										.getRequest().getId(),
 										(Response) receivedObject);
 
 								List<Response> l = htBlockingMulticastResponse
@@ -399,7 +399,7 @@ public class GoldenNodeServer extends Server {
 							} else {
 								Logger.debug("Ignoring "
 										+ ((Response) receivedObject)
-												.getRequest().getRequestType()
+										.getRequest().getRequestType()
 										+ " " + receivedObject);
 							}
 
@@ -747,7 +747,6 @@ public class GoldenNodeServer extends Server {
 		multicastSocket.joinGroup(MULTICAST_ADDRESS);
 		multicastSocket.setReuseAddress(true);
 		multicastSocket.bind(new InetSocketAddress(MULTICAST_PORT));
-		multicastSocket.getLoopbackMode();
 
 	}
 

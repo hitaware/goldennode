@@ -17,7 +17,9 @@ public class ReflectionUtils {
 			}
 			Method m = MethodUtils.getMatchingAccessibleMethod(cls.getClass(),
 					methodName, cz);
-
+			if (m == null) {
+				throw new MethodNotFoundException();
+			}
 			return m.invoke(cls, params);
 		} catch (InvocationTargetException e) {
 			throw e;

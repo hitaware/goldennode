@@ -43,7 +43,7 @@ public class ServerStateListenerImpl implements ServerStateListener {
 		try {
 			Logger.debug("***server stopped... id : " + server.getId());
 			cluster.multicast(new Operation(null, "announceServerLeaving",
-					server));
+					server));// TODO change to safemulticast
 		} catch (ClusterException e) {
 			Logger.error(e);
 		}

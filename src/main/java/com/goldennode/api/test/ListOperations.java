@@ -24,7 +24,6 @@ public class ListOperations {
 			for (int i = 0; i < 10; i++) {
 				clusteredList.add(new Integer(i).toString());
 			}
-			// c.attachObject((ClusteredObject) clusteredList);
 
 			/*
 			 * new Timer().schedule(new TimerTask() {
@@ -44,7 +43,6 @@ public class ListOperations {
 			System.out.println(clusteredList.size());
 
 			// c.detachObject((ClusteredObject) clusteredList);
-			// clusteredList.remove(0);
 			// c.stop();
 		} catch (ClusterException e) {
 			Logger.error(e);
