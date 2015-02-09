@@ -6,7 +6,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 public class ClusteredLock extends ClusteredObject implements Lock,
-		java.io.Serializable {
+java.io.Serializable {
 	private static final long serialVersionUID = 7373984872572414699L;
 	private final Sync sync;
 
@@ -95,7 +95,7 @@ public class ClusteredLock extends ClusteredObject implements Lock,
 	}
 
 	private void sendLockRequestToPeers() {
-		// TODO Auto-generated method stub
+		// TODO implement
 
 	}
 
