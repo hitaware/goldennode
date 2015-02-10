@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import java.io.BufferedReader;
 import java.io.IOException;

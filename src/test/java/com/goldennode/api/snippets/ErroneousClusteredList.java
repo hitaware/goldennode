@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import com.goldennode.api.cluster.ClusteredList;
 import com.goldennode.api.cluster.OperationException;

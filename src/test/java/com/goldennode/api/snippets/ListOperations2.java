@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import java.util.Timer;
 import java.util.TimerTask;

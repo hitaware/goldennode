@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import java.util.List;
 import java.util.Timer;
@@ -21,7 +21,7 @@ public class ConcurrencyTestMaster {
 			((ErroneousClusteredList<String>) clusteredList).setOwnerId(c
 					.getOwner().getId());
 			((ErroneousClusteredList<String>) clusteredList)
-					.setPublicName("list1");
+			.setPublicName("list1");
 			c.attachObject((ClusteredObject) clusteredList);
 
 			new Timer().schedule(new TimerTask() {

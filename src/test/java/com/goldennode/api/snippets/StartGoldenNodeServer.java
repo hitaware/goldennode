@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import com.goldennode.api.core.GoldenNodeServer;
 import com.goldennode.api.core.Logger;

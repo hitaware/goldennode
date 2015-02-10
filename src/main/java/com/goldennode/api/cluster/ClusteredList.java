@@ -96,16 +96,16 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	}
 
-	public E _set(Integer index, E element) {
+	public E _set(int index, E element) {
 
-		E e = _u_set(index.intValue(), element);
+		E e = _u_set(index, element);
 		createUndoRecord(new Operation(getPublicName(), "u_set", index, e));
 		return e;
 	}
 
-	public E _u_set(Integer index, E element) {
+	public E _u_set(int index, E element) {
 
-		E e = innerList.set(index.intValue(), element);
+		E e = innerList.set(index, element);
 
 		return e;
 	}
@@ -123,13 +123,13 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	}
 
-	public void _add(Integer index, E element) {
+	public void _add(int index, E element) {
 		_u_add(index, element);
 		createUndoRecord(new Operation(getPublicName(), "u_remove", index));
 
 	}
 
-	public void _u_add(Integer index, E element) {
+	public void _u_add(int index, E element) {
 
 		innerList.add(index, element);
 
@@ -149,14 +149,14 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	}
 
-	public E _remove(Integer index) {
-		E e = _u_remove(index.intValue());
+	public E _remove(int index) {
+		E e = _u_remove(index);
 		createUndoRecord(new Operation(getPublicName(), "u_add", index, e));
 		return e;
 	}
 
-	public E _u_remove(Integer index) {
-		E e = innerList.remove(index.intValue());
+	public E _u_remove(int index) {
+		E e = innerList.remove(index);
 		return e;
 	}
 
@@ -174,19 +174,16 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	public void _clear() {
 		createUndoRecord(new Operation(getPublicName(), "u_addAll",
-				cloneInnerList()));
-
+				new ArrayList<E>(innerList)));
 		_u_clear();
 	}
 
 	public void _u_clear() {
-
 		innerList.clear();
 	}
 
 	@Override
-	public boolean remove(Object o) {// TODO check conflict with Integer version
-										// of the method
+	public boolean remove(Object o) {
 
 		if (getCluster() != null) {
 
@@ -199,7 +196,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	}
 
-	public Boolean _remove(Object o) {
+	public boolean _remove(Object o) {
 		Boolean b = _u_remove(o);
 		createUndoRecord(new Operation(getPublicName(), "u_add", o));
 		return b;
@@ -244,15 +241,6 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 		throw new UnsupportedOperationException();
 
-	}
-
-	private Collection<? extends E> cloneInnerList() {
-		// TODO find other way to clone
-		List<E> lst = new ArrayList<E>();
-		for (int i = 0; i < innerList.size(); i++) {
-			lst.add(innerList.get(i));
-		}
-		return lst;
 	}
 
 	@Override

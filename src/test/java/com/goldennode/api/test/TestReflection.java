@@ -35,17 +35,31 @@ public class TestReflection {
 		return "7";
 	}
 
+	public boolean method4() {
+		return true;
+	}
+
+	public Boolean method5() {
+		return true;
+	}
+
 	@Test
 	public void test() throws Exception {
 
 		TestReflection rt = new TestReflection();
-
+		System.out.println("Calling methods by reflection");
 		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method1",
 				new Object[] { new Integer(1) }), "2");
 		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method2",
 				new Object[] { new Integer(1) }), "5");
 		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method3",
 				new Object[] { new Integer(1) }), "6");
+		Assert.assertEquals(
+				ReflectionUtils.callMethod(rt, "method4", new Object[] {}),
+				true);
+		Assert.assertEquals(
+				ReflectionUtils.callMethod(rt, "method5", new Object[] {}),
+				true);
 
 	}
 }

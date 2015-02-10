@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
