@@ -1,4 +1,4 @@
-package com.goldennode.api.core;
+package com.goldennode.api.helper;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Member;
@@ -9,8 +9,7 @@ import java.util.Map;
 
 public class MethodUtils {
 
-	public static Method getMatchingAccessibleMethod(Class<?> cls,
-			String methodName, Class<?>... parameterTypes) {
+	public static Method getMatchingAccessibleMethod(Class<?> cls, String methodName, Class<?>... parameterTypes) {
 		try {
 			Method method = cls.getMethod(methodName, parameterTypes);
 			setAccessibleWorkaround(method);
@@ -22,14 +21,11 @@ public class MethodUtils {
 		Method[] methods = cls.getMethods();
 		for (Method method : methods) {
 			// compare name and parameters
-			if (method.getName().equals(methodName)
-					&& isAssignable(parameterTypes, method.getParameterTypes(),
-							true)) {
+			if (method.getName().equals(methodName) && isAssignable(parameterTypes, method.getParameterTypes(), true)) {
 				// get accessible version of method
 				Method accessibleMethod = getAccessibleMethod(method);
 				if (accessibleMethod != null
-						&& (bestMatch == null || compareParameterTypes(
-								accessibleMethod.getParameterTypes(),
+						&& (bestMatch == null || compareParameterTypes(accessibleMethod.getParameterTypes(),
 								bestMatch.getParameterTypes(), parameterTypes) < 0)) {
 					bestMatch = accessibleMethod;
 				}
@@ -41,11 +37,9 @@ public class MethodUtils {
 		return bestMatch;
 	}
 
-	public static Method getAccessibleMethod(Class<?> cls, String methodName,
-			Class<?>... parameterTypes) {
+	public static Method getAccessibleMethod(Class<?> cls, String methodName, Class<?>... parameterTypes) {
 		try {
-			return getAccessibleMethod(cls
-					.getMethod(methodName, parameterTypes));
+			return getAccessibleMethod(cls.getMethod(methodName, parameterTypes));
 		} catch (NoSuchMethodException e) {
 			return null;
 		}
@@ -64,19 +58,16 @@ public class MethodUtils {
 		Class<?>[] parameterTypes = method.getParameterTypes();
 
 		// Check the implemented interfaces and subinterfaces
-		method = getAccessibleMethodFromInterfaceNest(cls, methodName,
-				parameterTypes);
+		method = getAccessibleMethodFromInterfaceNest(cls, methodName, parameterTypes);
 
 		// Check the superclass chain
 		if (method == null) {
-			method = getAccessibleMethodFromSuperclass(cls, methodName,
-					parameterTypes);
+			method = getAccessibleMethodFromSuperclass(cls, methodName, parameterTypes);
 		}
 		return method;
 	}
 
-	private static Method getAccessibleMethodFromSuperclass(Class<?> cls,
-			String methodName, Class<?>... parameterTypes) {
+	private static Method getAccessibleMethodFromSuperclass(Class<?> cls, String methodName, Class<?>... parameterTypes) {
 		Class<?> parentClass = cls.getSuperclass();
 		while (parentClass != null) {
 			if (Modifier.isPublic(parentClass.getModifiers())) {
@@ -92,8 +83,7 @@ public class MethodUtils {
 	}
 
 	static boolean isAccessible(Member m) {
-		return m != null && Modifier.isPublic(m.getModifiers())
-				&& !m.isSynthetic();
+		return m != null && Modifier.isPublic(m.getModifiers()) && !m.isSynthetic();
 	}
 
 	static void setAccessibleWorkaround(AccessibleObject o) {
@@ -101,8 +91,7 @@ public class MethodUtils {
 			return;
 		}
 		Member m = (Member) o;
-		if (Modifier.isPublic(m.getModifiers())
-				&& isPackageAccess(m.getDeclaringClass().getModifiers())) {
+		if (Modifier.isPublic(m.getModifiers()) && isPackageAccess(m.getDeclaringClass().getModifiers())) {
 			try {
 				o.setAccessible(true);
 			} catch (SecurityException e) { // NOPMD
@@ -115,18 +104,15 @@ public class MethodUtils {
 		return (modifiers & ACCESS_TEST) == 0;
 	}
 
-	private static final int ACCESS_TEST = Modifier.PUBLIC | Modifier.PROTECTED
-			| Modifier.PRIVATE;
+	private static final int ACCESS_TEST = Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
 
-	static int compareParameterTypes(Class<?>[] left, Class<?>[] right,
-			Class<?>[] actual) {
+	static int compareParameterTypes(Class<?>[] left, Class<?>[] right, Class<?>[] actual) {
 		float leftCost = getTotalTransformationCost(actual, left);
 		float rightCost = getTotalTransformationCost(actual, right);
 		return leftCost < rightCost ? -1 : rightCost < leftCost ? 1 : 0;
 	}
 
-	private static float getTotalTransformationCost(Class<?>[] srcArgs,
-			Class<?>[] destArgs) {
+	private static float getTotalTransformationCost(Class<?>[] srcArgs, Class<?>[] destArgs) {
 		float totalCost = 0.0f;
 		for (int i = 0; i < srcArgs.length; i++) {
 			Class<?> srcClass, destClass;
@@ -137,8 +123,7 @@ public class MethodUtils {
 		return totalCost;
 	}
 
-	private static float getObjectTransformationCost(Class<?> srcClass,
-			Class<?> destClass) {
+	private static float getObjectTransformationCost(Class<?> srcClass, Class<?> destClass) {
 		if (destClass.isPrimitive()) {
 			return getPrimitivePromotionCost(srcClass, destClass);
 		}
@@ -166,8 +151,7 @@ public class MethodUtils {
 		return cost;
 	}
 
-	private static float getPrimitivePromotionCost(final Class<?> srcClass,
-			final Class<?> destClass) {
+	private static float getPrimitivePromotionCost(final Class<?> srcClass, final Class<?> destClass) {
 		float cost = 0.0f;
 		Class<?> cls = srcClass;
 		if (!cls.isPrimitive()) {
@@ -186,12 +170,11 @@ public class MethodUtils {
 		return cost;
 	}
 
-	private static final Class<?>[] ORDERED_PRIMITIVE_TYPES = { Byte.TYPE,
-			Short.TYPE, Character.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE,
-			Double.TYPE };
+	private static final Class<?>[] ORDERED_PRIMITIVE_TYPES = { Byte.TYPE, Short.TYPE, Character.TYPE, Integer.TYPE,
+			Long.TYPE, Float.TYPE, Double.TYPE };
 
-	private static Method getAccessibleMethodFromInterfaceNest(Class<?> cls,
-			String methodName, Class<?>... parameterTypes) {
+	private static Method getAccessibleMethodFromInterfaceNest(Class<?> cls, String methodName,
+			Class<?>... parameterTypes) {
 		Method method = null;
 
 		// Search up the superclass chain
@@ -206,8 +189,7 @@ public class MethodUtils {
 				}
 				// Does the method exist on this interface?
 				try {
-					method = interfaces[i].getDeclaredMethod(methodName,
-							parameterTypes);
+					method = interfaces[i].getDeclaredMethod(methodName, parameterTypes);
 				} catch (NoSuchMethodException e) { // NOPMD
 					/*
 					 * Swallow, if no method is found after the loop then this
@@ -218,8 +200,7 @@ public class MethodUtils {
 					break;
 				}
 				// Recursively check our parent interfaces
-				method = getAccessibleMethodFromInterfaceNest(interfaces[i],
-						methodName, parameterTypes);
+				method = getAccessibleMethodFromInterfaceNest(interfaces[i], methodName, parameterTypes);
 				if (method != null) {
 					break;
 				}
@@ -254,10 +235,8 @@ public class MethodUtils {
 		}
 	}
 
-	public static boolean isAssignable(Class<?>[] classArray,
-			Class<?>... toClassArray) {
-		return isAssignable(classArray, toClassArray,
-				isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
+	public static boolean isAssignable(Class<?>[] classArray, Class<?>... toClassArray) {
+		return isAssignable(classArray, toClassArray, isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
 	}
 
 	public static boolean isJavaVersionAtLeast(JavaVersion requiredVersion) {
@@ -423,8 +402,7 @@ public class MethodUtils {
 
 	}
 
-	public static boolean isAssignable(Class<?>[] classArray,
-			Class<?>[] toClassArray, boolean autoboxing) {
+	public static boolean isAssignable(Class<?>[] classArray, Class<?>[] toClassArray, boolean autoboxing) {
 		if (isSameLength(classArray, toClassArray) == false) {
 			return false;
 		}
@@ -443,12 +421,10 @@ public class MethodUtils {
 	}
 
 	public static boolean isAssignable(Class<?> cls, Class<?> toClass) {
-		return isAssignable(cls, toClass,
-				isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
+		return isAssignable(cls, toClass, isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
 	}
 
-	public static boolean isAssignable(Class<?> cls, Class<?> toClass,
-			boolean autoboxing) {
+	public static boolean isAssignable(Class<?> cls, Class<?> toClass, boolean autoboxing) {
 		if (toClass == null) {
 			return false;
 		}
@@ -479,12 +455,10 @@ public class MethodUtils {
 				return false;
 			}
 			if (Integer.TYPE.equals(cls)) {
-				return Long.TYPE.equals(toClass) || Float.TYPE.equals(toClass)
-						|| Double.TYPE.equals(toClass);
+				return Long.TYPE.equals(toClass) || Float.TYPE.equals(toClass) || Double.TYPE.equals(toClass);
 			}
 			if (Long.TYPE.equals(cls)) {
-				return Float.TYPE.equals(toClass)
-						|| Double.TYPE.equals(toClass);
+				return Float.TYPE.equals(toClass) || Double.TYPE.equals(toClass);
 			}
 			if (Boolean.TYPE.equals(cls)) {
 				return false;
@@ -496,23 +470,16 @@ public class MethodUtils {
 				return Double.TYPE.equals(toClass);
 			}
 			if (Character.TYPE.equals(cls)) {
-				return Integer.TYPE.equals(toClass)
-						|| Long.TYPE.equals(toClass)
-						|| Float.TYPE.equals(toClass)
+				return Integer.TYPE.equals(toClass) || Long.TYPE.equals(toClass) || Float.TYPE.equals(toClass)
 						|| Double.TYPE.equals(toClass);
 			}
 			if (Short.TYPE.equals(cls)) {
-				return Integer.TYPE.equals(toClass)
-						|| Long.TYPE.equals(toClass)
-						|| Float.TYPE.equals(toClass)
+				return Integer.TYPE.equals(toClass) || Long.TYPE.equals(toClass) || Float.TYPE.equals(toClass)
 						|| Double.TYPE.equals(toClass);
 			}
 			if (Byte.TYPE.equals(cls)) {
-				return Short.TYPE.equals(toClass)
-						|| Integer.TYPE.equals(toClass)
-						|| Long.TYPE.equals(toClass)
-						|| Float.TYPE.equals(toClass)
-						|| Double.TYPE.equals(toClass);
+				return Short.TYPE.equals(toClass) || Integer.TYPE.equals(toClass) || Long.TYPE.equals(toClass)
+						|| Float.TYPE.equals(toClass) || Double.TYPE.equals(toClass);
 			}
 			// should never get here
 			return false;
@@ -527,17 +494,14 @@ public class MethodUtils {
 			return System.getProperty(property);
 		} catch (SecurityException ex) {
 			// we are not allowed to look at this property
-			System.err
-					.println("Caught a SecurityException reading the system property '"
-							+ property
-							+ "'; the SystemUtils property value will default to null.");
+			System.err.println("Caught a SecurityException reading the system property '" + property
+					+ "'; the SystemUtils property value will default to null.");
 			return null;
 		}
 
 	}
 
-	private static final JavaVersion JAVA_SPECIFICATION_VERSION_AS_ENUM = JavaVersion
-			.get(JAVA_SPECIFICATION_VERSION);
+	private static final JavaVersion JAVA_SPECIFICATION_VERSION_AS_ENUM = JavaVersion.get(JAVA_SPECIFICATION_VERSION);
 
 	public static Class<?> primitiveToWrapper(Class<?> cls) {
 		Class<?> convertedClass = cls;
@@ -550,10 +514,8 @@ public class MethodUtils {
 	public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
 	public static boolean isSameLength(Object[] array1, Object[] array2) {
-		if (array1 == null && array2 != null && array2.length > 0
-				|| array2 == null && array1 != null && array1.length > 0
-				|| array1 != null && array2 != null
-				&& array1.length != array2.length) {
+		if (array1 == null && array2 != null && array2.length > 0 || array2 == null && array1 != null
+				&& array1.length > 0 || array1 != null && array2 != null && array1.length != array2.length) {
 			return false;
 		}
 		return true;

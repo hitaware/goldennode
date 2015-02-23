@@ -5,8 +5,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-public class ClusteredLock extends ClusteredObject implements Lock,
-java.io.Serializable {
+public class ClusteredLock extends ClusteredObject implements Lock, java.io.Serializable {
 	private static final long serialVersionUID = 7373984872572414699L;
 	private final Sync sync;
 
@@ -82,21 +81,14 @@ java.io.Serializable {
 		sync = new Sync();
 	}
 
-	public ClusteredLock(String publicName, String ownerId)
-			throws ClusterException {
+	public ClusteredLock(String publicName, String ownerId) throws ClusterException {
 		super(publicName, ownerId);
 		sync = new Sync();
 	}
 
 	@Override
 	public void lock() {
-		sendLockRequestToPeers();
 		sync.lock();
-	}
-
-	private void sendLockRequestToPeers() {
-		// TODO implement
-
 	}
 
 	@Override
@@ -110,8 +102,7 @@ java.io.Serializable {
 	}
 
 	@Override
-	public boolean tryLock(long timeout, TimeUnit unit)
-			throws InterruptedException {
+	public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
 		return sync.tryAcquireNanos(1, unit.toNanos(timeout));
 	}
 
@@ -122,15 +113,14 @@ java.io.Serializable {
 
 	@Override
 	public Condition newCondition() {
-		return sync.newCondition();
+		throw new UnsupportedOperationException();
+		// return sync.newCondition();
 	}
 
 	@Override
 	public String toString() {
 		Thread o = sync.getOwner();
-		return super.toString()
-				+ (o == null ? "[Unlocked]" : "[Locked by thread "
-						+ o.getName() + "]");
+		return super.toString() + (o == null ? "[Unlocked]" : "[Locked by thread " + o.getName() + "]");
 	}
 
 }

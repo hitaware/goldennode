@@ -8,16 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+
+import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterProxy;
+import com.goldennode.api.cluster.ClusteredList;
+import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.cluster.OperationException;
-import com.goldennode.api.core.GoldenNodeServer;
-import com.goldennode.api.core.Logger;
 import com.goldennode.api.core.Request;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
@@ -25,6 +29,9 @@ import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.ServerStateListener;
 
 public class ReplicatedMemoryCluster implements Cluster {
+
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCluster.class);
+
 	Map<String, ClusteredObject> clusteredObjects;
 	private Map<String, Server> clusteredServers;
 	private Map<String, TimerTask> clusteredServerPingers;
@@ -36,14 +43,10 @@ public class ReplicatedMemoryCluster implements Cluster {
 	private Object obj = new Object();
 	private ClusterProxy proxy;
 
-	public ReplicatedMemoryCluster() throws ClusterException {
+	public ReplicatedMemoryCluster(Server server) throws ClusterException {
 
-		try {
-			loadConfig();
-			server = new GoldenNodeServer();
-		} catch (ServerException e) {
-			throw new ClusterException(e);
-		}
+		loadConfig();
+		this.server = server;
 		ServerStateListener s = new ServerStateListenerImpl(this);
 		server.addServerStateListener(s);
 		ClusterProxy p = new ProxyImpl(this);
@@ -58,7 +61,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 				obj.wait(INIT_TIME);
 			}
 		} catch (InterruptedException e) {
-			//
+			LOGGER.trace("interruption");
 		}
 
 	}
@@ -72,16 +75,12 @@ public class ReplicatedMemoryCluster implements Cluster {
 			System.setProperty("replicatedmemorycluster.pingperiod", "1000");
 		}
 		if (System.getProperty("replicatedmemorycluster.pinginitialdelay") == null) {
-			System.setProperty("replicatedmemorycluster.pinginitialdelay",
-					"1000");
+			System.setProperty("replicatedmemorycluster.pinginitialdelay", "1000");
 		}
 
-		INIT_TIME = Integer.parseInt(System
-				.getProperty("replicatedmemorycluster.inittime"));
-		PING_PERIOD = Integer.parseInt(System
-				.getProperty("replicatedmemorycluster.pingperiod"));
-		PING_INITIAL_DELAY = Integer.parseInt(System
-				.getProperty("replicatedmemorycluster.pinginitialdelay"));
+		INIT_TIME = Integer.parseInt(System.getProperty("replicatedmemorycluster.inittime"));
+		PING_PERIOD = Integer.parseInt(System.getProperty("replicatedmemorycluster.pingperiod"));
+		PING_INITIAL_DELAY = Integer.parseInt(System.getProperty("replicatedmemorycluster.pinginitialdelay"));
 	}
 
 	@Override
@@ -114,8 +113,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 	}
 
 	@Override
-	public Response unicastUDP(Server remoteServer, Operation operation)
-			throws ClusterException {
+	public Response unicastUDP(Server remoteServer, Operation operation) throws ClusterException {
 		try {
 			return server.unicastUDP(remoteServer, prepareRequest(operation));
 		} catch (ServerException e) {
@@ -124,8 +122,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 	}
 
 	@Override
-	public Response unicastTCP(Server remoteServer, Operation operation)
-			throws ClusterException {
+	public Response unicastTCP(Server remoteServer, Operation operation) throws ClusterException {
 
 		try {
 			return server.unicastTCP(remoteServer, prepareRequest(operation));
@@ -145,13 +142,12 @@ public class ReplicatedMemoryCluster implements Cluster {
 
 	private int getVersion(String publicName) throws ClusterException {
 
-		return (Integer) unicastTCP(getOwner(),
-				new Operation(publicName, "getVersion")).getReturnValue();
+		return (Integer) unicastTCP(getOwner(), new Operation(publicName, "getVersion")).getReturnValue();
 
 	}
 
 	public void removeClusteredServer(Server server) {
-		Logger.debug("Server removed from the cluster: " + server);
+		LOGGER.debug("Server removed from the cluster: " + server);
 		clusteredServers.remove(server.getId());
 		TimerTask tt = clusteredServerPingers.remove(server.getId());
 		tt.cancel();
@@ -172,7 +168,7 @@ public class ReplicatedMemoryCluster implements Cluster {
 	};
 
 	public void addClusteredServer(Server server) {
-		Logger.debug("Server added to the cluster: " + server);
+		LOGGER.debug("Server added to the cluster: " + server);
 		clusteredServers.put(server.getId(), server);
 		TimerTask tt = new ServerPinger(server, this);
 		clusteredServerPingers.put(server.getId(), tt);
@@ -212,78 +208,93 @@ public class ReplicatedMemoryCluster implements Cluster {
 		}
 	}
 
-	/*
-	 * @Override public void attachObject(ClusteredObject obj) {
-	 *
-	 * safeMulticast(new Operation(null, "createClusteredObject",
-	 * obj.getPublicName(), obj.getClass(), obj.getOwnerId()));
-	 *
-	 * }
-	 *
-	 * @Override public void detachObject(ClusteredObject obj) {
-	 *
-	 * safeMulticast(new Operation(null, "removeClusteredObject",
-	 * obj.getPublicName()));
-	 *
-	 * }
-	 */
-
-	/*
-	 * @Override public Lock createLock() { try { ClusteredLock cl = new
-	 * ClusteredLock("ClusteredLock" + UUID.randomUUID().toString(),
-	 * getOwner().getId()); attachObject(cl); } catch (ClusterException e) { //
-	 * TODO e.printStackTrace(); } return null; }
-	 */
-
 	@Override
-	public Response safeMulticast(Operation operation) {
-
-		Response resp = null;
+	public List<Response> safeMulticast(Operation operation) {
 		List<Server> servers = new ArrayList<Server>();
 		servers.add(getOwner());
 		servers.addAll(clusteredServers.values());
 
-		int version = 0;
 		try {
-			version = getVersion(operation.getObjectPublicName());
-		} catch (ClusterException e) {
-			throw new OperationException(e);
+			lockObjects(servers, operation);
+			// checkVersions(servers, operation);
+			List<Response> responses = doOperLogic(servers, operation);
+			return responses;
+		} catch (Exception e) {
+
+		} finally {
+			unlockObjects(servers, operation);
 		}
-		int versionAfter = version;
+
+		return null;
+
+	}
+
+	private List<Response> doOperLogic(List<Server> servers, Operation operation) {
+		List<?> doList = doOper(servers, operation);
+		if (doList.get(0) instanceof Response) {
+			// Success
+		} else {
+			return null;
+			// Exception occured success servers returned with the list
+			// TODOList<?> undoList = doOper((List<Server>) doList,
+			// operation.undo());
+			// if (undoList.get(0) instanceof Response) {
+			// // Success
+			// } else {
+			// // Exception occured success servers returned with the list
+			// resynchObject();
+			// }
+		}
+		return (List<Response>) doList;
+	}
+
+	private List<?> doOper(List<Server> servers, Operation operation) {
 
 		Iterator<Server> iter = servers.iterator();
 		List<Server> successServers = new ArrayList<Server>();
+		List<Response> responses = new ArrayList<Response>();
 		while (iter.hasNext()) {
 			Server remoteServer = iter.next();
 			try {
-				if (remoteServer.equals(getOwner())) {
-					resp = unicastTCP(remoteServer, operation);
-					versionAfter = getVersion(operation.getObjectPublicName());
-				} else {
-					unicastTCP(remoteServer, operation);
-				}
+				responses.add(unicastTCP(remoteServer, operation));
 				successServers.add(remoteServer);
 
 			} catch (ClusterException e) {
-				StringBuffer sb = new StringBuffer();
-				if (versionAfter > version) {
-					Operation undoOperation = Operation.undoLatest(
-							operation.getObjectPublicName(), versionAfter);
-					Iterator<Server> iter2 = successServers.iterator();
-					while (iter2.hasNext()) {
-						Server us = iter2.next();
-						try {
-							unicastTCP(us, undoOperation);
-						} catch (ClusterException e1) {
-							sb.append("\n" + "Can not undo server:" + us
-									+ " Exception:" + e1.toString() + "\n");
-						}
-					}
-				}
-				throw new OperationException(e + sb.toString());
+				return successServers;
 			}
 		}
-		return resp;
+		return responses;
+	}
+
+	private void unlockObjects(List<Server> servers, Operation operation) {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void resynchObject() {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void lockObjects(List<Server> servers, Operation operation) {
+		// TODO Auto-generated method stub
+
+	}
+
+	private void checkVersions(List<Server> servers, Operation operation) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Lock createLock(ClusteredObject obj) {
+		try {
+			ClusteredLock cl = new ClusteredLock(obj.getPublicName() + UUID.randomUUID().toString(), getOwner().getId());
+
+		} catch (ClusterException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
@@ -291,62 +302,52 @@ public class ReplicatedMemoryCluster implements Cluster {
 
 		try {
 
-			if (co.getOwnerId() == null) {
-				throw new ClusterException("Set ownerId");
-
-			}
-			if (co.getPublicName() == null) {
-				throw new ClusterException("Set publicName");
-
-			}
 			if (clusteredObjects.containsKey(co.getPublicName())) {
-				throw new ClusterException("Object already exits at server:"
-						+ getOwner());
+				throw new ClusterException("Object already exits at server:" + getOwner());
 
 			}
 			co.setCluster(this);
 
-			/*
-			 * if (ClusteredList.class.isAssignableFrom(co.getClass())) {
-			 *
-			 * safeMulticast(new Operation(null, "createClusteredObject",
-			 * co.getPublicName(), co.getClass(), co.getOwnerId()));
-			 *
-			 * Iterator iterNew = ((ClusteredList) co).iterator(); while
-			 * (iterNew.hasNext()) { safeMulticast(new
-			 * Operation(co.getPublicName(), "add", iterNew.next()));
-			 *
-			 * } } else {
-			 */
+			if (ClusteredList.class.isAssignableFrom(co.getClass())) {
 
-			safeMulticast(new Operation(null, "addClusteredObject", co));
-			/* } */
+				safeMulticast(new Operation(null, "createClusteredObject", co.getPublicName(), co.getClass(),
+						co.getOwnerId()));
 
-		} catch (Exception e) {
-			throw new ClusterException(e);
-		}
-	}
+				Iterator iterNew = ((ClusteredList) co).iterator();
+				while (iterNew.hasNext()) {
+					safeMulticast(new Operation(co.getPublicName(), "add", iterNew.next()));
 
-	@Override
-	public void detachObject(ClusteredObject obj) throws ClusterException {
+				}
+			} else {
 
-		try {
-			if (!clusteredObjects.containsKey(obj.getPublicName())) {
-				throw new ClusterException("Object doesn't exit in the server:"
-						+ getOwner());
-
+				safeMulticast(new Operation(null, "addClusteredObject", co));
 			}
 
-			safeMulticast(
-
-					new Operation(null, "removeClusteredObject", obj.getPublicName()));
-			obj.setOwnerId(null);
-			obj.setPublicName(null);
-			obj.setCluster(null);
-
 		} catch (Exception e) {
 			throw new ClusterException(e);
 		}
 	}
+
+	// @Override
+	// public void detachObject(ClusteredObject obj) throws ClusterException {
+	//
+	// try {
+	// if (!clusteredObjects.containsKey(obj.getPublicName())) {
+	// throw new ClusterException("Object doesn't exit in the server:" +
+	// getOwner());
+	//
+	// }
+	//
+	// safeMulticast(
+	//
+	// new Operation(null, "removeClusteredObject", obj.getPublicName()));
+	// obj.setOwnerId(null);
+	// obj.setPublicName(null);
+	// obj.setCluster(null);
+	//
+	// } catch (Exception e) {
+	// throw new ClusterException(e);
+	// }
+	// }
 
 }

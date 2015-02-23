@@ -65,23 +65,18 @@ public abstract class Server implements Serializable {
 
 	public abstract Request prepareRequest(String method, Object... params);
 
-	public abstract Response unicastTCP(Server remoteServer, Request request)
-			throws ServerException;
+	public abstract Response unicastTCP(Server remoteServer, Request request) throws ServerException;
 
-	public abstract Response unicastUDP(Server remoteServer, Request request)
-			throws ServerException;
+	public abstract Response unicastUDP(Server remoteServer, Request request) throws ServerException;
 
 	public abstract void multicast(Request request) throws ServerException;
 
-	public abstract List<Response> blockingMulticast(Request request,
-			Long timeout) throws ServerException;
+	public abstract List<Response> blockingMulticast(Request request, Long timeout) throws ServerException;
 
 	@Override
 	public String toString() {
-		return "Server [id=" + id + ", host=" + host + ", multicastPort="
-				+ getMulticastPort() + ", unicastUDPPort="
-				+ getUnicastUDPPort() + ", unicastTCPPort="
-				+ getUnicastTCPPort() + "]";
+		return "Server [id=" + id + ", host=" + host + ", multicastPort=" + getMulticastPort() + ", unicastUDPPort="
+				+ getUnicastUDPPort() + ", unicastTCPPort=" + getUnicastTCPPort() + "]";
 	}
 
 	@Override

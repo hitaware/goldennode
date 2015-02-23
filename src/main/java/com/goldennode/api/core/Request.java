@@ -76,9 +76,8 @@ public class Request implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Request [id=" + id + ", method=" + method + ", params="
-				+ params + ", requestType=" + requestType + ", serverFrom="
-				+ serverFrom + ", size=" + getBytes().length + "]";
+		return "Request [id=" + id + ", method=" + method + ", params=" + params + ", requestType=" + requestType
+				+ ", serverFrom=" + serverFrom + ", size=" + getBytes().length + "]";
 	}
 
 }

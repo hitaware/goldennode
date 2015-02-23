@@ -26,8 +26,7 @@ public class ProxyImpl extends ClusterProxy {
 	public void _announceServerJoining(Server s) throws ClusterException {
 		cluster.addClusteredServer(s);
 		// push this server
-		cluster.unicastTCP(s, new Operation(null, "sendOwnServerIdentity",
-				cluster.getOwner()));
+		cluster.unicastTCP(s, new Operation(null, "sendOwnServerIdentity", cluster.getOwner()));
 		// push objects
 		Collection<ClusteredObject> cos = cluster.getClusteredObjects();
 		Iterator<ClusteredObject> iter = cos.iterator();
@@ -37,19 +36,16 @@ public class ProxyImpl extends ClusterProxy {
 			if (co.getOwnerId().equals(cluster.getOwner().getId())) {
 				if (ClusteredList.class.isAssignableFrom(co.getClass())) {
 
-					cluster.unicastTCP(s, new Operation(null,
-							"createClusteredObject", co.getPublicName(),
+					cluster.unicastTCP(s, new Operation(null, "createClusteredObject", co.getPublicName(),
 							ClusteredList.class, co.getOwnerId()));
 					Iterator iterNew = ((ClusteredList) co).iterator();
 					while (iterNew.hasNext()) {
-						cluster.unicastTCP(s, new Operation(co.getPublicName(),
-								"add", iterNew.next()));
+						cluster.unicastTCP(s, new Operation(co.getPublicName(), "add", iterNew.next()));
 
 					}
 				} else {
 
-					cluster.unicastTCP(s, new Operation(null,
-							"addClusteredObject", co));
+					cluster.unicastTCP(s, new Operation(null, "addClusteredObject", co));
 				}
 			}
 		}
@@ -60,37 +56,32 @@ public class ProxyImpl extends ClusterProxy {
 		cluster.addClusteredServer(s);
 	}
 
-	public void _addClusteredObject(ClusteredObject obj)
-			throws ClusterException {
+	public void _addClusteredObject(ClusteredObject obj) throws ClusterException {
 		_u_addClusteredObject(obj);
-		createUndoRecord(new Operation(null, "u_removeClusteredObject",
-				obj.getPublicName()));
+		// TODO createUndoRecord(new Operation(null, "u_removeClusteredObject",
+		// obj.getPublicName()));
 	}
 
-	public void _u_addClusteredObject(ClusteredObject obj)
-			throws ClusterException {
+	public void _u_addClusteredObject(ClusteredObject obj) throws ClusterException {
 
 		if (cluster.clusteredObjects.containsKey(obj.getPublicName())) {
-			throw new ClusterException("Object already exits at server:"
-					+ cluster.getOwner());
+			throw new ClusterException("Object already exits at server:" + cluster.getOwner());
 		}
 		cluster.clusteredObjects.put(obj.getPublicName(), obj);
 
 	}
 
-	public void _removeClusteredObject(String publicName)
-			throws ClusterException {
+	public void _removeClusteredObject(String publicName) throws ClusterException {
 		ClusteredObject co = _u_removeClusteredObject(publicName);
 		// TODO preset ownerid,publicname,cluster
-		createUndoRecord(new Operation(null, "u_addClusteredObject", co));
+		// TODO createUndoRecord(new Operation(null, "u_addClusteredObject",
+		// co));
 
 	}
 
-	public ClusteredObject _u_removeClusteredObject(String publicName)
-			throws ClusterException {
+	public ClusteredObject _u_removeClusteredObject(String publicName) throws ClusterException {
 		if (!cluster.clusteredObjects.containsKey(publicName)) {
-			throw new ClusterException("Object doesn't exist in the server:"
-					+ cluster.getOwner());
+			throw new ClusterException("Object doesn't exist in the server:" + cluster.getOwner());
 		}
 		ClusteredObject co = cluster.clusteredObjects.get(publicName);
 		co.setOwnerId(null);
@@ -99,34 +90,30 @@ public class ProxyImpl extends ClusterProxy {
 		return cluster.clusteredObjects.remove(publicName);
 	}
 
-	public void _createClusteredObject(String publicName,
-			Class<? extends ClusteredObject> claz, String ownerId)
+	public void _createClusteredObject(String publicName, Class<? extends ClusteredObject> claz, String ownerId)
 			throws ClusterException {
 
 		try {
 			if (cluster.clusteredObjects.containsKey(publicName)) {
-				throw new ClusterException("Object already exits at server:"
-						+ cluster.getOwner());
+				throw new ClusterException("Object already exits at server:" + cluster.getOwner());
 			}
-			Constructor<? extends ClusteredObject> c = claz
-					.getDeclaredConstructor(String.class, String.class,
-							Cluster.class);
+			Constructor<? extends ClusteredObject> c = claz.getDeclaredConstructor(String.class, String.class,
+					Cluster.class);
 			ClusteredObject co = c.newInstance(publicName, ownerId, cluster);
 			cluster.clusteredObjects.put(co.getPublicName(), co);
-			createUndoRecord(new Operation(null, "u_removeClusteredObject", co));
+			// TODO createUndoRecord(new Operation(null,
+			// "u_removeClusteredObject", co));
 		} catch (Exception e) {
 			throw new ClusterException(e);
 		}
 
 	}
 
-	public void _u_createClusteredObject(ClusteredObject co)
-			throws ClusterException {
+	public void _u_createClusteredObject(ClusteredObject co) throws ClusterException {
 
 		try {
 			if (!cluster.clusteredObjects.containsKey(co.getPublicName())) {
-				throw new ClusterException("Object doesn't exit in the server:"
-						+ cluster.getOwner());
+				throw new ClusterException("Object doesn't exit in the server:" + cluster.getOwner());
 			}
 			cluster.clusteredObjects.remove(co.getPublicName());
 		} catch (Exception e) {

@@ -41,8 +41,8 @@ public class Response implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Response [returnValue=" + returnValue + ", serverFrom="
-				+ serverFrom + ", size=" + getBytes().length + "]";
+		return "Response [returnValue=" + returnValue + ", serverFrom=" + serverFrom + ", size=" + getBytes().length
+				+ "]";
 	}
 
 	public byte[] getBytes() {

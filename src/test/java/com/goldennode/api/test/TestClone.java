@@ -8,8 +8,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 public class TestClone {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestClone.class);
 
 	List<InnerObject> list;
 	List<InnerObject> list2;
@@ -29,11 +31,9 @@ public class TestClone {
 	@Test
 	public void test() throws Exception {
 
-		System.out.println("Cloning lists");
-		List<InnerObject> cloneList = Collections
-				.synchronizedList(new ArrayList<InnerObject>(list));
-		List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList) list2)
-				.clone();
+		LOGGER.debug("Cloning lists");
+		List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
+		List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList) list2).clone();
 
 		cloneList.add(new InnerObject(new Date()));
 		cloneList2.add(new InnerObject(new Date()));

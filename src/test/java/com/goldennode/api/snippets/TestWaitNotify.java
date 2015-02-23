@@ -2,7 +2,11 @@ package com.goldennode.api.snippets;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.LoggerFactory;
+
 public class TestWaitNotify {
+
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestWaitNotify.class);
 
 	Object lck = new Object();
 
@@ -19,6 +23,7 @@ public class TestWaitNotify {
 }
 
 class TH extends Thread {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TH.class);
 
 	private int ind;
 	private Object lck;
@@ -29,35 +34,35 @@ class TH extends Thread {
 	}
 
 	public void doWait() {
-		System.out.println("will sync myMonitorObject in doWait");
+		LOGGER.debug("will sync myMonitorObject in doWait");
 		synchronized (lck) {
 			try {
-				System.out.println("will wait");
+				LOGGER.debug("will wait");
 				lck.wait();
-				System.out.println("waited");
+				LOGGER.debug("waited");
 				for (int i = 0; i < 10; i++) {
-					System.out.println("doing job in doWait" + i);
+					LOGGER.debug("doing job in doWait" + i);
 				}
 				ReentrantLock lock = new ReentrantLock();
 
 			} catch (InterruptedException e) {//
 
 			}
-			System.out.println("end wait");
+			LOGGER.debug("end wait");
 		}
 	}
 
 	public void doNotify() {
-		System.out.println("will sync myMonitorObject in doNotify");
+		LOGGER.debug("will sync myMonitorObject in doNotify");
 		synchronized (lck) {
-			System.out.println("will notify");
+			LOGGER.debug("will notify");
 			lck.notify();
-			System.out.println("notified");
+			LOGGER.debug("notified");
 
 			for (int i = 0; i < 10; i++) {
-				System.out.println("doing job in doNotify" + i);
+				LOGGER.debug("doing job in doNotify" + i);
 			}
-			System.out.println("end notify");
+			LOGGER.debug("end notify");
 
 		}
 	}

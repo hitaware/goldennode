@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
@@ -15,6 +17,8 @@ import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.core.Server;
 
 public class TestCluster {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestCluster.class);
+
 	Cluster c;
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -35,7 +39,7 @@ public class TestCluster {
 
 	public void menu(boolean write) {
 		try {
-			System.out.println("");
+			LOGGER.debug("");
 			if (write) {
 				System.out
 						.println("1-create list/2-add to list/3-remove from list/4-clear list/5-print list detail/6-cluster detail/7-stop");
@@ -71,7 +75,7 @@ public class TestCluster {
 	}
 
 	private void clear() throws ClusterException, IOException {
-		System.out.println("Enter list name");
+		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
@@ -82,34 +86,32 @@ public class TestCluster {
 			cl.clear();
 
 		} else {
-			System.out.println("No clustered list available");
+			LOGGER.debug("No clustered list available");
 		}
 
 	}
 
 	public void createList() throws ClusterException, IOException {
-		System.out.println("Enter list name");
+		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		List<String> clusteredList = new ClusteredList<String>(name, c
-				.getOwner().getId());
-		c.attachObject((ClusteredList<String>) clusteredList);
+		List<String> clusteredList = new ClusteredList<String>(name, c.getOwner().getId());
+		// c.attachObject((ClusteredList<String>) clusteredList);
 
 	}
 
 	public void add() throws ClusterException, IOException {
 
-		System.out.println("Enter list name");
+		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		ClusteredList<String> cl = (ClusteredList<String>) c
-				.getClusteredObject(name);
+		ClusteredList<String> cl = (ClusteredList<String>) c.getClusteredObject(name);
 		if (cl != null) {
-			System.out.println("Enter value");
+			LOGGER.debug("Enter value");
 			String val = br.readLine();
 			if (val.equalsIgnoreCase("x")) {
 				return;
@@ -117,20 +119,20 @@ public class TestCluster {
 			cl.add(val);
 
 		} else {
-			System.out.println("No clustered list available");
+			LOGGER.debug("No clustered list available");
 		}
 
 	}
 
 	public void remove() throws ClusterException, IOException {
-		System.out.println("Enter list name");
+		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
 		ClusteredList cl = (ClusteredList) c.getClusteredObject(name);
 		if (cl != null) {
-			System.out.println("Enter value");
+			LOGGER.debug("Enter value");
 			String val = br.readLine();
 			if (val.equalsIgnoreCase("x")) {
 				return;
@@ -138,49 +140,49 @@ public class TestCluster {
 			cl.remove(new Integer(val).intValue());
 
 		} else {
-			System.out.println("No clustered list available");
+			LOGGER.debug("No clustered list available");
 		}
 
 	}
 
 	public void clusteredListDetail() throws IOException {
 
-		System.out.println("Enter list name");
+		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
 		ClusteredList cl = (ClusteredList) c.getClusteredObject(name);
 		if (cl != null) {
-			System.out.println("Clustered List Detail");
+			LOGGER.debug("Clustered List Detail");
 			for (int i = 0; i < cl.size(); i++) {
-				System.out.println("item " + i + " " + cl.get(i));
+				LOGGER.debug("item " + i + " " + cl.get(i));
 			}
 		} else {
-			System.out.println("No clustered list available");
+			LOGGER.debug("No clustered list available");
 		}
 
 	}
 
 	public void clusterDetail() throws IOException {
 
-		System.out.println(c);
+		LOGGER.debug(c.toString());
 		Collection<Server> cs = c.getPeers();
 		Iterator<Server> iter = cs.iterator();
-		System.out.println("Servers");
+		LOGGER.debug("Servers");
 		while (iter.hasNext()) {
 			Server s = iter.next();
 			if (s.equals(c.getOwner())) {
-				System.out.println(s + " THIS SERVER");
+				LOGGER.debug(s + " THIS SERVER");
 			} else {
-				System.out.println(s);
+				LOGGER.debug(s.toString());
 			}
 		}
 		Collection<ClusteredObject> co = c.getClusteredObjects();
 		Iterator<ClusteredObject> iter2 = co.iterator();
-		System.out.println("Objects");
+		LOGGER.debug("Objects");
 		while (iter2.hasNext()) {
-			System.out.println(iter2.next());
+			LOGGER.debug(iter2.next().toString());
 		}
 
 	}

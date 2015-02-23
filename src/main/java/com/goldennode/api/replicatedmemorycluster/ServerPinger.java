@@ -2,12 +2,16 @@ package com.goldennode.api.replicatedmemorycluster;
 
 import java.util.TimerTask;
 
+import org.slf4j.LoggerFactory;
+
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.Operation;
-import com.goldennode.api.core.Logger;
 import com.goldennode.api.core.Server;
 
 public class ServerPinger extends TimerTask {
+
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerPinger.class);
+
 	private Server serverToPing;
 	ReplicatedMemoryCluster cluster;
 
@@ -20,10 +24,9 @@ public class ServerPinger extends TimerTask {
 	public void run() {
 
 		try {
-			cluster.unicastTCP(serverToPing, new Operation(null, "ping",
-					cluster.getOwner().getId()));
+			cluster.unicastTCP(serverToPing, new Operation(null, "ping", cluster.getOwner().getId()));
 		} catch (ClusterException e) {
-			Logger.error("Can't ping peer: " + serverToPing);
+			LOGGER.error("Can't ping peer: " + serverToPing);
 			cluster.removeClusteredServer(serverToPing);
 		}
 

@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.slf4j.LoggerFactory;
+
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
-import com.goldennode.api.cluster.ClusteredObject;
-import com.goldennode.api.core.Logger;
 
 public class ConcurrencyTestMaster {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ConcurrencyTestMaster.class);
 
 	public static void main(String[] args) {
 
@@ -18,11 +19,8 @@ public class ConcurrencyTestMaster {
 			Cluster c = ClusterFactory.getCluster();
 			final List<String> clusteredList = new ErroneousClusteredList<String>();
 
-			((ErroneousClusteredList<String>) clusteredList).setOwnerId(c
-					.getOwner().getId());
-			((ErroneousClusteredList<String>) clusteredList)
-			.setPublicName("list1");
-			c.attachObject((ClusteredObject) clusteredList);
+			((ErroneousClusteredList<String>) clusteredList).setOwnerId(c.getOwner().getId());
+			((ErroneousClusteredList<String>) clusteredList).setPublicName("list1");
 
 			new Timer().schedule(new TimerTask() {
 
@@ -39,7 +37,7 @@ public class ConcurrencyTestMaster {
 
 				@Override
 				public void run() {
-					System.out.println(clusteredList.size());
+					LOGGER.debug(new Integer(clusteredList.size()).toString());
 
 				}
 			}, 0, 1000);
@@ -48,7 +46,7 @@ public class ConcurrencyTestMaster {
 			// clusteredList.remove(0);
 			// c.stop();
 		} catch (ClusterException e) {
-			Logger.error(e);
+			LOGGER.error("Error occured", e);
 		}
 	}
 }

@@ -2,10 +2,12 @@ package com.goldennode.api.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.core.ReflectionUtils;
+import com.goldennode.api.helper.ReflectionUtils;
 
 public class TestReflection {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestReflection.class);
 
 	public String method1(int index) {
 		return "1";
@@ -47,19 +49,12 @@ public class TestReflection {
 	public void test() throws Exception {
 
 		TestReflection rt = new TestReflection();
-		System.out.println("Calling methods by reflection");
-		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method1",
-				new Object[] { new Integer(1) }), "2");
-		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method2",
-				new Object[] { new Integer(1) }), "5");
-		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method3",
-				new Object[] { new Integer(1) }), "6");
-		Assert.assertEquals(
-				ReflectionUtils.callMethod(rt, "method4", new Object[] {}),
-				true);
-		Assert.assertEquals(
-				ReflectionUtils.callMethod(rt, "method5", new Object[] {}),
-				true);
+		LOGGER.debug("Calling methods by reflection");
+		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method1", new Object[] { new Integer(1) }), "2");
+		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method2", new Object[] { new Integer(1) }), "5");
+		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method3", new Object[] { new Integer(1) }), "6");
+		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method4", new Object[] {}), true);
+		Assert.assertEquals(ReflectionUtils.callMethod(rt, "method5", new Object[] {}), true);
 
 	}
 }

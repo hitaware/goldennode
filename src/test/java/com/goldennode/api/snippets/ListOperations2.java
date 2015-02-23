@@ -3,14 +3,16 @@ package com.goldennode.api.snippets;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.slf4j.LoggerFactory;
+
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ClusteredList;
 import com.goldennode.api.cluster.ClusteredObject;
-import com.goldennode.api.core.Logger;
 
 public class ListOperations2 {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ListOperations2.class);
 
 	public static void main(String[] args) {
 
@@ -23,20 +25,18 @@ public class ListOperations2 {
 				public void run() {
 					ClusteredObject co = c.getClusteredObject("list1");
 					if (co != null) {
-						System.out.println(((ClusteredList) co).size());
+						LOGGER.debug(new Integer(((ClusteredList) co).size()).toString());
 					} else {
-						System.out.println("not init");
+						LOGGER.debug("not init");
 					}
 
 				}
 			}, 1000, 1000);
-			// clusteredList.remove(0);
-			// c.detachObject(clusteredList);
-			// clusteredList.remove(0);
+
 			// sleep(1000);
 			// c.stop();
 		} catch (ClusterException e) {
-			Logger.error(e);
+			LOGGER.error("Error occured", e);
 		}
 	}
 }

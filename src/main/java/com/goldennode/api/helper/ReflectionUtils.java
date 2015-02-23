@@ -1,12 +1,13 @@
-package com.goldennode.api.core;
+package com.goldennode.api.helper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.goldennode.api.core.MethodNotFoundException;
+
 public class ReflectionUtils {
 
-	public static Object callMethod(Object cls, String methodName,
-			Object[] params) throws Exception {
+	public static Object callMethod(Object cls, String methodName, Object[] params) throws Exception {
 
 		try {
 			@SuppressWarnings("rawtypes")
@@ -15,9 +16,9 @@ public class ReflectionUtils {
 				Object s = params[i];
 				cz[i] = s.getClass();
 			}
-			Method m = MethodUtils.getMatchingAccessibleMethod(cls.getClass(),
-					methodName, cz);
+			Method m = MethodUtils.getMatchingAccessibleMethod(cls.getClass(), methodName, cz);
 			if (m == null) {
+				System.out.println(methodName);
 				throw new MethodNotFoundException();
 			}
 			return m.invoke(cls, params);

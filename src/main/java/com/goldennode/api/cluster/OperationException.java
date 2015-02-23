@@ -1,6 +1,7 @@
 package com.goldennode.api.cluster;
 
 public class OperationException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
 
 	public OperationException(Exception e) {
 		super(e);
@@ -13,7 +14,5 @@ public class OperationException extends RuntimeException {
 	public OperationException(Throwable cause) {
 		super(cause);
 	}
-
-	private static final long serialVersionUID = 1L;
 
 }

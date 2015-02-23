@@ -1,11 +1,7 @@
 package com.goldennode.api.cluster;
 
-import java.io.Serializable;
+public abstract class ClusteredObject {
 
-public abstract class ClusteredObject extends UndoableObject implements
-		Serializable {
-
-	private static final long serialVersionUID = 1L;
 	private String ownerId;
 	private String publicName;
 	private transient Cluster cluster;
@@ -14,16 +10,16 @@ public abstract class ClusteredObject extends UndoableObject implements
 		//
 	}
 
-	public ClusteredObject(String publicName, String ownerId)
-			throws ClusterException {
+	public ClusteredObject(String publicName, String ownerId) throws ClusterException {
 		this.publicName = publicName;
 		this.ownerId = ownerId;
+
 	}
 
-	public ClusteredObject(String publicName, String ownerId, Cluster cluster)
-			throws ClusterException {
+	public ClusteredObject(String publicName, String ownerId, Cluster cluster) throws ClusterException {
 		this.publicName = publicName;
 		this.ownerId = ownerId;
+		this.cluster = cluster;
 		this.cluster = cluster;
 	}
 
@@ -53,8 +49,7 @@ public abstract class ClusteredObject extends UndoableObject implements
 
 	@Override
 	public String toString() {
-		return "ClusteredObject [ownerId=" + ownerId + ", publicName="
-				+ publicName + ", cluster=" + cluster + "]";
+		return "ClusteredObject [ownerId=" + ownerId + ", publicName=" + publicName + ", cluster=" + cluster + "]";
 	}
 
 	@Override

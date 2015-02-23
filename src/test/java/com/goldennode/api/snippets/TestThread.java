@@ -1,6 +1,6 @@
 package com.goldennode.api.snippets;
 
-import com.goldennode.api.core.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Java program to demonstrate How to use notify and notifyAll method in Java
@@ -8,6 +8,7 @@ import com.goldennode.api.core.Logger;
  * up etc.
  */
 public class TestThread {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestThread.class);
 
 	private volatile boolean go = false;
 
@@ -21,10 +22,9 @@ public class TestThread {
 				try {
 					test.waitMeth();
 				} catch (InterruptedException ex) {
-					Logger.error(ex);
+					LOGGER.error("Error occured", ex);
 				}
-				Logger.debug(Thread.currentThread()
-						+ " finished Execution(wait test)");
+				LOGGER.debug(Thread.currentThread() + " finished Execution(wait test)");
 			}
 		};
 
@@ -33,8 +33,7 @@ public class TestThread {
 			@Override
 			public void run() {
 				test.notifyMeth();
-				Logger.debug(Thread.currentThread()
-						+ " finished Execution(notify test)");
+				LOGGER.debug(Thread.currentThread() + " finished Execution(notify test)");
 			}
 		};
 
@@ -61,10 +60,9 @@ public class TestThread {
 	 */
 	private synchronized void waitMeth() throws InterruptedException {
 		// while (go != true) {
-		Logger.debug(Thread.currentThread()
-				+ " is going to wait on this object");
+		LOGGER.debug(Thread.currentThread() + " is going to wait on this object");
 		wait(); // release lock and reacquires on wakeup
-		Logger.debug(Thread.currentThread() + " is woken up");
+		LOGGER.debug(Thread.currentThread() + " is woken up");
 		// }
 		go = false; // resetting condition
 	}
@@ -75,8 +73,7 @@ public class TestThread {
 	 */
 	private synchronized void notifyMeth() {
 		// while (go == false) {
-		Logger.debug(Thread.currentThread()
-				+ " is going to notify all or one thread waiting on this object");
+		LOGGER.debug(Thread.currentThread() + " is going to notify all or one thread waiting on this object");
 
 		go = true; // making condition true for waiting thread
 		// notify(); // only one out of three waiting thread WT1, WT2,WT3

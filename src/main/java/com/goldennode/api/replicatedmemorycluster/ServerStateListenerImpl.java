@@ -1,12 +1,16 @@
 package com.goldennode.api.replicatedmemorycluster;
 
+import org.slf4j.LoggerFactory;
+
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.Operation;
-import com.goldennode.api.core.Logger;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerStateListener;
 
 public class ServerStateListenerImpl implements ServerStateListener {
+
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStateListener.class);
+
 	/**
 	 * A reference to cluster in case it is needed in this class
 	 */
@@ -25,12 +29,11 @@ public class ServerStateListenerImpl implements ServerStateListener {
 	@Override
 	public void serverStarted(Server server) {
 		try {
-			Logger.debug("***server started... id : " + server.getId());
-			cluster.multicast(new Operation(null, "announceServerJoining",
-					server));
+			LOGGER.debug("***server started... id : " + server.getId());
+			cluster.multicast(new Operation(null, "announceServerJoining", server));
 
 		} catch (ClusterException e) {
-			Logger.error(e);
+			LOGGER.error("Error Occured", e);
 		}
 	}
 
@@ -41,11 +44,15 @@ public class ServerStateListenerImpl implements ServerStateListener {
 	@Override
 	public void serverStopping(Server server) {
 		try {
-			Logger.debug("***server stopped... id : " + server.getId());
-			cluster.multicast(new Operation(null, "announceServerLeaving",
-					server));// TODO change to safemulticast
+			LOGGER.debug("***server stopped... id : " + server.getId());
+			cluster.multicast(new Operation(null, "announceServerLeaving", server));// TODO
+			// should
+			// we
+			// change
+			// to
+			// safemulticast?
 		} catch (ClusterException e) {
-			Logger.error(e);
+			LOGGER.error("Error occured", e);
 		}
 	}
 

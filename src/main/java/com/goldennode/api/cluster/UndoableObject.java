@@ -1,12 +1,15 @@
 package com.goldennode.api.cluster;
 
+import java.io.Serializable;
 import java.util.Stack;
 
-import com.goldennode.api.core.ReflectionUtils;
+import com.goldennode.api.helper.ReflectionUtils;
 
-public class UndoableObject {
-	protected transient Stack<Operation> history = new Stack<Operation>();
-	protected transient int version = 1;
+public class UndoableObject implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	protected Stack<Operation> history = new Stack<Operation>();
+	protected int version = 1;
 
 	public void createUndoRecord(Operation operation) {
 		version++;
@@ -25,21 +28,22 @@ public class UndoableObject {
 		return version;
 	}
 
-	public void undoLatest(int lastestVersion) {
-
-		if (version != lastestVersion) {
-			throw new OperationException(lastestVersion
-					+ " is not the latest version. Objects version is "
-					+ version);
+	public void undo(int currentVersion) {
+		if (getVersion() != currentVersion) {
+			throw new OperationException(currentVersion + " is not the latest version. Objects version is " + version);
 		}
-		if (version == 1) {
+		if (getVersion() == 1) {
 			throw new OperationException("Object in initial state");
 		}
+		doUndo();
+	}
+
+	private void doUndo() {
+
 		Operation operation = history.pop();
 		if (operation != null) {
 			try {
-				ReflectionUtils.callMethod(this, operation.getObjectMethod(),
-						operation.getParams());
+				ReflectionUtils.callMethod(this, operation.getObjectMethod(), operation.getParams());
 				version--;
 			} catch (Exception e) {
 				throw new OperationException(e);
@@ -50,9 +54,9 @@ public class UndoableObject {
 
 	/*
 	 * public void beginTransaction() { history.clear(); }
-	 *
+	 * 
 	 * public void commitTransaction() { history.clear(); }
-	 *
+	 * 
 	 * public void rollbackTransaction() throws ObjectOperationException { while
 	 * (!history.isEmpty()) { undo(); } }
 	 */
