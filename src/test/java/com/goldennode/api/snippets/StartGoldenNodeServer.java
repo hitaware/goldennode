@@ -3,7 +3,7 @@ package com.goldennode.api.snippets;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.GoldenNodeServer;
-import com.goldennode.api.core.Proxy;
+import com.goldennode.api.core.OperationBase;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.ServerStateListener;
@@ -14,10 +14,10 @@ public class StartGoldenNodeServer {
 	public static void main(String[] args) {
 		try {
 
-			ProxyClass proxy = new StartGoldenNodeServer().new ProxyClass();
+			ProxyClass operationBase = new StartGoldenNodeServer().new ProxyClass();
 			GoldenNodeServer server = new GoldenNodeServer();
-			server.addServerStateListener(proxy);
-			server.setProxy(proxy);
+			server.addServerStateListener(operationBase);
+			server.setOperationBase(operationBase);
 			server.start();
 
 		} catch (ServerException e) {
@@ -26,7 +26,7 @@ public class StartGoldenNodeServer {
 
 	}
 
-	class ProxyClass implements Proxy, ServerStateListener {
+	class ProxyClass implements OperationBase, ServerStateListener {
 		public Integer _getSum(Integer param1, Integer param2) {
 			LOGGER.debug("getSum(" + param1 + "," + param2 + ")");
 			return new Integer(param1.intValue() + param2.intValue());

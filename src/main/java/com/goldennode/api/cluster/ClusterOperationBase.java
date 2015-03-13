@@ -1,9 +1,9 @@
 package com.goldennode.api.cluster;
 
-import com.goldennode.api.core.Proxy;
+import com.goldennode.api.core.OperationBase;
 import com.goldennode.api.helper.ReflectionUtils;
 
-public abstract class ClusterProxy implements Proxy {
+public abstract class ClusterOperationBase implements OperationBase {
 
 	public Object _op_(Operation operation) throws OperationException {
 

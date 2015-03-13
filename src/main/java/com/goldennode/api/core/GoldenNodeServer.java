@@ -117,9 +117,9 @@ public class GoldenNodeServer extends Server {
 		rs.setRequest(r);
 		rs.setServerFrom(this);
 		if (isStarted()) {
-			if (getProxy() != null) {
+			if (getOperationBase() != null) {
 				try {
-					Object s = ReflectionUtils.callMethod(getProxy(), r.getMethod(), r.getParams());
+					Object s = ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
 					rs.setReturnValue(s);
 				} catch (Exception e) {
 					rs.setReturnValue(e);
@@ -156,10 +156,10 @@ public class GoldenNodeServer extends Server {
 	private void processNonBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
 
 		if (isStarted()) {
-			if (getProxy() != null) {
+			if (getOperationBase() != null) {
 
 				try {
-					ReflectionUtils.callMethod(getProxy(), r.getMethod(), r.getParams());
+					ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
 				} catch (Exception e) {
 					throw new ServerException(e);
 				}
@@ -263,10 +263,10 @@ public class GoldenNodeServer extends Server {
 					Response rs = new Response();
 					rs.setRequest(r);
 					rs.setServerFrom(GoldenNodeServer.this);
-					if (getProxy() != null) {
+					if (getOperationBase() != null) {
 
 						try {
-							Object s = ReflectionUtils.callMethod(getProxy(), r.getMethod(), r.getParams());
+							Object s = ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
 							rs.setReturnValue(s);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -377,7 +377,9 @@ public class GoldenNodeServer extends Server {
 			if (isStarted()) {
 				throw new ServerAlreadyStartedException();
 			}
-			getServerStateListener().serverStarting(GoldenNodeServer.this);
+			for (ServerStateListener listener : getServerStateListeners()) {
+				listener.serverStarting(GoldenNodeServer.this);
+			}
 			htUnicastResponse = new ConcurrentHashMap<String, Response>();
 			htBlockingMulticastResponse = new ConcurrentHashMap<String, List<Response>>();
 			unicastLocks = new ConcurrentHashMap<String, Object>();
@@ -435,8 +437,9 @@ public class GoldenNodeServer extends Server {
 			thTCPServerSocket.start();
 			LOGGER.debug("Server listening to unicastudpport:" + UNICAST_UDP_PORT + " multicastport:" + MULTICAST_PORT
 					+ " unicasttcpport:" + UNICAST_TCP_PORT);
-			getServerStateListener().serverStarted(GoldenNodeServer.this);
-
+			for (ServerStateListener listener : getServerStateListeners()) {
+				listener.serverStarted(GoldenNodeServer.this);
+			}
 		} catch (IOException e) {
 			throw new ServerException(e);
 		}
@@ -448,7 +451,10 @@ public class GoldenNodeServer extends Server {
 			if (!isStarted()) {
 				throw new ServerAlreadyStoppedException();
 			}
-			getServerStateListener().serverStopping(GoldenNodeServer.this);
+			for (ServerStateListener listener : getServerStateListeners()) {
+				listener.serverStopping(GoldenNodeServer.this);
+			}
+
 			setStarted(false);
 			multicastSocket.close();
 			unicastSocket.close();
@@ -457,7 +463,9 @@ public class GoldenNodeServer extends Server {
 			thUnicastUDPProcessor.interrupt();
 			thTCPServerSocket.interrupt();
 			requestProcessorThreadPool.shutdown();
-			getServerStateListener().serverStopped(GoldenNodeServer.this);
+			for (ServerStateListener listener : getServerStateListeners()) {
+				listener.serverStopped(GoldenNodeServer.this);
+			}
 			Iterator<TCPProcessor> iter = tcpProcessors.iterator();
 			while (iter.hasNext()) {
 				TCPProcessor s = iter.next();

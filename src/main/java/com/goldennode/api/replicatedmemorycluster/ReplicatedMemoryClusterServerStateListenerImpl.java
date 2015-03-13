@@ -7,7 +7,7 @@ import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerStateListener;
 
-public class ServerStateListenerImpl implements ServerStateListener {
+public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerStateListener {
 
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStateListener.class);
 
@@ -17,7 +17,7 @@ public class ServerStateListenerImpl implements ServerStateListener {
 
 	private ReplicatedMemoryCluster cluster;
 
-	ServerStateListenerImpl(ReplicatedMemoryCluster cluster) {
+	ReplicatedMemoryClusterServerStateListenerImpl(ReplicatedMemoryCluster cluster) {
 		this.cluster = cluster;
 	}
 

@@ -6,7 +6,6 @@ import java.util.concurrent.locks.Lock;
 
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
-import com.goldennode.api.cluster.ClusterProxy;
 import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.Response;
@@ -30,12 +29,6 @@ public class BigMemoryCluster implements Cluster {
 
 	@Override
 	public Server getOwner() {
-
-		return null;
-	}
-
-	@Override
-	public ClusterProxy getProxy() {
 
 		return null;
 	}

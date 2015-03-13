@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.GoldenNodeServer;
-import com.goldennode.api.core.Proxy;
+import com.goldennode.api.core.OperationBase;
 import com.goldennode.api.core.Request;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
@@ -32,7 +32,7 @@ public class TestGoldenNodeServer {
 			ProxyClass proxy = new TestGoldenNodeServer().new ProxyClass();
 			server = new GoldenNodeServer();
 			server.addServerStateListener(proxy);
-			server.setProxy(proxy);
+			server.setOperationBase(proxy);
 			server.start();
 			Request r = server.prepareRequest("_getSum", new Integer(3), new Integer(4));
 			List<Response> l = server.blockingMulticast(r, 1000l);
@@ -66,7 +66,7 @@ public class TestGoldenNodeServer {
 			ProxyClass proxy = new TestGoldenNodeServer().new ProxyClass();
 			server = new GoldenNodeServer();
 			server.addServerStateListener(proxy);
-			server.setProxy(proxy);
+			server.setOperationBase(proxy);
 			server.start();
 			Request r = server.prepareRequest("_getSum", new Integer(3), new Integer(4));
 			server.multicast(r);
@@ -94,7 +94,7 @@ public class TestGoldenNodeServer {
 			ProxyClass proxy = new TestGoldenNodeServer().new ProxyClass();
 			server = new GoldenNodeServer();
 			server.addServerStateListener(proxy);
-			server.setProxy(proxy);
+			server.setOperationBase(proxy);
 			server.start();
 			Request r = server.prepareRequest("_getSum", new Integer(3), new Integer(4));
 			Response resp = server.unicastUDP(server, r);
@@ -123,7 +123,7 @@ public class TestGoldenNodeServer {
 			ProxyClass proxy = new TestGoldenNodeServer().new ProxyClass();
 			server = new GoldenNodeServer();
 			server.addServerStateListener(proxy);
-			server.setProxy(proxy);
+			server.setOperationBase(proxy);
 			server.start();
 			Request r = server.prepareRequest("_getSum", new Integer(3), new Integer(4));
 			Response resp = server.unicastTCP(server, r);
@@ -154,7 +154,7 @@ public class TestGoldenNodeServer {
 		}
 	}
 
-	class ProxyClass implements Proxy, ServerStateListener {
+	class ProxyClass implements OperationBase, ServerStateListener {
 		public Integer _getSum(Integer param1, Integer param2) {
 			LOGGER.debug("getSum(" + param1 + "," + param2 + ")");
 			return new Integer(param1.intValue() + param2.intValue());

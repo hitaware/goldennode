@@ -19,9 +19,12 @@ public class ClusterFactory {
 
 		try {
 			Server server = new GoldenNodeServer();
+
 			if (type == ClusterType.BIGMEMORY) {
+
 				return new BigMemoryCluster(server);
 			} else if (type == ClusterType.REPLICATEDMEMORY) {
+
 				return new ReplicatedMemoryCluster(server);
 			}
 			return null;

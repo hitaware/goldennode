@@ -1,5 +1,5 @@
 package com.goldennode.api.core;
 
-public interface Proxy {
+public interface OperationBase {
 
 }

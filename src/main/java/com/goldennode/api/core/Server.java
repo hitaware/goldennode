@@ -2,13 +2,16 @@ package com.goldennode.api.core;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class Server implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	transient private Proxy proxy;
-	transient private ServerStateListener serverStateListener;
+	transient private OperationBase operationBase;
+	transient private List<ServerStateListener> serverStateListeners = Collections
+			.synchronizedList(new ArrayList<ServerStateListener>());
 	transient private boolean started = false;
 	private InetAddress host;
 	private String id;
@@ -21,16 +24,16 @@ public abstract class Server implements Serializable {
 		this.host = host;
 	}
 
-	public Proxy getProxy() {
-		return proxy;
+	public OperationBase getOperationBase() {
+		return operationBase;
 	}
 
-	public void setProxy(Proxy proxy) {
-		this.proxy = proxy;
+	public void setOperationBase(OperationBase operationBase) {
+		this.operationBase = operationBase;
 	}
 
-	public ServerStateListener getServerStateListener() {
-		return serverStateListener;
+	public ServerStateListener[] getServerStateListeners() {
+		return serverStateListeners.toArray(new ServerStateListener[0]);
 	}
 
 	public boolean isStarted() {
@@ -42,7 +45,7 @@ public abstract class Server implements Serializable {
 	}
 
 	public void addServerStateListener(ServerStateListener serverStateListener) {
-		this.serverStateListener = serverStateListener;
+		serverStateListeners.add(serverStateListener);
 	}
 
 	public String getId() {

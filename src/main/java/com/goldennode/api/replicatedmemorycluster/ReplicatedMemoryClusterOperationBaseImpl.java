@@ -6,16 +6,16 @@ import java.util.Iterator;
 
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
-import com.goldennode.api.cluster.ClusterProxy;
+import com.goldennode.api.cluster.ClusterOperationBase;
 import com.goldennode.api.cluster.ClusteredList;
 import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.Server;
 
-public class ProxyImpl extends ClusterProxy {
+public class ReplicatedMemoryClusterOperationBaseImpl extends ClusterOperationBase {
 	ReplicatedMemoryCluster cluster;
 
-	ProxyImpl(ReplicatedMemoryCluster cluster) {
+	ReplicatedMemoryClusterOperationBaseImpl(ReplicatedMemoryCluster cluster) {
 		this.cluster = cluster;
 	}
 

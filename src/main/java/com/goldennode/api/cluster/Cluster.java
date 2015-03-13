@@ -15,8 +15,6 @@ public interface Cluster {
 
 	public Server getOwner();
 
-	public ClusterProxy getProxy();
-
 	public Response unicastUDP(Server peer, Operation operation) throws ClusterException;
 
 	public Response unicastTCP(Server peer, Operation operation) throws ClusterException;

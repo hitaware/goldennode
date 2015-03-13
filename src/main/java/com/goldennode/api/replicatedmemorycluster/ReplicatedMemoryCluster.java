@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
-import com.goldennode.api.cluster.ClusterProxy;
 import com.goldennode.api.cluster.ClusteredList;
 import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.api.cluster.ClusteredObject;
@@ -26,7 +25,6 @@ import com.goldennode.api.core.Request;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
-import com.goldennode.api.core.ServerStateListener;
 
 public class ReplicatedMemoryCluster implements Cluster {
 
@@ -41,16 +39,13 @@ public class ReplicatedMemoryCluster implements Cluster {
 	private int PING_INITIAL_DELAY;
 	private int INIT_TIME;
 	private Object obj = new Object();
-	private ClusterProxy proxy;
 
 	public ReplicatedMemoryCluster(Server server) throws ClusterException {
 
 		loadConfig();
 		this.server = server;
-		ServerStateListener s = new ServerStateListenerImpl(this);
-		server.addServerStateListener(s);
-		ClusterProxy p = new ProxyImpl(this);
-		server.setProxy(p);
+		server.setOperationBase(new ReplicatedMemoryClusterOperationBaseImpl(this));
+		server.addServerStateListener(new ReplicatedMemoryClusterServerStateListenerImpl(this));
 		clusteredServers = new ConcurrentHashMap<String, Server>();
 		clusteredServerPingers = new ConcurrentHashMap<String, TimerTask>();
 		clusteredObjects = new ConcurrentHashMap<String, ClusteredObject>();
@@ -105,11 +100,6 @@ public class ReplicatedMemoryCluster implements Cluster {
 	@Override
 	public Server getOwner() {
 		return server;
-	}
-
-	@Override
-	public ClusterProxy getProxy() {
-		return proxy;
 	}
 
 	@Override
