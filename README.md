@@ -52,7 +52,7 @@ USAGE OF GOLDEN NODE
 
 		ClusteredObject co = c.getClusteredObject("list1");
     					
-	3) The object loaded from the previous step is a ClustedList. So Let's cast it and print its size.			
+	3) The object loaded from the previous step is a ClusteredList. So Let's cast it and print its size.			
     				
 		System.out.println(((ClusteredList) co).size());
     				
