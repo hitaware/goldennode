@@ -1,0 +1,4 @@
+lock stays when a server goes. what to do?acquireDistributedLock(...) implement with timeout parameter
+when a server crashes reassign clusteredobjects to another server
+3 servers running, another process came later. Problems : sync breaks or clusteredobject not found exception
+propagate thread id to server calls and use it in locks
