@@ -9,17 +9,18 @@ public class Response implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private Object returnValue;
+	private Exception exception;
 	private Server serverFrom;
 	private Request request;
 
-	Response() {//
+	public Response() {//
 	}
 
 	public Request getRequest() {
 		return request;
 	}
 
-	void setRequest(Request request) {
+	public void setRequest(Request request) {
 		this.request = request;
 	}
 
@@ -27,7 +28,7 @@ public class Response implements Serializable {
 		return serverFrom;
 	}
 
-	void setServerFrom(Server serverFrom) {
+	public void setServerFrom(Server serverFrom) {
 		this.serverFrom = serverFrom;
 	}
 
@@ -35,14 +36,14 @@ public class Response implements Serializable {
 		return returnValue;
 	}
 
-	void setReturnValue(Object returnValue) {
+	public void setReturnValue(Object returnValue) {
 		this.returnValue = returnValue;
 	}
 
 	@Override
 	public String toString() {
-		return "Response [returnValue=" + returnValue + ", serverFrom=" + serverFrom + ", size=" + getBytes().length
-				+ "]";
+		return " > Response [returnValue=" + returnValue + ", exception="
+				+ exception + ", serverFrom=" + serverFrom + "] ";
 	}
 
 	public byte[] getBytes() {

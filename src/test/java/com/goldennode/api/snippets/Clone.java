@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.snippets;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-public class TestClone {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestClone.class);
+public class Clone {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Clone.class);
 
 	List<InnerObject> list;
 	List<InnerObject> list2;
@@ -28,12 +28,15 @@ public class TestClone {
 		list2.add(new InnerObject(new Date()));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test() throws Exception {
 
 		LOGGER.debug("Cloning lists");
-		List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
-		List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList) list2).clone();
+		List<InnerObject> cloneList = Collections
+				.synchronizedList(new ArrayList<InnerObject>(list));
+		List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList<InnerObject>) list2)
+				.clone();
 
 		cloneList.add(new InnerObject(new Date()));
 		cloneList2.add(new InnerObject(new Date()));

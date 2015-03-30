@@ -1,4 +1,4 @@
-package com.goldennode.api.snippets;
+package com.goldennode.api.replicatedmemorycluster;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,8 +10,8 @@ import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 
-public class StartStopCluster {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(StartStopCluster.class);
+public class TestStartStopCluster {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestStartStopCluster.class);
 
 	public static void main(String[] args) {
 		try {

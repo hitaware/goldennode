@@ -1,7 +1,12 @@
 package com.goldennode.api.cluster;
 
-public abstract class ClusteredObject {
+import java.io.Serializable;
 
+import com.goldennode.api.core.Server;
+
+public abstract class ClusteredObject implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private String ownerId;
 	private String publicName;
 	private transient Cluster cluster;
@@ -10,13 +15,13 @@ public abstract class ClusteredObject {
 		//
 	}
 
-	public ClusteredObject(String publicName, String ownerId) throws ClusterException {
+	public ClusteredObject(String publicName, String ownerId) {
 		this.publicName = publicName;
 		this.ownerId = ownerId;
 
 	}
 
-	public ClusteredObject(String publicName, String ownerId, Cluster cluster) throws ClusterException {
+	public ClusteredObject(String publicName, String ownerId, Cluster cluster) {
 		this.publicName = publicName;
 		this.ownerId = ownerId;
 		this.cluster = cluster;
@@ -47,9 +52,15 @@ public abstract class ClusteredObject {
 		return cluster;
 	}
 
+	public Server getLockServer() {
+		return getOwnerId().equals(cluster.getOwner().getId()) ? cluster
+				.getOwner() : cluster.getServer(getOwnerId());
+	}
+
 	@Override
 	public String toString() {
-		return "ClusteredObject [ownerId=" + ownerId + ", publicName=" + publicName + ", cluster=" + cluster + "]";
+		return " > ClusteredObject [ownerId=" + ownerId + ", publicName="
+				+ publicName + "] ";
 	}
 
 	@Override

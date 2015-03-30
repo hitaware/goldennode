@@ -1,5 +1,6 @@
 package com.goldennode.api.cluster;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,21 +8,44 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-public class ClusteredList<E> extends ClusteredObject implements List<E> {
+import org.slf4j.LoggerFactory;
+
+public class ClusteredList<E> extends ClusteredObject implements List<E>, Serializable {
 
 	private static final long serialVersionUID = 1L;
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredList.class);
 
 	protected List<E> innerList = Collections.synchronizedList(new ArrayList<E>());
+
+	private int counter = 0;
 
 	public ClusteredList() {
 		super();
 	}
 
-	public ClusteredList(String publicName, String ownerId) throws ClusterException {
-		super(publicName, ownerId);
+	public int getcounter() {
+
+		return counter;
+
 	}
 
-	public ClusteredList(String publicName, String ownerId, Cluster cluster) throws ClusterException {
+	public int inccounter() {
+		try {
+			getCluster().acquireDistributedLock(this);
+			return (int) getCluster().safeMulticast(new Operation(getPublicName(), "inccounter"));
+		} finally {
+			getCluster().releaseDistributedLock(this);
+		}
+	}
+
+	public int _inccounter() {
+
+		counter = counter + 1;
+		return counter;
+
+	}
+
+	public ClusteredList(String publicName, String ownerId, Cluster cluster) {
 		super(publicName, ownerId, cluster);
 	}
 
@@ -58,85 +82,78 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	// TODO Integer Object conflict
 	@Override
 	public boolean add(E e) {
+		try {
+			getCluster().acquireDistributedLock(this);
 
-		if (getCluster() != null) {
-			return (Boolean) getCluster().safeMulticast(new Operation(getPublicName(), "add", e)).get(0)
-					.getReturnValue();
-
-		} else {
-			return _add(e);
+			return (Boolean) getCluster().safeMulticast(new Operation(getPublicName(), "add", e));
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public Boolean _add(E e) {
-		Boolean b = _u_add(e);
-		if (getCluster() != null) {
-			// TODO getCluster().getProxy().createUndoRecord(
-			// new Operation(getPublicName(), "u_remove", e));
-		}
+		Boolean b = _base_add(e);
+
+		// TODO getCluster().getProxy().createUndoRecord(
+		// new Operation(getPublicName(), "base_remove", e));
+
 		return b;
 	}
 
-	public Boolean _u_add(E e) {
+	public Boolean _base_add(E e) {
 		return innerList.add(e);
+
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public E set(int index, E element) {
+		try {
+			getCluster().acquireDistributedLock(this);
 
-		if (getCluster() != null) {
-
-			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "set", index, element)).get(0)
-					.getReturnValue();
-
-		} else {
-			return _set(index, element);
+			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "set", index, element));
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public E _set(int index, E element) {
+		E e = _base_set(index, element);
 
-		E e = _u_set(index, element);
-		if (getCluster() != null) {
-			// TODO getCluster().getProxy().createUndoRecord(new
-			// Operation(getPublicName(), "u_set", index, e));
-		}
+		// TODO getCluster().getProxy().createUndoRecord(new
+		// Operation(getPublicName(), "base_set", index, e));
+
 		return e;
 	}
 
-	public E _u_set(int index, E element) {
-
+	public E _base_set(int index, E element) {
 		E e = innerList.set(index, element);
 
 		return e;
+
 	}
 
 	@Override
 	public void add(int index, E element) {
+		try {
+			getCluster().acquireDistributedLock(this);
 
-		if (getCluster() != null) {
 			getCluster().safeMulticast(new Operation(getPublicName(), "add", index, element));
-
-		} else {
-			_add(index, element);
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public void _add(int index, E element) {
-		_u_add(index, element);
-		if (getCluster() != null) {
-			// TODO getCluster().getProxy().createUndoRecord(new
-			// Operation(getPublicName(), "u_remove", index));
-		}
+		_base_add(index, element);
+
+		// TODO getCluster().getProxy().createUndoRecord(new
+		// Operation(getPublicName(), "base_remove", index));
 
 	}
 
-	public void _u_add(int index, E element) {
-
+	public void _base_add(int index, E element) {
+		getCluster().acquireDistributedLock(this);
 		innerList.add(index, element);
 
 	}
@@ -144,81 +161,79 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public E remove(int index) {
-
-		if (getCluster() != null) {
-
-			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "remove", index)).get(0)
-					.getReturnValue();
-		} else {
-			return _remove(index);
+		try {
+			getCluster().acquireDistributedLock(this);
+			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "remove", index));
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public E _remove(int index) {
-		E e = _u_remove(index);
-		if (getCluster() != null) {
-			// TODO getCluster().getProxy().createUndoRecord(new
-			// Operation(getPublicName(), "u_add", index, e));
-		}
+		E e = _base_remove(index);
+
+		// TODO getCluster().getProxy().createUndoRecord(new
+		// Operation(getPublicName(), "base_add", index, e));
+
 		return e;
 	}
 
-	public E _u_remove(int index) {
+	public E _base_remove(int index) {
+
+		getCluster().acquireDistributedLock(this);
 		E e = innerList.remove(index);
 		return e;
+
 	}
 
 	@Override
 	public void clear() {
-
-		if (getCluster() != null) {
+		try {
+			getCluster().acquireDistributedLock(this);
 			getCluster().safeMulticast(new Operation(getPublicName(), "clear"));
-
-		} else {
-			_clear();
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public void _clear() {
-		if (getCluster() != null) {
-			// TODO getCluster().getProxy().createUndoRecord(
-			// new Operation(getPublicName(), "u_addAll", new
-			// ArrayList<E>(innerList)));
-		}
-		_u_clear();
+
+		// TODO getCluster().getProxy().createUndoRecord(
+		// new Operation(getPublicName(), "base_addAll", new
+		// ArrayList<E>(innerList)));
+
+		_base_clear();
 	}
 
-	public void _u_clear() {
+	public void _base_clear() {
+
+		getCluster().acquireDistributedLock(this);
 		innerList.clear();
+
 	}
 
 	@Override
 	public boolean remove(Object o) {
+		try {
+			getCluster().acquireDistributedLock(this);
 
-		if (getCluster() != null) {
-
-			return (boolean) getCluster().safeMulticast(new Operation(getPublicName(), "remove", o)).get(0)
-					.getReturnValue();
-		} else {
-			return _remove(o);
+			return (boolean) getCluster().safeMulticast(new Operation(getPublicName(), "remove", o));
+		} finally {
+			getCluster().releaseDistributedLock(this);
 		}
-
 	}
 
 	public boolean _remove(Object o) {
-		Boolean b = _u_remove(o);
-		if (getCluster() != null) {
-			// TODOgetCluster().getProxy().createUndoRecord(new
-			// Operation(getPublicName(), "u_add", o));
-		}
+		Boolean b = _base_remove(o);
+
+		// TODOgetCluster().getProxy().createUndoRecord(new
+		// Operation(getPublicName(), "base_add", o));
+
 		return b;
 
 	}
 
-	public boolean _u_remove(Object o) {
-
+	public boolean _base_remove(Object o) {
 		return innerList.remove(o);
 
 	}
@@ -230,9 +245,12 @@ public class ClusteredList<E> extends ClusteredObject implements List<E> {
 
 	}
 
-	public void _u_addAll(Collection<? extends E> c) {
+	public void _base_addAll(Collection<? extends E> c) {
 
-		innerList.addAll(c);
+		try {
+			innerList.addAll(c);
+		} finally {
+		}
 
 	}
 

@@ -22,8 +22,7 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 	}
 
 	/**
-	 * This method is called when local server is started. addServerToCluster is
-	 * called within cluster
+	 * This method is called when local server is started. addServerToCluster is called within cluster
 	 */
 
 	@Override
@@ -37,28 +36,20 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 		}
 	}
 
-	/**
-	 * This method is called when local server is stopped.
-	 * removeServerFromCluster is called within cluster
-	 */
 	@Override
 	public void serverStopping(Server server) {
-		try {
-			LOGGER.debug("***server stopped... id : " + server.getId());
-			cluster.multicast(new Operation(null, "announceServerLeaving", server));// TODO
-			// should
-			// we
-			// change
-			// to
-			// safemulticast?
-		} catch (ClusterException e) {
-			LOGGER.error("Error occured", e);
-		}
+
 	}
 
+	/**
+	 * This method is called when local server is stopped. removeServerFromCluster is called within cluster
+	 */
 	@Override
 	public void serverStopped(Server server) {
-		//
+		LOGGER.debug("***server stopped... id : " + server.getId());
+		// We cancelled multicast, we will detect it via heartbeat detector.
+		// cluster.multicast(new Operation(null, "announceServerLeaving",
+		// server));
 
 	}
 

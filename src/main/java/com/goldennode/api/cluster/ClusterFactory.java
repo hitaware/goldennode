@@ -2,15 +2,17 @@ package com.goldennode.api.cluster;
 
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.bigmemorycluster.BigMemoryCluster;
 import com.goldennode.api.core.GoldenNodeServer;
+import com.goldennode.api.core.LockService;
+import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.replicatedmemorycluster.ReplicatedMemoryCluster;
 
 public class ClusterFactory {
 
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterFactory.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory
+			.getLogger(ClusterFactory.class);
 
 	private ClusterFactory() {
 	}
@@ -18,11 +20,12 @@ public class ClusterFactory {
 	public static Cluster getCluster(ClusterType type) throws ClusterException {
 
 		try {
-			Server server = new GoldenNodeServer();
+			LockService lockService = new LockServiceImpl();
+			Server server = new GoldenNodeServer(lockService);
 
 			if (type == ClusterType.BIGMEMORY) {
-
-				return new BigMemoryCluster(server);
+				throw new UnsupportedOperationException();
+				// return new BigMemoryCluster(server);
 			} else if (type == ClusterType.REPLICATEDMEMORY) {
 
 				return new ReplicatedMemoryCluster(server);

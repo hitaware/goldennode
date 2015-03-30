@@ -1,4 +1,4 @@
-package com.goldennode.api.snippets;
+package com.goldennode.api.replicatedmemorycluster;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
-import com.goldennode.api.cluster.ClusteredList;
-import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.core.Server;
 
 public class TestCluster {
@@ -42,7 +40,7 @@ public class TestCluster {
 			LOGGER.debug("");
 			if (write) {
 				System.out
-						.println("1-create list/2-add to list/3-remove from list/4-clear list/5-print list detail/6-cluster detail/7-stop");
+				.println("1-create list/2-add to list/3-remove from list/4-clear list/5-print list detail/6-cluster detail/7-stop");
 			}
 			String i = br.readLine();
 			if (i.equals("1")) {
@@ -80,7 +78,7 @@ public class TestCluster {
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		ClusteredList cl = (ClusteredList) c.getClusteredObject(name);
+		List<String> cl = c.getList("", name);
 		if (cl != null) {
 
 			cl.clear();
@@ -97,7 +95,8 @@ public class TestCluster {
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		List<String> clusteredList = new ClusteredList<String>(name, c.getOwner().getId());
+		// List<String> clusteredList = new ClusteredList<String>(name,
+		// c.getOwner().getId());
 		// c.attachObject((ClusteredList<String>) clusteredList);
 
 	}
@@ -109,7 +108,7 @@ public class TestCluster {
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		ClusteredList<String> cl = (ClusteredList<String>) c.getClusteredObject(name);
+		List<String> cl = c.getList("", name);
 		if (cl != null) {
 			LOGGER.debug("Enter value");
 			String val = br.readLine();
@@ -130,7 +129,7 @@ public class TestCluster {
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		ClusteredList cl = (ClusteredList) c.getClusteredObject(name);
+		List<String> cl = c.getList("", name);
 		if (cl != null) {
 			LOGGER.debug("Enter value");
 			String val = br.readLine();
@@ -145,14 +144,14 @@ public class TestCluster {
 
 	}
 
-	public void clusteredListDetail() throws IOException {
+	public void clusteredListDetail() throws IOException, ClusterException {
 
 		LOGGER.debug("Enter list name");
 		String name = br.readLine();
 		if (name.equalsIgnoreCase("x")) {
 			return;
 		}
-		ClusteredList cl = (ClusteredList) c.getClusteredObject(name);
+		List<String> cl = c.getList("", name);
 		if (cl != null) {
 			LOGGER.debug("Clustered List Detail");
 			for (int i = 0; i < cl.size(); i++) {
@@ -178,12 +177,12 @@ public class TestCluster {
 				LOGGER.debug(s.toString());
 			}
 		}
-		Collection<ClusteredObject> co = c.getClusteredObjects();
-		Iterator<ClusteredObject> iter2 = co.iterator();
-		LOGGER.debug("Objects");
-		while (iter2.hasNext()) {
-			LOGGER.debug(iter2.next().toString());
-		}
+		// Collection<ClusteredObject> co = c.getClusteredObjects();
+		// Iterator<ClusteredObject> iter2 = co.iterator();
+		// LOGGER.debug("Objects");
+		// while (iter2.hasNext()) {
+		// LOGGER.debug(iter2.next().toString());
+		// }
 
 	}
 }

@@ -1,18 +1,17 @@
 package com.goldennode.api.snippets;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.slf4j.LoggerFactory;
 
-public class TestWaitNotify {
+public class WaitNotify {
 
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestWaitNotify.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory
+			.getLogger(WaitNotify.class);
 
 	Object lck = new Object();
 
 	public static void main(String[] args) {
 
-		TestWaitNotify twn = new TestWaitNotify();
+		WaitNotify twn = new WaitNotify();
 		Thread th1 = new TH(twn.lck, 1);
 		Thread th2 = new TH(twn.lck, 2);
 		th1.start();
@@ -43,7 +42,6 @@ class TH extends Thread {
 				for (int i = 0; i < 10; i++) {
 					LOGGER.debug("doing job in doWait" + i);
 				}
-				ReentrantLock lock = new ReentrantLock();
 
 			} catch (InterruptedException e) {//
 

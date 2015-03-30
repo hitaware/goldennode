@@ -6,7 +6,6 @@ import com.goldennode.api.helper.ReflectionUtils;
 
 public class Transaction {
 
-	private static final long serialVersionUID = 1L;
 	protected Stack<Operation> history = new Stack<Operation>();
 
 	public void createUndoRecord(Operation operation) {
@@ -22,7 +21,8 @@ public class Transaction {
 		Operation operation = history.pop();
 		if (operation != null) {
 			try {
-				ReflectionUtils.callMethod(this, operation.getObjectMethod(), operation.getParams());
+				ReflectionUtils.callMethod(this, operation.getObjectMethod(),
+						operation.getParams());
 			} catch (Exception e) {
 				throw new OperationException(e);
 			}

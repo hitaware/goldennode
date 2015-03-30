@@ -2,15 +2,7 @@ package com.goldennode.api.replicatedmemorycluster;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
 
 import org.slf4j.LoggerFactory;
 
@@ -19,325 +11,222 @@ import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusteredList;
 import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.api.cluster.ClusteredObject;
+import com.goldennode.api.cluster.ClusteredObjectManager;
+import com.goldennode.api.cluster.ClusteredServerManager;
+import com.goldennode.api.cluster.HearbeatStatusListener;
 import com.goldennode.api.cluster.Operation;
-import com.goldennode.api.cluster.OperationException;
-import com.goldennode.api.core.Request;
-import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
-import com.goldennode.api.core.ServerException;
+import com.goldennode.api.helper.LockHelper;
+import com.goldennode.api.helper.SystemUtils;
 
-public class ReplicatedMemoryCluster implements Cluster {
+public class ReplicatedMemoryCluster extends Cluster {
 
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCluster.class);
 
-	Map<String, ClusteredObject> clusteredObjects;
-	private Map<String, Server> clusteredServers;
-	private Map<String, TimerTask> clusteredServerPingers;
-	private Server server;
-	private Timer pingTimer;
-	private int PING_PERIOD;
-	private int PING_INITIAL_DELAY;
-	private int INIT_TIME;
-	private Object obj = new Object();
+	private static final int HANDSHAKING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
+			"com.goldennode.api.replicatedmemorycluster.ReplicatedMemoryCluster.initTime"));
+
+	protected ClusteredObjectManager clusteredObjectManager;
+	protected ClusteredServerManager clusteredServerManager;
 
 	public ReplicatedMemoryCluster(Server server) throws ClusterException {
-
-		loadConfig();
-		this.server = server;
+		super(server);
 		server.setOperationBase(new ReplicatedMemoryClusterOperationBaseImpl(this));
 		server.addServerStateListener(new ReplicatedMemoryClusterServerStateListenerImpl(this));
-		clusteredServers = new ConcurrentHashMap<String, Server>();
-		clusteredServerPingers = new ConcurrentHashMap<String, TimerTask>();
-		clusteredObjects = new ConcurrentHashMap<String, ClusteredObject>();
-		pingTimer = new Timer();
+
+		clusteredObjectManager = new ClusteredObjectManager();
+		clusteredServerManager = new ClusteredServerManager();
+		// start goldennodeserver
 		start();
+		// Wait for handshaking of peers
+		LockHelper.sleep(HANDSHAKING_DELAY);
+		// If eligible for lead go for it
+		leaderSelector.joinElection();
+		// Will wait until there is a master server(lead)
+		getMasterServer();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <E> List<E> getList(E e, String publicName) throws ClusterException {
+
 		try {
-			synchronized (obj) {
-				obj.wait(INIT_TIME);
+			acquireDistributedLock();
+			LOGGER.debug("Get List");
+			if (clusteredObjectManager.contains(publicName)) {
+				LOGGER.debug("Contains list > " + publicName);
+				return (List<E>) clusteredObjectManager.getClusteredObject(publicName);
+			} else {
+				LOGGER.debug("Will create list. Doesn't Contain list > " + publicName);
+				safeMulticast(new Operation(null, "addClusteredObject", new ClusteredList<E>(publicName, getOwner()
+						.getId(), this)));
+				return (List<E>) clusteredObjectManager.getClusteredObject(publicName);
 			}
-		} catch (InterruptedException e) {
-			LOGGER.trace("interruption");
+		} finally {
+			releaseDistributedLock();
 		}
 
 	}
 
-	private void loadConfig() {
-
-		if (System.getProperty("replicatedmemorycluster.inittime") == null) {
-			System.setProperty("replicatedmemorycluster.inittime", "1000");
-		}
-		if (System.getProperty("replicatedmemorycluster.pingperiod") == null) {
-			System.setProperty("replicatedmemorycluster.pingperiod", "1000");
-		}
-		if (System.getProperty("replicatedmemorycluster.pinginitialdelay") == null) {
-			System.setProperty("replicatedmemorycluster.pinginitialdelay", "1000");
-		}
-
-		INIT_TIME = Integer.parseInt(System.getProperty("replicatedmemorycluster.inittime"));
-		PING_PERIOD = Integer.parseInt(System.getProperty("replicatedmemorycluster.pingperiod"));
-		PING_INITIAL_DELAY = Integer.parseInt(System.getProperty("replicatedmemorycluster.pinginitialdelay"));
-	}
-
 	@Override
-	public Collection<ClusteredObject> getClusteredObjects() {
-
-		return Collections.unmodifiableCollection(clusteredObjects.values());
-	}
-
-	@Override
-	public ClusteredObject getClusteredObject(String publicName) {
-
-		return clusteredObjects.get(publicName);
-
-	}
-
-	Request prepareRequest(Operation operation) {
-
-		return server.prepareRequest(operation.getMethod(), operation);
-
-	}
-
-	@Override
-	public Server getOwner() {
-		return server;
-	}
-
-	@Override
-	public Response unicastUDP(Server remoteServer, Operation operation) throws ClusterException {
-		try {
-			return server.unicastUDP(remoteServer, prepareRequest(operation));
-		} catch (ServerException e) {
-			throw new ClusterException(e);
-		}
-	}
-
-	@Override
-	public Response unicastTCP(Server remoteServer, Operation operation) throws ClusterException {
+	public ClusteredLock getLock(String publicName) {
 
 		try {
-			return server.unicastTCP(remoteServer, prepareRequest(operation));
-		} catch (ServerException e) {
-			throw new ClusterException(e);
+			acquireDistributedLock();
+			if (clusteredObjectManager.contains(publicName)) {
+				return (ClusteredLock) clusteredObjectManager.getClusteredObject(publicName);
+			} else {
+				return (ClusteredLock) safeMulticast(new Operation(null, "addClusteredObject", new ClusteredLock(
+						publicName, getOwner().getId(), this)));
+
+			}
+		} finally {
+			releaseDistributedLock();
 		}
 	}
 
-	@Override
-	public void multicast(Operation operation) throws ClusterException {
-		try {
-			server.multicast(prepareRequest(operation));
-		} catch (ServerException e) {
-			throw new OperationException(e);
+	void addClusteredObject(ClusteredObject co) throws ClusterException {
+		if (clusteredObjectManager.contains(co)) {
+			throw new ClusterException("Object already exits at server" + getOwner() + "clustered object" + co);
+		}
+		LOGGER.debug("Created clustered object" + co);
+		co.setCluster(this);
+		clusteredObjectManager.addClusteredObject(co);
+		if (isLocalObject(co)) {
+			getOwner().createLock(co.getPublicName());
 		}
 	}
 
-	private int getVersion(String publicName) throws ClusterException {
+	private boolean isLocalObject(ClusteredObject co) {
+		return co.getOwnerId().equals(getOwner().getId());
+	}
 
-		return (Integer) unicastTCP(getOwner(), new Operation(publicName, "getVersion")).getReturnValue();
+	void serverIsDeadOperation(Server server) throws ClusterException {
+
+		clusteredServerManager.removeClusteredServer(server);
+		// removeClusteredServersObjects(server);
+
+		LOGGER.debug("is dead server master?");
+		if (server.isMaster()) {
+			LOGGER.debug("yes, it is");
+			leaderSelector.rejoinElection();
+		} else {
+			LOGGER.debug("no, it is not");
+		}
 
 	}
 
-	public void removeClusteredServer(Server server) {
-		LOGGER.debug("Server removed from the cluster: " + server);
-		clusteredServers.remove(server.getId());
-		TimerTask tt = clusteredServerPingers.remove(server.getId());
-		tt.cancel();
-		Collection<ClusteredObject> cos = clusteredObjects.values();
-		Iterator<ClusteredObject> iter = cos.iterator();
-		List<String> ids = new ArrayList<String>();
-		while (iter.hasNext()) {
-			ClusteredObject co = iter.next();
-			if (co.getOwnerId().equals(server.getId())) {
-				ids.add(co.getPublicName());
+	void incomingServer(final Server server) {
+
+		clusteredServerManager.addClusteredServer(server);
+		heartBeatTimer.schedule(server, new HearbeatStatusListener() {
+
+			@Override
+			public void serverUnreachable(Server server) {
+				try {
+					serverIsDeadOperation(server);
+				} catch (ClusterException e1) {
+					// Thread will die
+				}
+
+			}
+		});
+
+		if (server.isMaster()) {
+			LOGGER.debug("new incoming master server" + server);
+			leaderSelector.setLeaderId(server.getId());
+		} else {
+			LOGGER.debug("new incoming non-master server");
+		}
+	}
+
+	void replicateObjects(Server toServer) throws ClusterException {
+
+		for (ClusteredObject co : clusteredObjectManager.getClusteredObjects()) {
+
+			if (isLocalObject(co)) {
+				try {
+					// acquireDistributedLock(co);
+					acquireDistributedLock();
+					// TODO maybe we need to send in parts if data is big
+					unicastTCP(toServer, new Operation(null, "addClusteredObject", co));
+				} finally {
+					releaseDistributedLock();
+					// releaseDistributedLock(co);
+				}
 			}
 		}
-		Iterator<String> iter2 = ids.iterator();
-		while (iter2.hasNext()) {
-			String id = iter2.next();
-			clusteredObjects.remove(id);
-		}
-	};
-
-	public void addClusteredServer(Server server) {
-		LOGGER.debug("Server added to the cluster: " + server);
-		clusteredServers.put(server.getId(), server);
-		TimerTask tt = new ServerPinger(server, this);
-		clusteredServerPingers.put(server.getId(), tt);
-		pingTimer.schedule(tt, PING_INITIAL_DELAY, PING_PERIOD);
-
 	}
 
-	@Override
-	public Collection<Server> getPeers() {
-		return Collections.unmodifiableCollection(clusteredServers.values());
-	}
+	void sendOwnServerIdentiy(Server toServer) throws ClusterException {
 
-	@Override
-	public String toString() {
-		return "Cluster [server=" + server + "]";
+		unicastTCP(toServer, new Operation(null, "sendOwnServerIdentity", getOwner()));
 	}
 
 	@Override
 	public void start() throws ClusterException {
-		try {
-			server.start();
-			pingTimer = new Timer();
-		} catch (ServerException e) {
-			throw new ClusterException(e);
-		}
+		super.start();
 	}
 
 	@Override
 	public void stop() throws ClusterException {
-		try {
-			server.stop();
-			clusteredServers.clear();
-			clusteredObjects.clear();
-			pingTimer.cancel();
-		} catch (ServerException e) {
-			throw new ClusterException(e);
-		}
+		super.stop();
+		clusteredServerManager.clear();
+		clusteredObjectManager.clear();
 	}
 
 	@Override
-	public List<Response> safeMulticast(Operation operation) {
+	public Collection<Server> getAllServers() {
 		List<Server> servers = new ArrayList<Server>();
 		servers.add(getOwner());
-		servers.addAll(clusteredServers.values());
-
-		try {
-			lockObjects(servers, operation);
-			// checkVersions(servers, operation);
-			List<Response> responses = doOperLogic(servers, operation);
-			return responses;
-		} catch (Exception e) {
-
-		} finally {
-			unlockObjects(servers, operation);
-		}
-
-		return null;
-
-	}
-
-	private List<Response> doOperLogic(List<Server> servers, Operation operation) {
-		List<?> doList = doOper(servers, operation);
-		if (doList.get(0) instanceof Response) {
-			// Success
-		} else {
-			return null;
-			// Exception occured success servers returned with the list
-			// TODOList<?> undoList = doOper((List<Server>) doList,
-			// operation.undo());
-			// if (undoList.get(0) instanceof Response) {
-			// // Success
-			// } else {
-			// // Exception occured success servers returned with the list
-			// resynchObject();
-			// }
-		}
-		return (List<Response>) doList;
-	}
-
-	private List<?> doOper(List<Server> servers, Operation operation) {
-
-		Iterator<Server> iter = servers.iterator();
-		List<Server> successServers = new ArrayList<Server>();
-		List<Response> responses = new ArrayList<Response>();
-		while (iter.hasNext()) {
-			Server remoteServer = iter.next();
-			try {
-				responses.add(unicastTCP(remoteServer, operation));
-				successServers.add(remoteServer);
-
-			} catch (ClusterException e) {
-				return successServers;
-			}
-		}
-		return responses;
-	}
-
-	private void unlockObjects(List<Server> servers, Operation operation) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void resynchObject() {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void lockObjects(List<Server> servers, Operation operation) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void checkVersions(List<Server> servers, Operation operation) {
-		// TODO Auto-generated method stub
+		servers.addAll(clusteredServerManager.getClusteredServers());
+		return servers;
 
 	}
 
 	@Override
-	public Lock createLock(ClusteredObject obj) {
-		try {
-			ClusteredLock cl = new ClusteredLock(obj.getPublicName() + UUID.randomUUID().toString(), getOwner().getId());
-
-		} catch (ClusterException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public Server getServer(String id) {
+		return clusteredServerManager.getClusteredServer(id);
 	}
 
 	@Override
-	public void attachObject(ClusteredObject co) throws ClusterException {
-
-		try {
-
-			if (clusteredObjects.containsKey(co.getPublicName())) {
-				throw new ClusterException("Object already exits at server:" + getOwner());
-
-			}
-			co.setCluster(this);
-
-			if (ClusteredList.class.isAssignableFrom(co.getClass())) {
-
-				safeMulticast(new Operation(null, "createClusteredObject", co.getPublicName(), co.getClass(),
-						co.getOwnerId()));
-
-				Iterator iterNew = ((ClusteredList) co).iterator();
-				while (iterNew.hasNext()) {
-					safeMulticast(new Operation(co.getPublicName(), "add", iterNew.next()));
-
-				}
-			} else {
-
-				safeMulticast(new Operation(null, "addClusteredObject", co));
-			}
-
-		} catch (Exception e) {
-			throw new ClusterException(e);
-		}
+	public Collection<Server> getPeers() {
+		return clusteredServerManager.getClusteredServers();
 	}
 
-	// @Override
-	// public void detachObject(ClusteredObject obj) throws ClusterException {
-	//
-	// try {
-	// if (!clusteredObjects.containsKey(obj.getPublicName())) {
-	// throw new ClusterException("Object doesn't exit in the server:" +
-	// getOwner());
-	//
-	// }
-	//
-	// safeMulticast(
-	//
-	// new Operation(null, "removeClusteredObject", obj.getPublicName()));
-	// obj.setOwnerId(null);
-	// obj.setPublicName(null);
-	// obj.setCluster(null);
-	//
-	// } catch (Exception e) {
-	// throw new ClusterException(e);
-	// }
-	// }
+	@Override
+	protected ClusteredObject getClusteredObject(String publicName) {
+		return clusteredObjectManager.getClusteredObject(publicName);
+	}
 
 }
+// public ClusteredObject removeClusteredObject(String publicName)
+// throws ClusterException {
+// if (!clusteredObjects.containsKey(publicName)) {
+// throw new ClusterException("Object doesn't exist in the server:"
+// + getOwner());
+// }
+// ClusteredObject co = clusteredObjects.get(publicName);
+// co.setOwnerId(null);
+// co.setPublicName(null);
+// co.setCluster(null);
+// return clusteredObjects.remove(publicName);
+// }
+
+// private void removeClusteredServersObjects(Server server) {
+// Collection<ClusteredObject> cos = clusteredObjects.values();
+// Iterator<ClusteredObject> iter = cos.iterator();
+// List<String> ids = new ArrayList<String>();
+// while (iter.hasNext()) {
+// ClusteredObject co = iter.next();
+// if (co.getOwnerId().equals(server.getId())) {
+// ids.add(co.getPublicName());
+// }
+// }
+// Iterator<String> iter2 = ids.iterator();
+// while (iter2.hasNext()) {
+// String id = iter2.next();
+// clusteredObjects.remove(id);
+// }
+// }
+

@@ -14,6 +14,7 @@ public class Request implements Serializable {
 	private ArrayList<Object> params = new ArrayList<Object>();
 	private RequestType requestType;
 	private Server serverFrom;
+	private int timeout = 1000;// ms
 
 	Request() {
 		id = java.util.UUID.randomUUID().toString();
@@ -74,10 +75,19 @@ public class Request implements Serializable {
 		this.serverFrom = serverFrom;
 	}
 
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
 	@Override
 	public String toString() {
-		return "Request [id=" + id + ", method=" + method + ", params=" + params + ", requestType=" + requestType
-				+ ", serverFrom=" + serverFrom + ", size=" + getBytes().length + "]";
+		return " > Request [id=" + id + ", method=" + method + ", params="
+				+ params + ", requestType=" + requestType + ", serverFrom="
+				+ serverFrom + "] ";
 	}
 
 }

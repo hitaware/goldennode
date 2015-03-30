@@ -14,7 +14,7 @@ import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,89 +27,47 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.helper.LockHelper;
 import com.goldennode.api.helper.ReflectionUtils;
+import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeServer extends Server {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServer.class);
 
 	private static final long serialVersionUID = 1L;
-	transient private MulticastSocket multicastSocket;
-	transient private DatagramSocket unicastSocket;
-	transient private ServerSocket tcpSocket;
-	transient private Map<String, Response> htUnicastResponse;
-	transient private Map<String, List<Response>> htBlockingMulticastResponse;
-	transient private Map<String, Object> unicastLocks;
-	transient private Map<String, Object> blockingMulticastLocks;
-	transient private InetAddress MULTICAST_ADDRESS;
-	transient private Thread thMulticastProcessor;
-	transient private Thread thUnicastUDPProcessor;
-	transient private Thread thTCPServerSocket;
-	transient private int MAX_UDPPACKET_SIZE;
-	transient private int RESPONSE_WAIT_TIMEOUT;
-	transient private int MULTICAST_TTL;
-	transient private int REQUEST_PROCESSOR_THREADPOOL_SIZE;
-	transient private ExecutorService requestProcessorThreadPool;
-	transient private boolean RECEIVE_SELFMULTICAST;
-	transient private Set<TCPProcessor> tcpProcessors;
+	private transient MulticastSocket multicastSocket;
+	private transient DatagramSocket unicastSocket;
+	private transient ServerSocket tcpSocket;
+	private transient Map<String, Response> htUnicastResponse;
+	private transient Map<String, List<Response>> htBlockingMulticastResponse;
+	private transient Map<String, Object> unicastLocks;
+	private transient Map<String, Object> blockingMulticastLocks;
 
-	private int MULTICAST_PORT;
-	private int UNICAST_UDP_PORT;
-	private int UNICAST_TCP_PORT;
+	private transient Thread thMulticastProcessor;
+	private transient Thread thUnicastUDPProcessor;
+	private transient Thread thTCPServerSocket;
+	private transient Set<TCPProcessor> tcpProcessors;
+	private transient ExecutorService requestProcessorThreadPool;
 
-	public GoldenNodeServer() throws ServerException {
-		try {
-			loadConfig();
+	private transient int MAX_UDPPACKET_SIZE = Integer.parseInt(SystemUtils.getSystemProperty("32768",
+			"com.goldennode.api.core.GoldenNodeServer.maxUDPPacketSize"));
+	private transient int MULTICAST_TTL = Integer.parseInt(SystemUtils.getSystemProperty("255",
+			"com.goldennode.api.core.GoldenNodeServer.multicastTTL"));
+	private transient int REQUEST_PROCESSOR_THREADPOOL_SIZE = Integer.parseInt(SystemUtils.getSystemProperty("100",
+			"com.goldennode.api.core.GoldenNodeServer.requestProcessorThreadpoolSize"));
+	private transient boolean RECEIVE_SELFMULTICAST = Boolean.parseBoolean(SystemUtils.getSystemProperty("false",
+			"com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast"));
+	private transient String MULTICAST_ADDRESS = SystemUtils.getSystemProperty("225.4.5.6",
+			"com.goldennode.api.core.GoldenNodeServer.multicastAddress");
+	private int MULTICAST_PORT = Integer.parseInt(SystemUtils.getSystemProperty("25000",
+			"com.goldennode.api.core.GoldenNodeServer.multicastPort"));
+	private int UNICAST_UDP_PORT = Integer.parseInt(SystemUtils.getSystemProperty("25002",
+			"com.goldennode.api.core.GoldenNodeServer.unicastUDPPort"));
+	private int UNICAST_TCP_PORT = Integer.parseInt(SystemUtils.getSystemProperty("26002",
+			"com.goldennode.api.core.GoldenNodeServer.unicastTCPPort"));
 
-			setId(java.util.UUID.randomUUID().toString());
-			setHost(InetAddress.getLocalHost());
-		} catch (UnknownHostException e) {
-			throw new ServerException(e);
-		}
-	}
-
-	private void loadConfig() throws UnknownHostException {
-		if (System.getProperty("goldennodeserver.multicastport") == null) {
-			System.setProperty("goldennodeserver.multicastport", "25000");
-		}
-		if (System.getProperty("goldennodeserver.unicastudpport") == null) {
-			System.setProperty("goldennodeserver.unicastudpport", "25002");
-		}
-		if (System.getProperty("goldennodeserver.unicasttcpport") == null) {
-			System.setProperty("goldennodeserver.unicasttcpport", "26002");
-		}
-		if (System.getProperty("goldennodeserver.multicastaddress") == null) {
-			System.setProperty("goldennodeserver.multicastaddress", "225.4.5.6");
-		}
-		if (System.getProperty("goldennodeserver.requestretry") == null) {
-			System.setProperty("goldennodeserver.requestretry", "2");
-		}
-		if (System.getProperty("goldennodeserver.responsewaittimeout") == null) {
-			System.setProperty("goldennodeserver.responsewaittimeout", "1000");
-		}
-		if (System.getProperty("goldennodeserver.maxudppacketsize") == null) {
-			System.setProperty("goldennodeserver.maxudppacketsize", "32768");
-		}
-		if (System.getProperty("goldennodeserver.multicastttl") == null) {
-			System.setProperty("goldennodeserver.multicastttl", "255");
-		}
-		if (System.getProperty("goldennodeserver.requestprocessorthreadpoolsize") == null) {
-			System.setProperty("goldennodeserver.requestprocessorthreadpoolsize", "100");
-		}
-		if (System.getProperty("goldennodeserver.receiveselfmulticast") == null) {
-			System.setProperty("goldennodeserver.receiveselfmulticast", "false");
-		}
-
-		MULTICAST_ADDRESS = InetAddress.getByName(System.getProperty("goldennodeserver.multicastaddress"));
-		MULTICAST_PORT = Integer.parseInt(System.getProperty("goldennodeserver.multicastport"));
-		MAX_UDPPACKET_SIZE = Integer.parseInt(System.getProperty("goldennodeserver.maxudppacketsize"));
-		RESPONSE_WAIT_TIMEOUT = Integer.parseInt(System.getProperty("goldennodeserver.responsewaittimeout"));
-		MULTICAST_TTL = Integer.parseInt(System.getProperty("goldennodeserver.multicastttl"));
-		UNICAST_UDP_PORT = Integer.parseInt(System.getProperty("goldennodeserver.unicastudpport"));
-		UNICAST_TCP_PORT = Integer.parseInt(System.getProperty("goldennodeserver.unicasttcpport"));
-		REQUEST_PROCESSOR_THREADPOOL_SIZE = Integer.parseInt(System
-				.getProperty("goldennodeserver.requestprocessorthreadpoolsize"));
-		RECEIVE_SELFMULTICAST = Boolean.parseBoolean(System.getProperty("goldennodeserver.receiveselfmulticast"));
-
+	public GoldenNodeServer(LockService lockService) throws ServerException {
+		super(lockService);
 	}
 
 	private void processBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
@@ -248,6 +206,7 @@ public class GoldenNodeServer extends Server {
 
 		@Override
 		public void run() {
+			Request r = null;
 
 			try {
 				ObjectInputStream inFromClient = new ObjectInputStream(s.getInputStream());
@@ -257,9 +216,11 @@ public class GoldenNodeServer extends Server {
 
 					final Object receivedObject = inFromClient.readObject();
 
-					LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
+					// LOGGER.debug("Receiving "
+					// + ((Request) receivedObject).getRequestType() + " "
+					// + receivedObject);
 
-					final Request r = (Request) receivedObject;
+					r = (Request) receivedObject;
 					Response rs = new Response();
 					rs.setRequest(r);
 					rs.setServerFrom(GoldenNodeServer.this);
@@ -269,7 +230,6 @@ public class GoldenNodeServer extends Server {
 							Object s = ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
 							rs.setReturnValue(s);
 						} catch (Exception e) {
-							e.printStackTrace();
 							rs.setReturnValue(e);
 						}
 
@@ -282,16 +242,17 @@ public class GoldenNodeServer extends Server {
 				}
 
 			} catch (EOFException e) {
-				LOGGER.trace("eof occured");
+				// LOGGER.trace("eof occured");
 			} catch (SocketException e) {
-				if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")) {
+				if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")
+						|| e.toString().contains("Broken pipe")) {
 				} else {
 					stop();
-					LOGGER.error("Error occured", e);
+					LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
 				}
 			} catch (IOException | ClassNotFoundException e) {
 				stop();
-				LOGGER.error("Error occured", e);
+				LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
 
 			} finally {
 				tcpProcessors.remove(this);
@@ -380,6 +341,7 @@ public class GoldenNodeServer extends Server {
 			for (ServerStateListener listener : getServerStateListeners()) {
 				listener.serverStarting(GoldenNodeServer.this);
 			}
+
 			htUnicastResponse = new ConcurrentHashMap<String, Response>();
 			htBlockingMulticastResponse = new ConcurrentHashMap<String, List<Response>>();
 			unicastLocks = new ConcurrentHashMap<String, Object>();
@@ -478,31 +440,48 @@ public class GoldenNodeServer extends Server {
 	}
 
 	@Override
-	public Request prepareRequest(String method, Object... params) {
+	public Request prepareRequest(String method, RequestOptions options, Object... params) {
 		Request r = new Request();
 		r.setMethod(method);
 		r.addParams(params);
 		r.setServerFrom(this);
+		r.setTimeout(options.getTimeout());
 		return r;
 	}
 
 	@Override
 	public Response unicastTCP(Server remoteServer, Request request) throws ServerException {
+		// int retry = 0;
+		// ServerException ex = null;
+		// while (retry++ < 3) {
+		// try {
+		return doUnicastTCP(remoteServer, request);
+		// } catch (ServerException e) {
+		// ex = e;
+		// }
+		// }
+		// throw ex;
+	}
+
+	private Response doUnicastTCP(Server remoteServer, Request request) throws ServerException {
 		Socket clientSocket = null;
 		ObjectOutputStream outToServer = null;
 		ObjectInputStream inFromServer = null;
 		try {
 			if (isStarted()) {
 				request.setRequestType(RequestType.UNICAST_TCP);
-				LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+				// LOGGER.debug("Sending " + request.getRequestType() + " "
+				// + request);
 				clientSocket = new Socket(remoteServer.getHost(), remoteServer.getUnicastTCPPort());
-
+				clientSocket.setSoTimeout(request.getTimeout());
 				outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 				inFromServer = new ObjectInputStream(clientSocket.getInputStream());
 
 				outToServer.writeObject(request);
 
 				Response response = (Response) inFromServer.readObject();
+				// LOGGER.debug("Received " + request.getRequestType() + " "
+				// + response);
 				if (response.getReturnValue() instanceof Exception) {
 					throw new ServerException((Exception) response.getReturnValue());
 				}
@@ -511,8 +490,12 @@ public class GoldenNodeServer extends Server {
 			} else {
 				throw new ServerNotStartedException();
 			}
+		} catch (SocketTimeoutException e) {
+			throw new ServerException("cant execute request " + request + " on server " + remoteServer + " "
+					+ e.toString());
 		} catch (ClassNotFoundException | IOException e) {
-			throw new ServerException(e);
+			throw new ServerException("cant execute request " + request + " on server " + remoteServer + " "
+					+ e.toString());
 		} finally {
 
 			try {
@@ -524,6 +507,7 @@ public class GoldenNodeServer extends Server {
 			}
 
 		}
+
 	}
 
 	@Override
@@ -544,13 +528,8 @@ public class GoldenNodeServer extends Server {
 				Object lock = new Object();
 				unicastLocks.put(request.getId(), lock);
 				unicastSocket.send(packet);
-				synchronized (lock) {
-					try {
-						lock.wait(RESPONSE_WAIT_TIMEOUT);
-					} catch (InterruptedException e) {
-						LOGGER.trace("interruption");
-					}
-				}
+				LockHelper.wait(lock, request.getTimeout());
+
 				unicastLocks.remove(request.getId());
 				Response resp = htUnicastResponse.remove(request.getId());
 				if (resp == null) {
@@ -571,12 +550,12 @@ public class GoldenNodeServer extends Server {
 	}
 
 	@Override
-	public List<Response> blockingMulticast(Request request, Long timeout) throws ServerException {
-		return blockingMulticast(request, timeout, -1, false, false);
+	public List<Response> blockingMulticast(Request request) throws ServerException {
+		return blockingMulticast(request, -1, false, false);
 	}
 
-	public List<Response> blockingMulticast(Request request, Long timeout, int maxResponses,
-			boolean throwExceptionIfFewerResponses, boolean failForPartialFailures) throws ServerException {
+	public List<Response> blockingMulticast(Request request, int maxResponses, boolean throwExceptionIfFewerResponses,
+			boolean failForPartialFailures) throws ServerException {
 
 		try {
 			if (isStarted()) {
@@ -586,20 +565,15 @@ public class GoldenNodeServer extends Server {
 				if (bytes.length > MAX_UDPPACKET_SIZE) {
 					throw new PacketSizeExceededException();
 				}
-				DatagramPacket packet = new DatagramPacket(bytes, bytes.length, MULTICAST_ADDRESS, MULTICAST_PORT);
+				DatagramPacket packet = new DatagramPacket(bytes, bytes.length,
+						InetAddress.getByName(MULTICAST_ADDRESS), MULTICAST_PORT);
 
 				Object lock = new Object();
 				blockingMulticastLocks.put(request.getId(), lock);
 				htBlockingMulticastResponse.put(request.getId(),
 						Collections.synchronizedList(new FixedSizeList<Response>(maxResponses)));
 				multicastSocket.send(packet);
-				synchronized (lock) {
-					try {
-						lock.wait(timeout);
-					} catch (InterruptedException e) {
-						LOGGER.trace("interruption");
-					}
-				}
+				LockHelper.wait(lock, request.getTimeout());
 				blockingMulticastLocks.remove(request.getId());
 				List<Response> resp = htBlockingMulticastResponse.remove(request.getId());
 				if (resp.size() < maxResponses && throwExceptionIfFewerResponses) {
@@ -636,7 +610,8 @@ public class GoldenNodeServer extends Server {
 				if (bytes.length > MAX_UDPPACKET_SIZE) {
 					throw new PacketSizeExceededException();
 				}
-				DatagramPacket packet = new DatagramPacket(bytes, bytes.length, MULTICAST_ADDRESS, MULTICAST_PORT);
+				DatagramPacket packet = new DatagramPacket(bytes, bytes.length,
+						InetAddress.getByName(MULTICAST_ADDRESS), MULTICAST_PORT);
 				multicastSocket.send(packet);
 			} else {
 				throw new ServerNotStartedException();
@@ -685,7 +660,7 @@ public class GoldenNodeServer extends Server {
 		multicastSocket = new MulticastSocket(null);
 		multicastSocket.setTimeToLive(MULTICAST_TTL);
 		multicastSocket.setBroadcast(true);
-		multicastSocket.joinGroup(MULTICAST_ADDRESS);
+		multicastSocket.joinGroup(InetAddress.getByName(MULTICAST_ADDRESS));
 		multicastSocket.setReuseAddress(true);
 		multicastSocket.bind(new InetSocketAddress(MULTICAST_PORT));
 

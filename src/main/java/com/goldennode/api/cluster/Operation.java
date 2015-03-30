@@ -8,7 +8,8 @@ import java.util.List;
 public class Operation implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private List<Object> params = Collections.synchronizedList(new ArrayList<Object>());
+	private List<Object> params = Collections
+			.synchronizedList(new ArrayList<Object>());
 	private String method;
 	private String id;
 	private String objectPublicName;
@@ -19,7 +20,8 @@ public class Operation implements Serializable {
 
 	}
 
-	public Operation(String objectPublicName, String objectMethod, Object... params) {
+	public Operation(String objectPublicName, String objectMethod,
+			Object... params) {
 		id = java.util.UUID.randomUUID().toString();
 		setMethod("op_");
 		setParams(params);
@@ -85,6 +87,7 @@ public class Operation implements Serializable {
 		for (int i = 0; i < params.size(); i++) {
 			sb.append("Param(" + (i + 1) + ") =" + params.get(i) + " ");
 		}
-		return "Operation [objectMethod=" + objectMethod + "," + sb.toString() + "]";
+		return " > Operation [objectMethod=" + objectMethod + ","
+				+ sb.toString() + "] ";
 	}
 }

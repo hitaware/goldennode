@@ -1,4 +1,4 @@
-package com.goldennode.api.test;
+package com.goldennode.api.replicatedmemorycluster;
 
 public class TestUndo {
 	// List<String> list;

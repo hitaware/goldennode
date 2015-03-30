@@ -2,6 +2,7 @@ package com.goldennode.api.core;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,50 @@ public abstract class Server implements Serializable {
 	transient private boolean started = false;
 	private InetAddress host;
 	private String id;
+	private boolean master;
+	private transient LockService lockService;
+
+	public Server(LockService lockService) throws ServerException {
+		try {
+			setId(java.util.UUID.randomUUID().toString());
+			setHost(InetAddress.getLocalHost());
+			this.lockService = lockService;
+			lockService.createLock("$application");
+		} catch (UnknownHostException e) {
+			throw new ServerException(e);
+		}
+
+	}
+
+	public void acquireLock(String lockName, String processId) {
+		lockService.acquireLock(lockName, processId);
+
+	}
+
+	public void releaseLock(String lockName, String processId) {
+		lockService.releaseLock(lockName, processId);
+
+	}
+
+	public void acquireLock(String processId) {
+		lockService.acquireLock(processId);
+
+	}
+
+	public void releaseLock(String processId) {
+		lockService.releaseLock(processId);
+
+	}
+
+	public void createLock(String lockName) {
+		lockService.createLock(lockName);
+
+	}
+
+	public void deleteLock(String lockName) {
+		lockService.deleteLock(lockName);
+
+	}
 
 	public InetAddress getHost() {
 		return host;
@@ -34,6 +79,14 @@ public abstract class Server implements Serializable {
 
 	public ServerStateListener[] getServerStateListeners() {
 		return serverStateListeners.toArray(new ServerStateListener[0]);
+	}
+
+	public boolean isMaster() {
+		return master;
+	}
+
+	public void setMaster(boolean master) {
+		this.master = master;
 	}
 
 	public boolean isStarted() {
@@ -66,20 +119,26 @@ public abstract class Server implements Serializable {
 
 	public abstract void stop() throws ServerException;
 
-	public abstract Request prepareRequest(String method, Object... params);
+	public abstract Request prepareRequest(String method,
+			RequestOptions options, Object... params);
 
-	public abstract Response unicastTCP(Server remoteServer, Request request) throws ServerException;
+	public abstract Response unicastTCP(Server remoteServer, Request request)
+			throws ServerException;
 
-	public abstract Response unicastUDP(Server remoteServer, Request request) throws ServerException;
+	public abstract Response unicastUDP(Server remoteServer, Request request)
+			throws ServerException;
 
 	public abstract void multicast(Request request) throws ServerException;
 
-	public abstract List<Response> blockingMulticast(Request request, Long timeout) throws ServerException;
+	public abstract List<Response> blockingMulticast(Request request)
+			throws ServerException;
 
 	@Override
 	public String toString() {
-		return "Server [id=" + id + ", host=" + host + ", multicastPort=" + getMulticastPort() + ", unicastUDPPort="
-				+ getUnicastUDPPort() + ", unicastTCPPort=" + getUnicastTCPPort() + "]";
+		return " > Server [id=" + id + ", host=" + host + ", master=" + master
+				+ ", multicastPort=" + getMulticastPort() + ", unicastUDPPort="
+				+ getUnicastUDPPort() + ", unicastTCPPort="
+				+ getUnicastTCPPort() + "] ";
 	}
 
 	@Override
