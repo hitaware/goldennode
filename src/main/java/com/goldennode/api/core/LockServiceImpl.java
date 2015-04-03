@@ -27,7 +27,7 @@ public class LockServiceImpl implements LockService {
 					LockBag lb = entry.getValue();
 					if (lb.getLockedProcessId() != null) {
 						Date lastAcquire = lb.getLastAcquire();
-						if (System.currentTimeMillis() - lastAcquire.getTime() > lb.getTimeout()) {
+						if (System.currentTimeMillis() - lastAcquire.getTime() > lb.getTimeout() * 1000) {
 							unlock(lockName, lb.getLockedProcessId());
 						}
 					}

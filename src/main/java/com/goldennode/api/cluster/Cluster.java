@@ -67,15 +67,14 @@ public abstract class Cluster {
 		}
 	}
 
-	public Object safeMulticast(Operation operation) {
+	public Object safeMulticast(Operation operation) throws ClusterException {
 		MultiResponse responses = tcpMulticast(getAllServers(), operation);
 		try {
 			Response response = responses.getResponseAssertAllResponsesSameAndSuccessful();
 			return response.getReturnValue();
 		} catch (ClusterException e) {
 			// TODO Rollback successful servers
-			throw new RuntimeException(e);// Notice that this is an unchecked
-			// exception for client usage.
+			throw e;
 		}
 	}
 
@@ -140,170 +139,105 @@ public abstract class Cluster {
 		return server.tryLock(lockName, timeout, unit, lockTimeout);
 	}
 
-	public void lock(String lockName) {
+	public void lock(String lockName) throws ClusterException {
 		lock(lockName, LOCK_TIMEOUT);
 	}
 
-	public void lock(String lockName, long timeout) {
-		try {
-			LOGGER.debug("Will call acquireLock on server" + getMasterServer() + " processId > "
-					+ server.createProcessId());
-			unicastTCP(getMasterServer(), new Operation(null, "lock", lockName, timeout));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void lock(String lockName, long timeout) throws ClusterException {
+		LOGGER.debug("Will call acquireLock on server" + getMasterServer() + " processId > " + server.createProcessId());
+		unicastTCP(getMasterServer(), new Operation(null, "lock", lockName, timeout));
 	}
 
-	public void lock(ClusteredObject co) {
+	public void lock(ClusteredObject co) throws ClusterException {
 		lock(co, LOCK_TIMEOUT);
 	}
 
-	public void lock(ClusteredObject co, long timeout) {
-		try {
-			LOGGER.debug("Will call acquireLock on server" + getMasterServer() + " processId > "
-					+ server.createProcessId());
-			unicastTCP(co.getLockServer(), new Operation(null, "lock", co.getPublicName(), timeout));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void lock(ClusteredObject co, long timeout) throws ClusterException {
+		LOGGER.debug("Will call acquireLock on server" + getMasterServer() + " processId > " + server.createProcessId());
+		unicastTCP(co.getLockServer(), new Operation(null, "lock", co.getPublicName(), timeout));
 	}
 
-	public void unlock(String lockName) {
-		try {
-			LOGGER.debug("Will call releaseLock on server" + getMasterServer() + " processId > "
-					+ server.createProcessId());
-			unicastTCP(getMasterServer(), new Operation(null, "unlock", lockName));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void unlock(String lockName) throws ClusterException {
+		LOGGER.debug("Will call releaseLock on server" + getMasterServer() + " processId > " + server.createProcessId());
+		unicastTCP(getMasterServer(), new Operation(null, "unlock", lockName));
 	}
 
-	public void unlock(ClusteredObject co) {
-		try {
-			LOGGER.debug("Will call releaseLock on server" + getMasterServer() + " processId > "
-					+ server.createProcessId());
-			unicastTCP(co.getLockServer(), new Operation(null, "unlock", co.getPublicName()));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void unlock(ClusteredObject co) throws ClusterException {
+		LOGGER.debug("Will call releaseLock on server" + getMasterServer() + " processId > " + server.createProcessId());
+		unicastTCP(co.getLockServer(), new Operation(null, "unlock", co.getPublicName()));
 	}
 
-	public int newCondition(String lockName) {
-		try {
-			return (int) unicastTCP(getMasterServer(), new Operation(null, "newCondition", lockName)).getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public int newCondition(String lockName) throws ClusterException {
+		return (int) unicastTCP(getMasterServer(), new Operation(null, "newCondition", lockName)).getReturnValue();
 	}
 
-	public int newCondition(ClusteredObject co) {
-		try {
-			return (int) unicastTCP(co.getLockServer(), new Operation(null, "newCondition", co.getPublicName()))
-					.getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public int newCondition(ClusteredObject co) throws ClusterException {
+		return (int) unicastTCP(co.getLockServer(), new Operation(null, "newCondition", co.getPublicName()))
+				.getReturnValue();
 	}
 
-	public void await(int conditionId) throws InterruptedException {
-		try {
-			unicastTCP(getMasterServer(), new Operation(null, "await", conditionId));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void await(int conditionId) throws InterruptedException, ClusterException {
+		unicastTCP(getMasterServer(), new Operation(null, "await", conditionId));
 	}
 
-	public void signal(int conditionId) {
-		try {
-			unicastTCP(getMasterServer(), new Operation(null, "signal", conditionId));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void signal(int conditionId) throws ClusterException {
+		unicastTCP(getMasterServer(), new Operation(null, "signal", conditionId));
 	}
 
-	public void signalAll(int conditionId) {
-		try {
-			unicastTCP(getMasterServer(), new Operation(null, "signalAll", conditionId));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void signalAll(int conditionId) throws ClusterException {
+		unicastTCP(getMasterServer(), new Operation(null, "signalAll", conditionId));
 	}
 
-	public void lockInterruptibly(String lockName) throws InterruptedException {
+	public void lockInterruptibly(String lockName) throws ClusterException {
 		lockInterruptibly(lockName, LOCK_TIMEOUT);
 	}
 
-	public void lockInterruptibly(String lockName, long timeout) throws InterruptedException {
-		try {
-			unicastTCP(getMasterServer(), new Operation(null, "lockInterruptibly", lockName, timeout));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void lockInterruptibly(String lockName, long timeout) throws ClusterException {
+		unicastTCP(getMasterServer(), new Operation(null, "lockInterruptibly", lockName, timeout));
 	}
 
-	public void lockInterruptibly(ClusteredObject co) throws InterruptedException {
+	public void lockInterruptibly(ClusteredObject co) throws ClusterException {
 		lockInterruptibly(co, LOCK_TIMEOUT);
 	}
 
-	public void lockInterruptibly(ClusteredObject co, long timeout) throws InterruptedException {
-		try {
-			unicastTCP(co.getLockServer(), new Operation(null, "lockInterruptibly", co.getPublicName(), timeout));
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public void lockInterruptibly(ClusteredObject co, long timeout) throws ClusterException {
+		unicastTCP(co.getLockServer(), new Operation(null, "lockInterruptibly", co.getPublicName(), timeout));
 	}
 
-	public boolean tryLock(String lockName) {
+	public boolean tryLock(String lockName) throws ClusterException {
 		return tryLock(lockName, LOCK_TIMEOUT);
 	}
 
-	public boolean tryLock(String lockName, long timeout) {
-		try {
-			return (boolean) unicastTCP(getMasterServer(), new Operation(null, "tryLock", lockName, timeout))
-					.getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public boolean tryLock(String lockName, long timeout) throws ClusterException {
+		return (boolean) unicastTCP(getMasterServer(), new Operation(null, "tryLock", lockName, timeout))
+				.getReturnValue();
 	}
 
-	public boolean tryLock(ClusteredObject co) {
+	public boolean tryLock(ClusteredObject co) throws ClusterException {
 		return tryLock(co, LOCK_TIMEOUT);
 	}
 
-	public boolean tryLock(ClusteredObject co, long timeout) {
-		try {
-			return (boolean) unicastTCP(co.getLockServer(), new Operation(null, "tryLock", co.getPublicName(), timeout))
-					.getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public boolean tryLock(ClusteredObject co, long timeout) throws ClusterException {
+		return (boolean) unicastTCP(co.getLockServer(), new Operation(null, "tryLock", co.getPublicName(), timeout))
+				.getReturnValue();
 	}
 
-	public boolean tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
+	public boolean tryLock(String lockName, long timeout, TimeUnit unit) throws ClusterException {
 		return tryLock(lockName, timeout, unit, LOCK_TIMEOUT);
 	}
 
-	public boolean tryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws InterruptedException {
-		try {
-			return (boolean) unicastTCP(getMasterServer(),
-					new Operation(null, "tryLock", lockName, timeout, unit, lockTimeout)).getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public boolean tryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws ClusterException {
+		return (boolean) unicastTCP(getMasterServer(),
+				new Operation(null, "tryLock", lockName, timeout, unit, lockTimeout)).getReturnValue();
 	}
 
-	public boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit) throws InterruptedException {
+	public boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit) throws ClusterException {
 		return tryLock(co, timeout, unit, LOCK_TIMEOUT);
 	}
 
-	public boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit, long lockTimeout)
-			throws InterruptedException {
-		try {
-			return (boolean) unicastTCP(co.getLockServer(),
-					new Operation(null, "tryLock", co.getPublicName(), timeout, unit, lockTimeout)).getReturnValue();
-		} catch (ClusterException e) {
-			throw new RuntimeException(e);
-		}
+	public boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit, long lockTimeout) throws ClusterException {
+		return (boolean) unicastTCP(co.getLockServer(),
+				new Operation(null, "tryLock", co.getPublicName(), timeout, unit, lockTimeout)).getReturnValue();
 	}
 
 	public void start() throws ClusterException {
@@ -375,7 +309,7 @@ public abstract class Cluster {
 		return server;
 	}
 
-	public abstract ClusteredLock getLock(String publicName);
+	public abstract ClusteredLock getLock(String publicName) throws ClusterException;
 
 	public abstract <E> List<E> getList(E e, String publicName) throws ClusterException;
 

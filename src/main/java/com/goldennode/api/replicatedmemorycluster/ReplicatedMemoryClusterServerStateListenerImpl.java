@@ -8,13 +8,10 @@ import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerStateListener;
 
 public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerStateListener {
-
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStateListener.class);
-
 	/**
 	 * A reference to cluster in case it is needed in this class
 	 */
-
 	private ReplicatedMemoryCluster cluster;
 
 	ReplicatedMemoryClusterServerStateListenerImpl(ReplicatedMemoryCluster cluster) {
@@ -24,13 +21,11 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 	/**
 	 * This method is called when local server is started. addServerToCluster is called within cluster
 	 */
-
 	@Override
 	public void serverStarted(Server server) {
 		try {
 			LOGGER.debug("***server started... id : " + server.getId());
 			cluster.multicast(new Operation(null, "announceServerJoining", server));
-
 		} catch (ClusterException e) {
 			LOGGER.error("Error Occured", e);
 		}
@@ -38,7 +33,13 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 
 	@Override
 	public void serverStopping(Server server) {
-
+		LOGGER.debug("***server stopped... id : " + server.getId());
+		try {
+			cluster.safeMulticast(new Operation(null, "announceServerLeaving", server));
+		} catch (ClusterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -46,16 +47,10 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 	 */
 	@Override
 	public void serverStopped(Server server) {
-		LOGGER.debug("***server stopped... id : " + server.getId());
-		// We cancelled multicast, we will detect it via heartbeat detector.
-		// cluster.multicast(new Operation(null, "announceServerLeaving",
-		// server));
-
 	}
 
 	@Override
 	public void serverStarting(Server server) {
 		//
-
 	}
 }

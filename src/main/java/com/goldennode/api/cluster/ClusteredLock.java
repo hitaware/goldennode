@@ -6,11 +6,8 @@ import java.util.concurrent.locks.Lock;
 
 import org.slf4j.LoggerFactory;
 
-public class ClusteredLock extends ClusteredObject implements
-		java.io.Serializable, Lock {
-	static org.slf4j.Logger LOGGER = LoggerFactory
-			.getLogger(ClusteredLock.class);
-
+public class ClusteredLock extends ClusteredObject implements java.io.Serializable, Lock {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLock.class);
 	private static final long serialVersionUID = 1L;
 
 	public ClusteredLock() {
@@ -27,22 +24,25 @@ public class ClusteredLock extends ClusteredObject implements
 
 	@Override
 	public void lock() {
-
-		getCluster().lock(this);
-
+		try {
+			getCluster().lock(this);
+		} catch (ClusterException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void unlock() {
-
-		getCluster().unlock(this);
-
+		try {
+			getCluster().unlock(this);
+		} catch (ClusterException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void lockInterruptibly() throws InterruptedException {
 		throw new UnsupportedOperationException();
-
 	}
 
 	@Override
@@ -51,8 +51,7 @@ public class ClusteredLock extends ClusteredObject implements
 	}
 
 	@Override
-	public boolean tryLock(long time, TimeUnit unit)
-			throws InterruptedException {
+	public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -20,12 +20,9 @@ import com.goldennode.api.helper.LockHelper;
 import com.goldennode.api.helper.SystemUtils;
 
 public class ReplicatedMemoryCluster extends Cluster {
-
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCluster.class);
-
 	private static final int HANDSHAKING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
 			"com.goldennode.api.replicatedmemorycluster.ReplicatedMemoryCluster.initTime"));
-
 	protected ClusteredObjectManager clusteredObjectManager;
 	protected ClusteredServerManager clusteredServerManager;
 
@@ -51,7 +48,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E> List<E> getList(E e, String publicName) throws ClusterException {
-
 		try {
 			lock(LockTypes.APPLICATION.toString());
 			LOGGER.debug("Get List");
@@ -67,12 +63,10 @@ public class ReplicatedMemoryCluster extends Cluster {
 		} finally {
 			unlock(LockTypes.APPLICATION.toString());
 		}
-
 	}
 
 	@Override
-	public ClusteredLock getLock(String publicName) {
-
+	public ClusteredLock getLock(String publicName) throws ClusterException {
 		try {
 			lock(LockTypes.APPLICATION.toString());
 			if (clusteredObjectManager.contains(publicName)) {
@@ -80,7 +74,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 			} else {
 				return (ClusteredLock) safeMulticast(new Operation(null, "addClusteredObject", new ClusteredLock(
 						publicName, getOwner().getId(), this)));
-
 			}
 		} finally {
 			unlock(LockTypes.APPLICATION.toString());
@@ -104,11 +97,9 @@ public class ReplicatedMemoryCluster extends Cluster {
 	}
 
 	void serverIsDeadOperation(Server server) throws ClusterException {
-
 		clusteredServerManager.removeClusteredServer(server);
 		reassignClusteredObject(server);
 		// removeClusteredServersObjects(server);
-
 		LOGGER.debug("is dead server master?");
 		if (server.isMaster()) {
 			LOGGER.debug("yes, it is");
@@ -116,14 +107,11 @@ public class ReplicatedMemoryCluster extends Cluster {
 		} else {
 			LOGGER.debug("no, it is not");
 		}
-
 	}
 
 	void incomingServer(final Server server) {
-
 		clusteredServerManager.addClusteredServer(server);
 		heartBeatTimer.schedule(server, new HearbeatStatusListener() {
-
 			@Override
 			public void serverUnreachable(Server server) {
 				try {
@@ -131,10 +119,8 @@ public class ReplicatedMemoryCluster extends Cluster {
 				} catch (ClusterException e1) {
 					// Thread will die
 				}
-
 			}
 		});
-
 		if (server.isMaster()) {
 			LOGGER.debug("new incoming master server" + server);
 			leaderSelector.setLeaderId(server.getId());
@@ -152,9 +138,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 	}
 
 	void replicateObjects(Server toServer) throws ClusterException {
-
 		for (ClusteredObject co : clusteredObjectManager.getClusteredObjects()) {
-
 			if (isLocalObject(co)) {
 				try {
 					// acquireDistributedLock(co);
@@ -170,7 +154,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 	}
 
 	void sendOwnServerIdentiy(Server toServer) throws ClusterException {
-
 		unicastTCP(toServer, new Operation(null, "sendOwnServerIdentity", getOwner()));
 	}
 
@@ -192,7 +175,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 		servers.add(getOwner());
 		servers.addAll(clusteredServerManager.getClusteredServers());
 		return servers;
-
 	}
 
 	@Override
@@ -209,7 +191,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 	protected ClusteredObject getClusteredObject(String publicName) {
 		return clusteredObjectManager.getClusteredObject(publicName);
 	}
-
 }
 // public ClusteredObject removeClusteredObject(String publicName)
 // throws ClusterException {
@@ -223,7 +204,6 @@ public class ReplicatedMemoryCluster extends Cluster {
 // co.setCluster(null);
 // return clusteredObjects.remove(publicName);
 // }
-
 // private void removeClusteredServersObjects(Server server) {
 // Collection<ClusteredObject> cos = clusteredObjects.values();
 // Iterator<ClusteredObject> iter = cos.iterator();
@@ -240,4 +220,3 @@ public class ReplicatedMemoryCluster extends Cluster {
 // clusteredObjects.remove(id);
 // }
 // }
-
