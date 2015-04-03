@@ -13,30 +13,22 @@ public class TestListOperations {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestListOperations.class);
 
 	public static void main(String[] args) {
-
 		try {
 			Cluster c = ClusterFactory.getCluster();
 			final ClusteredList<String> clusteredList = (ClusteredList<String>) c.getList(new String(), "list1");
-
-			for (int i = 0; i < 1000; i++) {
+			for (int i = 0; i < 50; i++) {
 				System.out.println("i=" + i);
 				clusteredList.inccounter();
-
 			}
-
 			new Timer().schedule(new TimerTask() {
-
 				@Override
 				public void run() {
 					LOGGER.debug("Size=" + clusteredList.getcounter());
-
 				}
 			}, 0, 1000);
-
 			// c.stop();
 		} catch (Exception e) {
 			LOGGER.error("Error occured", e);
 		}
-
 	}
 }

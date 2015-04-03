@@ -31,10 +31,10 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 
 	public int inccounter() {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 			return (int) getCluster().safeMulticast(new Operation(getPublicName(), "inccounter"));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -83,11 +83,11 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public boolean add(E e) {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 
 			return (Boolean) getCluster().safeMulticast(new Operation(getPublicName(), "add", e));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -109,11 +109,11 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public E set(int index, E element) {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 
 			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "set", index, element));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -136,11 +136,11 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public void add(int index, E element) {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 
 			getCluster().safeMulticast(new Operation(getPublicName(), "add", index, element));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -153,7 +153,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	}
 
 	public void _base_add(int index, E element) {
-		getCluster().acquireDistributedLock(this);
+		getCluster().lock(this);
 		innerList.add(index, element);
 
 	}
@@ -162,10 +162,10 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public E remove(int index) {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 			return (E) getCluster().safeMulticast(new Operation(getPublicName(), "remove", index));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -180,7 +180,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 
 	public E _base_remove(int index) {
 
-		getCluster().acquireDistributedLock(this);
+		getCluster().lock(this);
 		E e = innerList.remove(index);
 		return e;
 
@@ -189,10 +189,10 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public void clear() {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 			getCluster().safeMulticast(new Operation(getPublicName(), "clear"));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 
@@ -207,7 +207,7 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 
 	public void _base_clear() {
 
-		getCluster().acquireDistributedLock(this);
+		getCluster().lock(this);
 		innerList.clear();
 
 	}
@@ -215,11 +215,11 @@ public class ClusteredList<E> extends ClusteredObject implements List<E>, Serial
 	@Override
 	public boolean remove(Object o) {
 		try {
-			getCluster().acquireDistributedLock(this);
+			getCluster().lock(this);
 
 			return (boolean) getCluster().safeMulticast(new Operation(getPublicName(), "remove", o));
 		} finally {
-			getCluster().releaseDistributedLock(this);
+			getCluster().unlock(this);
 		}
 	}
 

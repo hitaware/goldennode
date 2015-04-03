@@ -7,14 +7,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Request implements Serializable {
-
 	private static final long serialVersionUID = 1L;
 	private String id;
 	private String method;
 	private ArrayList<Object> params = new ArrayList<Object>();
 	private RequestType requestType;
 	private Server serverFrom;
-	private int timeout = 1000;// ms
+	private int timeout;// seconds
+	private String processId;
 
 	Request() {
 		id = java.util.UUID.randomUUID().toString();
@@ -83,11 +83,17 @@ public class Request implements Serializable {
 		this.timeout = timeout;
 	}
 
-	@Override
-	public String toString() {
-		return " > Request [id=" + id + ", method=" + method + ", params="
-				+ params + ", requestType=" + requestType + ", serverFrom="
-				+ serverFrom + "] ";
+	public String getProcessId() {
+		return processId;
 	}
 
+	public void setProcessId(String processId) {
+		this.processId = processId;
+	}
+
+	@Override
+	public String toString() {
+		return " > Request [id=" + id + ", method=" + method + ", params=" + params + ", requestType=" + requestType
+				+ ", serverFrom=" + serverFrom + "] ";
+	}
 }

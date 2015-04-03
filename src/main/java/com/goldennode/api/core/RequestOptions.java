@@ -1,8 +1,11 @@
 package com.goldennode.api.core;
 
-public class RequestOptions {
+import com.goldennode.api.helper.SystemUtils;
 
-	private int timeout = 60000;
+public class RequestOptions {
+	private static final int REQUEST_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60",
+			"com.goldennode.api.core.RequestOptions.requestTimeout"));
+	private int timeout = REQUEST_TIMEOUT;
 
 	public RequestOptions() {
 	}
@@ -18,5 +21,4 @@ public class RequestOptions {
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
 }

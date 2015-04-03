@@ -9,11 +9,9 @@ import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.LeaderSelector;
 import com.goldennode.api.core.Server;
 
-public class ReplicatedMemoryClusterOperationBaseImpl extends
-ClusterOperationBase {
+public class ReplicatedMemoryClusterOperationBaseImpl extends ClusterOperationBase {
 
-	static org.slf4j.Logger LOGGER = LoggerFactory
-			.getLogger(LeaderSelector.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LeaderSelector.class);
 
 	ReplicatedMemoryCluster cluster;
 
@@ -24,7 +22,8 @@ ClusterOperationBase {
 	public void _announceServerJoining(Server s) throws ClusterException {
 		cluster.incomingServer(s);
 		cluster.sendOwnServerIdentiy(s);
-		cluster.replicateObjects(s);
+		cluster.replicateObjects(s);// TODO reguest objects from one server instead of
+		// sending objects froms each server.
 
 	}
 
@@ -32,8 +31,7 @@ ClusterOperationBase {
 		cluster.incomingServer(s);
 	}
 
-	public void _addClusteredObject(ClusteredObject obj)
-			throws ClusterException {
+	public void _addClusteredObject(ClusteredObject obj) throws ClusterException {
 
 		cluster.addClusteredObject(obj);
 

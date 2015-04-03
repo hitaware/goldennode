@@ -28,14 +28,14 @@ public class ClusteredLock extends ClusteredObject implements
 	@Override
 	public void lock() {
 
-		getCluster().acquireDistributedLock(this);
+		getCluster().lock(this);
 
 	}
 
 	@Override
 	public void unlock() {
 
-		getCluster().releaseDistributedLock(this);
+		getCluster().unlock(this);
 
 	}
 

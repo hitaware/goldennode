@@ -13,7 +13,6 @@ import com.goldennode.api.core.ServerException;
 import com.goldennode.api.replicatedmemorycluster.TestListOperations;
 
 public class MockGoldenNodeServer extends Server {
-
 	public MockGoldenNodeServer(LockService lockService, String id) throws ServerException {
 		super(lockService);
 		super.setId(id);
@@ -40,13 +39,11 @@ public class MockGoldenNodeServer extends Server {
 	@Override
 	public void start() throws ServerException {
 		LOGGER.debug("Server started");
-
 	}
 
 	@Override
 	public void stop() throws ServerException {
 		LOGGER.debug("Server stopped");
-
 	}
 
 	@Override
@@ -64,7 +61,6 @@ public class MockGoldenNodeServer extends Server {
 	@Override
 	public void multicast(Request request) throws ServerException {
 		LOGGER.debug("multicast sent");
-
 	}
 
 	@Override
@@ -80,39 +76,22 @@ public class MockGoldenNodeServer extends Server {
 	}
 
 	@Override
-	public void acquireLock(String locker, String processId) {
+	public void lock(String locker, long timeout) {
 		LOGGER.debug("acquired lock");
-
 	}
 
 	@Override
-	public void releaseLock(String locker, String processId) {
+	public void unlock(String locker) {
 		LOGGER.debug("released lock");
-
 	}
 
 	@Override
 	public void createLock(String lockName) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void deleteLock(String lockName) {
 		// TODO Auto-generated method stub
-
 	}
-
-	@Override
-	public void releaseLock(String processId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void acquireLock(String processId) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

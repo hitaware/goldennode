@@ -33,7 +33,9 @@ public class ReplicatedMemoryCluster extends Cluster {
 		super(server);
 		server.setOperationBase(new ReplicatedMemoryClusterOperationBaseImpl(this));
 		server.addServerStateListener(new ReplicatedMemoryClusterServerStateListenerImpl(this));
-
+		server.createLock(LockTypes.APPLICATION.toString());
+		server.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
+		server.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString());
 		clusteredObjectManager = new ClusteredObjectManager();
 		clusteredServerManager = new ClusteredServerManager();
 		// start goldennodeserver
@@ -51,7 +53,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 	public <E> List<E> getList(E e, String publicName) throws ClusterException {
 
 		try {
-			acquireDistributedLock();
+			lock(LockTypes.APPLICATION.toString());
 			LOGGER.debug("Get List");
 			if (clusteredObjectManager.contains(publicName)) {
 				LOGGER.debug("Contains list > " + publicName);
@@ -63,7 +65,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 				return (List<E>) clusteredObjectManager.getClusteredObject(publicName);
 			}
 		} finally {
-			releaseDistributedLock();
+			unlock(LockTypes.APPLICATION.toString());
 		}
 
 	}
@@ -72,7 +74,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 	public ClusteredLock getLock(String publicName) {
 
 		try {
-			acquireDistributedLock();
+			lock(LockTypes.APPLICATION.toString());
 			if (clusteredObjectManager.contains(publicName)) {
 				return (ClusteredLock) clusteredObjectManager.getClusteredObject(publicName);
 			} else {
@@ -81,7 +83,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 
 			}
 		} finally {
-			releaseDistributedLock();
+			unlock(LockTypes.APPLICATION.toString());
 		}
 	}
 
@@ -104,6 +106,7 @@ public class ReplicatedMemoryCluster extends Cluster {
 	void serverIsDeadOperation(Server server) throws ClusterException {
 
 		clusteredServerManager.removeClusteredServer(server);
+		reassignClusteredObject(server);
 		// removeClusteredServersObjects(server);
 
 		LOGGER.debug("is dead server master?");
@@ -140,6 +143,14 @@ public class ReplicatedMemoryCluster extends Cluster {
 		}
 	}
 
+	protected void reassignClusteredObject(Server server) {
+		// for (ClusteredObject co : clusteredObjectManager.getClusteredObjects()) {
+		// if (co.getOwnerId().equals(server.getId())) {
+		// co.setOwnerId(null);// TODO we might have to lock
+		// }
+		// }
+	}
+
 	void replicateObjects(Server toServer) throws ClusterException {
 
 		for (ClusteredObject co : clusteredObjectManager.getClusteredObjects()) {
@@ -147,11 +158,11 @@ public class ReplicatedMemoryCluster extends Cluster {
 			if (isLocalObject(co)) {
 				try {
 					// acquireDistributedLock(co);
-					acquireDistributedLock();
+					lock(LockTypes.APPLICATION.toString());
 					// TODO maybe we need to send in parts if data is big
 					unicastTCP(toServer, new Operation(null, "addClusteredObject", co));
 				} finally {
-					releaseDistributedLock();
+					unlock(LockTypes.APPLICATION.toString());
 					// releaseDistributedLock(co);
 				}
 			}

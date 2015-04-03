@@ -24,10 +24,10 @@ public class LockHelper {
 
 	}
 
-	public static void notify(Object object) throws RuntimeException {
+	public static void notifyAll(Object object) throws RuntimeException {
 		synchronized (object) {
 
-			object.notify();
+			object.notifyAll();
 
 		}
 

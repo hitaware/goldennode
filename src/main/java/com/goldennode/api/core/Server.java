@@ -6,9 +6,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Server implements Serializable {
-
 	private static final long serialVersionUID = 1L;
 	transient private OperationBase operationBase;
 	transient private List<ServerStateListener> serverStateListeners = Collections
@@ -18,47 +18,60 @@ public abstract class Server implements Serializable {
 	private String id;
 	private boolean master;
 	private transient LockService lockService;
+	public static ThreadLocal<String> processId = new ThreadLocal<String>();
 
 	public Server(LockService lockService) throws ServerException {
 		try {
 			setId(java.util.UUID.randomUUID().toString());
 			setHost(InetAddress.getLocalHost());
 			this.lockService = lockService;
-			lockService.createLock("$application");
 		} catch (UnknownHostException e) {
 			throw new ServerException(e);
 		}
-
 	}
 
-	public void acquireLock(String lockName, String processId) {
-		lockService.acquireLock(lockName, processId);
-
+	public void lock(String lockName, long timeout) {
+		lockService.lock(lockName, processId.get(), timeout);
 	}
 
-	public void releaseLock(String lockName, String processId) {
-		lockService.releaseLock(lockName, processId);
-
-	}
-
-	public void acquireLock(String processId) {
-		lockService.acquireLock(processId);
-
-	}
-
-	public void releaseLock(String processId) {
-		lockService.releaseLock(processId);
-
+	public void unlock(String lockName) {
+		lockService.unlock(lockName, processId.get());
 	}
 
 	public void createLock(String lockName) {
 		lockService.createLock(lockName);
-
 	}
 
 	public void deleteLock(String lockName) {
 		lockService.deleteLock(lockName);
+	}
 
+	public int newCondition(String lockName) {
+		return lockService.newCondition(lockName);
+	}
+
+	public void await(int conditionId) throws InterruptedException {
+		lockService.await(conditionId, processId.get());
+	}
+
+	public void signal(int conditionId) {
+		lockService.signal(conditionId, processId.get());
+	}
+
+	public void signalAll(int conditionId) {
+		lockService.signalAll(conditionId, processId.get());
+	}
+
+	public void lockInterruptibly(String lockName, long timeout) throws InterruptedException {
+		lockService.lockInterruptibly(lockName, processId.get(), timeout);
+	}
+
+	public boolean tryLock(String lockName, long timeout) {
+		return lockService.tryLock(lockName, processId.get(), timeout);
+	}
+
+	public boolean tryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws InterruptedException {
+		return lockService.tryLock(lockName, processId.get(), timeout, unit, lockTimeout);
 	}
 
 	public InetAddress getHost() {
@@ -119,25 +132,20 @@ public abstract class Server implements Serializable {
 
 	public abstract void stop() throws ServerException;
 
-	public abstract Request prepareRequest(String method,
-			RequestOptions options, Object... params);
+	public abstract Request prepareRequest(String method, RequestOptions options, Object... params);
 
-	public abstract Response unicastTCP(Server remoteServer, Request request)
-			throws ServerException;
+	public abstract Response unicastTCP(Server remoteServer, Request request) throws ServerException;
 
-	public abstract Response unicastUDP(Server remoteServer, Request request)
-			throws ServerException;
+	public abstract Response unicastUDP(Server remoteServer, Request request) throws ServerException;
 
 	public abstract void multicast(Request request) throws ServerException;
 
-	public abstract List<Response> blockingMulticast(Request request)
-			throws ServerException;
+	public abstract List<Response> blockingMulticast(Request request) throws ServerException;
 
 	@Override
 	public String toString() {
-		return " > Server [id=" + id + ", host=" + host + ", master=" + master
-				+ ", multicastPort=" + getMulticastPort() + ", unicastUDPPort="
-				+ getUnicastUDPPort() + ", unicastTCPPort="
+		return " > Server [id=" + id + ", host=" + host + ", master=" + master + ", multicastPort="
+				+ getMulticastPort() + ", unicastUDPPort=" + getUnicastUDPPort() + ", unicastTCPPort="
 				+ getUnicastTCPPort() + "] ";
 	}
 
@@ -158,7 +166,6 @@ public abstract class Server implements Serializable {
 			return false;
 		}
 		Server other = (Server) obj;
-
 		if (id == null) {
 			if (other.id != null) {
 				return false;
@@ -169,4 +176,7 @@ public abstract class Server implements Serializable {
 		return true;
 	}
 
+	public String createProcessId() {
+		return getId() + "_" + Thread.currentThread().getId();
+	}
 }
