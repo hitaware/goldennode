@@ -15,7 +15,7 @@ public class QueueLockServiceImpl {
 	}
 
 	public void put(Object x) throws InterruptedException {
-		lock.lock("lock1", Thread.currentThread().getName(), 60);
+		lock.lock("lock1", Thread.currentThread().getName(), 60000);
 		try {
 			while (count == items.length) {
 				lock.await(notFull, Thread.currentThread().getName());
@@ -32,7 +32,7 @@ public class QueueLockServiceImpl {
 	}
 
 	public Object take() throws InterruptedException {
-		lock.lock("lock1", Thread.currentThread().getName(), 60);
+		lock.lock("lock1", Thread.currentThread().getName(), 60000);
 		try {
 			while (count == 0) {
 				lock.await(notEmpty, Thread.currentThread().getName());

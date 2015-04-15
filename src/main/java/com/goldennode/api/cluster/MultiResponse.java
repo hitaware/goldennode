@@ -13,9 +13,7 @@ import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 
 public class MultiResponse {
-
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MultiResponse.class);
-
 	private Map<Server, Object> responses = new LinkedHashMap<Server, Object>();
 
 	public int size() {
@@ -24,70 +22,59 @@ public class MultiResponse {
 
 	public void addSuccessfulResponse(Server server, Response response) {
 		if (server == null || response == null) {
-			throw new InvalidResponseException();
+			throw new RuntimeException("Parameter can not be null");
 		}
 		responses.put(server, response);
 	}
 
 	public void addErroneusResponse(Server server, ClusterException exception) {
 		if (server == null || exception == null) {
-			throw new InvalidResponseException();
+			throw new RuntimeException("Parameter can not be null");
 		}
 		responses.put(server, exception);
 	}
 
-	public Response getResponseFromSingleServer(Server server) throws ClusterException {
+	public Response getResponseFromSingleServer(Server server) throws NoResponseException {
 		Object o = responses.get(server);
 		if (o == null) {
 			throw new NoResponseException();
 		} else if (o instanceof ClusterException) {
-			throw (ClusterException) o;
+			return null;
 		}
 		return (Response) o;
 	}
 
-	public Map<Server, Response> getResponsesNoCheck() {
+	public Map<Server, Response> getAllResponses() {
 		Map<Server, Response> tmpResponses = new LinkedHashMap<Server, Response>();
-
 		for (Entry<Server, Object> entry : responses.entrySet()) {
 			if (entry.getValue() instanceof Response) {
 				tmpResponses.put(entry.getKey(), (Response) entry.getValue());
 			} else {
 				tmpResponses.put(entry.getKey(), null);
 			}
-
 		}
 		return tmpResponses;
-
 	}
 
 	public boolean isSuccessfulCall(Object expectedResult) {
 		try {
 			Response r = getResponseAssertAllResponsesSameAndSuccessful();
-
 			if (r.getReturnValue() == null && expectedResult == null) {
 				LOGGER.debug("Successful response > " + null);
 				return true;
-
 			} else if (r.getReturnValue() == null && expectedResult != null) {
-
 				LOGGER.debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
-
 				return false;
-			}
-
-			else if (r.getReturnValue().equals(expectedResult)) {
+			} else if (r.getReturnValue().equals(expectedResult)) {
 				LOGGER.debug("Successful response > " + r.getReturnValue());
 				return true;
 			}
 			LOGGER.debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
-
 			return false;
 		} catch (ClusterException e) {
 			LOGGER.error("Unsuccessful response > " + e);
 			return false;
 		}
-
 	}
 
 	public Response getResponseAssertAllResponsesSameAndSuccessful() throws ClusterException {
@@ -95,7 +82,7 @@ public class MultiResponse {
 			throw new NoResponseException();
 		}
 		int i = 0;
-		Object firstValue = null;
+		Response firstValue = null;
 		Object previousValue = null;
 		for (Entry<Server, Object> entry : responses.entrySet()) {
 			i++;
@@ -104,38 +91,35 @@ public class MultiResponse {
 				throw (ClusterException) entry.getValue();
 			}
 			if (i > 1) {
-				if (previousValue == null && entry.getValue() == null) {
-					LOGGER.debug("Previous value is null and current value is null");
-				} else if (previousValue == null && entry.getValue() != null) {
-					throw new NonUniqueResultException("Previous > null. Current > " + entry.getValue());
+				if (previousValue == null && ((Response) entry.getValue()).getReturnValue() == null) {
+					// Don't do anything
+				} else if (previousValue == null && ((Response) entry.getValue()).getReturnValue() != null) {
+					throw new NonUniqueResultException("Previous > null. Current > "
+							+ ((Response) entry.getValue()).getReturnValue());
 				} else if (!previousValue.equals(((Response) entry.getValue()).getReturnValue())) {
 					throw new NonUniqueResultException("Previous > " + previousValue + ". Current > "
-							+ entry.getValue());
+							+ ((Response) entry.getValue()).getReturnValue());
 				}
 			}
 			if (i == 1) {
 				previousValue = ((Response) entry.getValue()).getReturnValue();
-				firstValue = entry.getValue();
+				firstValue = (Response) entry.getValue();
 			}
 		}
-		return (Response) firstValue;
-
+		return firstValue;
 	}
 
-	public Collection<Server> getSuccessfulServers(Object expectedResult) {
+	public Collection<Server> getServersWithNoErrorAndExpectedResult(Object expectedResult) {
 		List<Server> list = new ArrayList<Server>();
 		for (Entry<Server, Object> entry : responses.entrySet()) {
 			if (entry.getValue() instanceof Response) {
 				Response r = (Response) entry.getValue();
 				if (r.getReturnValue() == null && expectedResult == null) {
-					LOGGER.debug("Value is null and expected value is null");
 					list.add(entry.getKey());
 				} else if (r.getReturnValue() == null && expectedResult != null) {
-					LOGGER.debug("Don't do anything");
 					// Don't do anything
 				}
 				if (r.getReturnValue().equals(expectedResult)) {
-					LOGGER.debug("Value equals to expected value");
 					list.add(entry.getKey());
 				}
 			}
@@ -143,7 +127,7 @@ public class MultiResponse {
 		return list;
 	}
 
-	public Collection<Server> getUnErrorneousServers() {
+	public Collection<Server> getServersWithNoError() {
 		List<Server> list = new ArrayList<Server>();
 		for (Entry<Server, Object> entry : responses.entrySet()) {
 			if (entry.getValue() instanceof Response) {

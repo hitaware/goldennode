@@ -1,22 +1,23 @@
-package com.goldennode.api.cluster;
+package com.goldennode.api.goldennodecluster;
 
 import java.util.Collection;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.cluster.Cluster;
+import com.goldennode.api.cluster.MultiResponse;
+import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Server;
 
 public class LeaderSelector {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LeaderSelector.class);
-
 	private Cluster cluster;
 	private volatile String provisionLeaderId;
 	private volatile String leaderId;
 	private static final int WAIT_TIMEOUT = 1000;
 	private static final int REQUESTS_TIMEOUT = 10000;
 	private Object waitObject = new Object();
-
 	private LeaderSelectionListener listener;
 
 	public LeaderSelector(Cluster cluster, LeaderSelectionListener listener) {
@@ -24,8 +25,7 @@ public class LeaderSelector {
 		this.listener = listener;
 	}
 
-	public synchronized void IamCandidate() throws ClusterException {
-
+	public synchronized void IamCandidate() {
 		while (true) {
 			if (leaderId == null && amICandidate()) {
 				LOGGER.debug("I am candidate for leadership");
@@ -39,14 +39,11 @@ public class LeaderSelector {
 					LOGGER.debug("Couldnt get provisional lead. Will retry");
 				}
 				synchronized (waitObject) {
-
 					try {
 						wait(WAIT_TIMEOUT);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						throw new ClusterException();
 					}
-
 				}
 			} else {
 				LOGGER.debug("There is already a leader.");
@@ -75,23 +72,22 @@ public class LeaderSelector {
 			String methodName = null;
 			boolean selfResponse = false;
 			if (provisonal) {
-				selfResponse = _acquireProvisionalLeadership(cluster.getOwner().getId());
+				selfResponse = acquireProvisionalLeadership(cluster.getOwner().getId());
 				methodName = "acquireProvisionalLeadership";
 			} else {
-				selfResponse = _acquireLeadership(cluster.getOwner().getId());
+				selfResponse = acquireLeadership(cluster.getOwner().getId());
 				methodName = "acquireLeadership";
 			}
 			if (!selfResponse) {
 				LOGGER.debug("cant acquire lead on own. can't  get leadership");
 				return false;
 			}
-
 			MultiResponse responses = cluster.tcpMulticast(cluster.getPeers(), new Operation(null, methodName, cluster
 					.getOwner().getId()), new RequestOptions(REQUESTS_TIMEOUT));
 			if (responses.size() > 0 && !responses.isSuccessfulCall(true)) {
 				LOGGER.debug("rollback acquire");
 				if (provisonal) {
-					releaseLeadership(responses.getSuccessfulServers(true), true);
+					releaseLeadership(responses.getServersWithNoErrorAndExpectedResult(true), true);
 				}
 				return false;
 			}
@@ -100,12 +96,10 @@ public class LeaderSelector {
 		} finally {
 			LOGGER.trace("end getLeadership" + provisonal);
 		}
-
 	}
 
-	public boolean _acquireProvisionalLeadership(String id) {
+	public boolean acquireProvisionalLeadership(String id) {
 		try {
-
 			LOGGER.trace("begin _acquireProvisionalLeadership");
 			LOGGER.debug("trying to acquire provisional lead with id > " + id);
 			if (provisionLeaderId != null) {
@@ -134,9 +128,8 @@ public class LeaderSelector {
 		}
 	}
 
-	public boolean _acquireLeadership(String id) {
+	public boolean acquireLeadership(String id) {
 		try {
-
 			LOGGER.trace("begin _acquireLeadership");
 			LOGGER.debug("trying to acquire lead with id > " + id);
 			if (provisionLeaderId == null || !provisionLeaderId.equals(id)) {
@@ -147,9 +140,7 @@ public class LeaderSelector {
 				LOGGER.debug("lead has already been acquired by > " + leaderId);
 				return false;
 			}
-
 			synchronized (this) {
-
 				if (provisionLeaderId == null || !provisionLeaderId.equals(id)) {
 					LOGGER.debug("lead has already been acquired by > " + provisionLeaderId);
 					return false;
@@ -163,13 +154,12 @@ public class LeaderSelector {
 				listener.leaderChanged(leaderId);
 				return true;
 			}
-
 		} finally {
 			LOGGER.trace("end _acquireLeadership");
 		}
 	}
 
-	public synchronized boolean _releaseProvisionalLeadership(String id) {
+	public synchronized boolean releaseProvisionalLeadership(String id) {
 		try {
 			LOGGER.trace("begin _releaseProvisionalLeadership");
 			LOGGER.debug("trying to release provisonal lead with id > " + id);
@@ -184,10 +174,9 @@ public class LeaderSelector {
 		} finally {
 			LOGGER.trace("end _releaseProvisionalLeadership");
 		}
-
 	}
 
-	public synchronized boolean _releaseLeadership(String id) {
+	public synchronized boolean releaseLeadership(String id) {
 		try {
 			LOGGER.trace("begin _releaseLeadership");
 			LOGGER.debug("trying to release lead with id > " + id);
@@ -202,27 +191,23 @@ public class LeaderSelector {
 		} finally {
 			LOGGER.trace("end _releaseLeadership");
 		}
-
 	}
 
 	private boolean releaseLeadership(Collection<Server> servers, boolean provisonal) {
 		try {
 			LOGGER.trace("begin releaseLeadership" + provisonal);
 			LOGGER.debug("trying to release leadership");
-
 			String methodName = null;
 			boolean selfResponse = false;
 			if (provisonal) {
-				selfResponse = _releaseProvisionalLeadership(cluster.getOwner().getId());
+				selfResponse = releaseProvisionalLeadership(cluster.getOwner().getId());
 				methodName = "releaseProvisionalLeadership";
 			} else {
-				selfResponse = _releaseLeadership(cluster.getOwner().getId());
+				selfResponse = releaseLeadership(cluster.getOwner().getId());
 				methodName = "releaseLeadership";
 			}
-
 			MultiResponse responses = cluster.tcpMulticast(servers, new Operation(null, methodName, cluster.getOwner()
 					.getId()), new RequestOptions(REQUESTS_TIMEOUT));
-
 			boolean result = responses.size() > 0 && responses.isSuccessfulCall(true);
 			if (!result) {
 				LOGGER.debug("cant release lead from (a) server(s)");
@@ -233,12 +218,10 @@ public class LeaderSelector {
 			if (result && selfResponse) {
 				LOGGER.debug("released leadership successfully");
 			}
-
 			return result && selfResponse;
 		} finally {
 			LOGGER.trace("end releaseLeadership" + provisonal);
 		}
-
 	}
 
 	public synchronized void setLeaderId(String newLeaderId) {
@@ -250,19 +233,21 @@ public class LeaderSelector {
 			// This shouldn't happen!!! throw exception
 			LOGGER.debug("cant set leader. aldready set to > " + leaderId);
 		}
-
 	}
 
-	public synchronized void rejoinElection() throws ClusterException {
+	public synchronized void rejoinElection() {
 		provisionLeaderId = null;
 		leaderId = null;
-		joinElection();
-
+		joinElectionIfCandidate();
 	}
 
-	public synchronized void joinElection() throws ClusterException {
+	public synchronized void joinElectionIfCandidate() {
 		if (leaderId == null && amICandidate()) {
 			IamCandidate();
 		}
+	}
+
+	public synchronized String getLeaderId() {
+		return leaderId;
 	}
 }

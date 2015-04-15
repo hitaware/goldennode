@@ -1,35 +1,24 @@
 package com.goldennode.api.cluster;
 
 import java.io.Serializable;
+import java.util.UUID;
 
-import com.goldennode.api.core.Server;
+import org.slf4j.LoggerFactory;
 
 public abstract class ClusteredObject implements Serializable {
-
 	private static final long serialVersionUID = 1L;
 	private String ownerId;
 	private String publicName;
 	private transient Cluster cluster;
+	private String lockClusteredObject = "";
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredObject.class);
 
-	protected ClusteredObject() {
-		//
+	public ClusteredObject() {
+		publicName = getClass().getName() + "_" + UUID.randomUUID().toString();
 	}
 
-	public ClusteredObject(String publicName, String ownerId) {
+	public ClusteredObject(String publicName) {
 		this.publicName = publicName;
-		this.ownerId = ownerId;
-
-	}
-
-	public ClusteredObject(String publicName, String ownerId, Cluster cluster) {
-		this.publicName = publicName;
-		this.ownerId = ownerId;
-		this.cluster = cluster;
-		this.cluster = cluster;
-	}
-
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
 	}
 
 	public void setPublicName(String publicName) {
@@ -40,8 +29,32 @@ public abstract class ClusteredObject implements Serializable {
 		this.cluster = cluster;
 	}
 
+	public void setOwnerId(String ownerId) {
+		if (ownerId != null) {
+			synchronized (lockClusteredObject) {
+				if (this.ownerId == null) {
+					this.ownerId = ownerId;
+					lockClusteredObject.notifyAll();
+				} else {
+					LOGGER.error("ownerid is not null");
+					throw new RuntimeException("Illegal operation");
+				}
+			}
+		}
+	}
+
 	public String getOwnerId() {
-		return ownerId;
+		try {
+			synchronized (lockClusteredObject) {
+				while (ownerId == null) {
+					lockClusteredObject.wait();
+				}
+				return ownerId;
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return null;
+		}
 	}
 
 	public String getPublicName() {
@@ -52,15 +65,9 @@ public abstract class ClusteredObject implements Serializable {
 		return cluster;
 	}
 
-	public Server getLockServer() {
-		return getOwnerId().equals(cluster.getOwner().getId()) ? cluster
-				.getOwner() : cluster.getServer(getOwnerId());
-	}
-
 	@Override
 	public String toString() {
-		return " > ClusteredObject [ownerId=" + ownerId + ", publicName="
-				+ publicName + "] ";
+		return " > ClusteredObject [ownerId=" + ownerId + ", publicName=" + publicName + "] ";
 	}
 
 	@Override
@@ -90,4 +97,22 @@ public abstract class ClusteredObject implements Serializable {
 		return true;
 	}
 
+	public Object safeOperate(Operation o) {
+		boolean locked = false;
+		try {
+			getCluster().lock(this);
+			locked = true;
+			return getCluster().safeMulticast(o);
+		} catch (ClusterException e1) {
+			throw new RuntimeException(e1);
+		} finally {
+			if (locked) {
+				try {
+					getCluster().unlock(this);
+				} catch (ClusterException e1) {
+					throw new RuntimeException(e1);
+				}
+			}
+		}
+	}
 }

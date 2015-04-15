@@ -1,10 +1,14 @@
-package com.goldennode.api.cluster;
+package com.goldennode.api.goldennodecluster;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.cluster.Cluster;
+import com.goldennode.api.cluster.ClusterException;
+import com.goldennode.api.cluster.Operation;
+import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.helper.SystemUtils;
 
@@ -19,10 +23,7 @@ public class HeartbeatTimer {
 
 	public HeartbeatTimer(Cluster cluster) {
 		this.cluster = cluster;
-	}
-
-	public void start() {
-		timer = new Timer();
+		timer = new Timer("Heartbeat Timer");
 	}
 
 	public void stop() {
@@ -34,7 +35,8 @@ public class HeartbeatTimer {
 			@Override
 			public void run() {
 				try {
-					cluster.unicastTCP(server, new Operation(null, "ping", cluster.getOwner().getId()));
+					cluster.unicastTCP(server, new Operation(null, "ping", cluster.getOwner().getId()),
+							new RequestOptions());
 				} catch (ClusterException e) {
 					LOGGER.error("Can't ping peer: " + server);
 					cancel();

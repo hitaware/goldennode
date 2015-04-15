@@ -1,20 +1,21 @@
-package com.goldennode.api.replicatedmemorycluster;
+package com.goldennode.api.goldennodecluster;
 
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.Operation;
+import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerStateListener;
 
-public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerStateListener {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStateListener.class);
+public class GoldenNodeClusterServerStateListenerImpl implements ServerStateListener {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterServerStateListenerImpl.class);
 	/**
 	 * A reference to cluster in case it is needed in this class
 	 */
-	private ReplicatedMemoryCluster cluster;
+	private GoldenNodeCluster cluster;
 
-	ReplicatedMemoryClusterServerStateListenerImpl(ReplicatedMemoryCluster cluster) {
+	GoldenNodeClusterServerStateListenerImpl(GoldenNodeCluster cluster) {
 		this.cluster = cluster;
 	}
 
@@ -25,7 +26,7 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 	public void serverStarted(Server server) {
 		try {
 			LOGGER.debug("***server started... id : " + server.getId());
-			cluster.multicast(new Operation(null, "announceServerJoining", server));
+			cluster.multicast(new Operation(null, "announceServerJoining", server), new RequestOptions());
 		} catch (ClusterException e) {
 			LOGGER.error("Error Occured", e);
 		}
@@ -34,12 +35,11 @@ public class ReplicatedMemoryClusterServerStateListenerImpl implements ServerSta
 	@Override
 	public void serverStopping(Server server) {
 		LOGGER.debug("***server stopped... id : " + server.getId());
-		try {
-			cluster.safeMulticast(new Operation(null, "announceServerLeaving", server));
-		} catch (ClusterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// try {
+		// cluster.safeMulticast(new Operation(null, "announceServerLeaving", server));
+		// } catch (ClusterException e) {
+		// LOGGER.error("Error Occured", e);
+		// }
 	}
 
 	/**

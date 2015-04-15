@@ -19,42 +19,33 @@ public class Operation implements Serializable {
 
 	public Operation(String objectPublicName, String objectMethod, Object... params) {
 		id = java.util.UUID.randomUUID().toString();
-		setMethod("op_");
+		method = "op_";
 		setParams(params);
-		setObjectMethod(objectMethod);
-		setObjectPublicName(objectPublicName);
+		this.objectMethod = objectMethod;
+		this.objectPublicName = objectPublicName;
+	}
+
+	private void setParams(Object[] params) {
+		this.params.clear();
+		for (int i = 0; i < params.length; i++) {
+			this.params.add(params[i]);
+		}
 	}
 
 	public String getObjectMethod() {
 		return "_" + objectMethod;
 	}
 
-	private void setObjectMethod(String objectMethod) {
-		this.objectMethod = objectMethod;
-	}
-
 	public String getObjectPublicName() {
 		return objectPublicName;
-	}
-
-	private void setObjectPublicName(String objectPublicName) {
-		this.objectPublicName = objectPublicName;
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public String getMethod() {
 		return "_" + method;
-	}
-
-	protected void setMethod(String method) {
-		this.method = method;
 	}
 
 	public Object[] getParams() {
@@ -63,13 +54,6 @@ public class Operation implements Serializable {
 
 	public int paramSize() {
 		return params.size();
-	}
-
-	protected void setParams(Object[] params) {
-		this.params.clear();
-		for (int i = 0; i < params.length; i++) {
-			this.params.add(params[i]);
-		}
 	}
 
 	public Object get(int index) {

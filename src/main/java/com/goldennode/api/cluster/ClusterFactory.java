@@ -7,28 +7,20 @@ import com.goldennode.api.core.LockService;
 import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
-import com.goldennode.api.replicatedmemorycluster.ReplicatedMemoryCluster;
+import com.goldennode.api.goldennodecluster.GoldenNodeCluster;
 
 public class ClusterFactory {
-
-	static org.slf4j.Logger LOGGER = LoggerFactory
-			.getLogger(ClusterFactory.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterFactory.class);
 
 	private ClusterFactory() {
 	}
 
 	public static Cluster getCluster(ClusterType type) throws ClusterException {
-
 		try {
 			LockService lockService = new LockServiceImpl();
 			Server server = new GoldenNodeServer(lockService);
-
-			if (type == ClusterType.BIGMEMORY) {
-				throw new UnsupportedOperationException();
-				// return new BigMemoryCluster(server);
-			} else if (type == ClusterType.REPLICATEDMEMORY) {
-
-				return new ReplicatedMemoryCluster(server);
+			if (type == ClusterType.GOLDENNODECLUSTER) {
+				return new GoldenNodeCluster(server);
 			}
 			return null;
 		} catch (ServerException e) {
@@ -37,9 +29,6 @@ public class ClusterFactory {
 	}
 
 	public static Cluster getCluster() throws ClusterException {
-
-		return getCluster(ClusterType.REPLICATEDMEMORY);
-
+		return getCluster(ClusterType.GOLDENNODECLUSTER);
 	}
-
 }

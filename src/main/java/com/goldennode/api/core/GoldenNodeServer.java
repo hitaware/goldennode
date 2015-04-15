@@ -27,7 +27,6 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.helper.LockHelper;
 import com.goldennode.api.helper.ReflectionUtils;
 import com.goldennode.api.helper.SystemUtils;
 
@@ -80,7 +79,7 @@ public class GoldenNodeServer extends Server {
 					rs.setReturnValue(e);
 				}
 			} else {
-				rs.setReturnValue(new NoClientProxySetException());
+				rs.setReturnValue(new NoOperationBaseException());
 			}
 		} else {
 			rs.setReturnValue(new ServerNotStartedException());
@@ -114,7 +113,7 @@ public class GoldenNodeServer extends Server {
 					throw new ServerException(e);
 				}
 			} else {
-				throw new NoClientProxySetException();
+				throw new NoOperationBaseException();
 			}
 		} else {
 			throw new ServerNotStartedException();
@@ -143,6 +142,9 @@ public class GoldenNodeServer extends Server {
 						continue;
 					}
 				}
+				if (receivedObject instanceof Request) {
+					processId.set(((Request) receivedObject).getProcessId());
+				}
 				requestProcessorThreadPool.execute(getProcessor(receivedObject, packet));
 			} catch (SocketException e) {
 				if (e.toString().contains("Socket closed")) {
@@ -162,7 +164,7 @@ public class GoldenNodeServer extends Server {
 
 		public TCPProcessor(Socket s) {
 			this.s = s;
-			th = new Thread(this);
+			th = new Thread(this, "TCPProcessor");
 			tcpProcessors.add(this);
 			th.start();
 		}
@@ -201,7 +203,7 @@ public class GoldenNodeServer extends Server {
 						}
 						outToClient.writeObject(rs);
 					} else {
-						rs.setReturnValue(new NoClientProxySetException());
+						rs.setReturnValue(new NoOperationBaseException());
 					}
 				}
 			} catch (EOFException e) {
@@ -210,13 +212,14 @@ public class GoldenNodeServer extends Server {
 				if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")
 						|| e.toString().contains("Broken pipe")) {
 				} else {
-					stop();
+					// stop();
 					LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
 				}
 			} catch (IOException | ClassNotFoundException e) {
-				stop();
+				// stop();
 				LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
 			} finally {
+				stop();
 				tcpProcessors.remove(this);
 			}
 		}
@@ -295,8 +298,8 @@ public class GoldenNodeServer extends Server {
 			unicastLocks = new ConcurrentHashMap<String, Object>();
 			blockingMulticastLocks = new ConcurrentHashMap<String, Object>();
 			tcpProcessors = new HashSet<TCPProcessor>();
-			getMulticastSocket();
-			getUnicastSocket();
+			createMulticastSocket();
+			createUnicastSocket();
 			getTcpServerSocket();
 			requestProcessorThreadPool = Executors.newFixedThreadPool(REQUEST_PROCESSOR_THREADPOOL_SIZE);
 			thMulticastProcessor = new Thread(new Runnable() {
@@ -361,6 +364,13 @@ public class GoldenNodeServer extends Server {
 			thMulticastProcessor.interrupt();
 			thUnicastUDPProcessor.interrupt();
 			thTCPServerSocket.interrupt();
+			try {
+				thMulticastProcessor.join();
+				thUnicastUDPProcessor.join();
+				thTCPServerSocket.join();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 			requestProcessorThreadPool.shutdown();
 			for (ServerStateListener listener : getServerStateListeners()) {
 				listener.serverStopped(GoldenNodeServer.this);
@@ -411,7 +421,7 @@ public class GoldenNodeServer extends Server {
 				// LOGGER.debug("Sending " + request.getRequestType() + " "
 				// + request);
 				clientSocket = new Socket(remoteServer.getHost(), remoteServer.getUnicastTCPPort());
-				clientSocket.setSoTimeout(request.getTimeout() * 1000);
+				clientSocket.setSoTimeout(request.getTimeout());
 				outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 				inFromServer = new ObjectInputStream(clientSocket.getInputStream());
 				outToServer.writeObject(request);
@@ -433,6 +443,12 @@ public class GoldenNodeServer extends Server {
 					+ e.toString());
 		} finally {
 			try {
+				if (inFromServer != null) {
+					inFromServer.close();
+				}
+				if (outToServer != null) {
+					outToServer.close();
+				}
 				if (clientSocket != null) {
 					clientSocket.close();
 				}
@@ -457,7 +473,13 @@ public class GoldenNodeServer extends Server {
 				Object lock = new Object();
 				unicastLocks.put(request.getId(), lock);
 				unicastSocket.send(packet);
-				LockHelper.wait(lock, request.getTimeout() * 1000);
+				synchronized (lock) {
+					try {
+						lock.wait(request.getTimeout());
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
 				unicastLocks.remove(request.getId());
 				Response resp = htUnicastResponse.remove(request.getId());
 				if (resp == null) {
@@ -499,7 +521,13 @@ public class GoldenNodeServer extends Server {
 				htBlockingMulticastResponse.put(request.getId(),
 						Collections.synchronizedList(new FixedSizeList<Response>(maxResponses)));
 				multicastSocket.send(packet);
-				LockHelper.wait(lock, request.getTimeout() * 1000);
+				synchronized (lock) {
+					try {
+						lock.wait(request.getTimeout());
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
 				blockingMulticastLocks.remove(request.getId());
 				List<Response> resp = htBlockingMulticastResponse.remove(request.getId());
 				if (resp.size() < maxResponses && throwExceptionIfFewerResponses) {
@@ -558,7 +586,7 @@ public class GoldenNodeServer extends Server {
 		throw new IOException("Can not bind to any tcp port");
 	}
 
-	private void getUnicastSocket() throws IOException {
+	private void createUnicastSocket() throws IOException {
 		int i = 0;
 		while (i < 1000) {
 			try {
@@ -574,7 +602,7 @@ public class GoldenNodeServer extends Server {
 		throw new IOException("Can not bind to any udp port");
 	}
 
-	private void getMulticastSocket() throws IOException {
+	private void createMulticastSocket() throws IOException {
 		multicastSocket = new MulticastSocket(null);
 		multicastSocket.setTimeToLive(MULTICAST_TTL);
 		multicastSocket.setBroadcast(true);

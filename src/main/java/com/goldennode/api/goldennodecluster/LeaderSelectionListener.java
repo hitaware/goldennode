@@ -1,4 +1,4 @@
-package com.goldennode.api.cluster;
+package com.goldennode.api.goldennodecluster;
 
 public interface LeaderSelectionListener {
 

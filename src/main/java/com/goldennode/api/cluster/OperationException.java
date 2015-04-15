@@ -15,4 +15,7 @@ public class OperationException extends RuntimeException {
 		super(cause);
 	}
 
+	public OperationException() {
+		super();
+	}
 }

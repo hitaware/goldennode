@@ -6,23 +6,19 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.LockServiceImpl;
+import com.goldennode.api.core.MockGoldenNodeServer;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.TestGoldenNodeServer;
 
 public class TestMultiResponse {
-
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestGoldenNodeServer.class);
-
 	private MultiResponse mrSuccessful;
 	private MultiResponse mrErrorneous;
 	private MultiResponse mrUnsuccessful;
-
 	private MultiResponse mrNoResponse;
-
 	private MultiResponse mrErrorneous2;
-
 	private MultiResponse mrErrorneous3;
 
 	private Server getGoldenNodeServer(String id) throws ServerException {
@@ -43,21 +39,18 @@ public class TestMultiResponse {
 
 	@Before
 	public void init() throws ServerException {
-
 		// These responses have no exception(Unerrorneous) and they are the same, which means successful!
 		mrSuccessful = new MultiResponse();
 		mrSuccessful.addSuccessfulResponse(getGoldenNodeServer("1"), getUnErrorneousResponse("control_text"));
 		mrSuccessful.addSuccessfulResponse(getGoldenNodeServer("2"), getUnErrorneousResponse("control_text"));
 		mrSuccessful.addSuccessfulResponse(getGoldenNodeServer("3"), getUnErrorneousResponse("control_text"));
 		mrSuccessful.addSuccessfulResponse(getGoldenNodeServer("4"), getUnErrorneousResponse("control_text"));
-
 		// These responses have no exception(Unerrorneous) but the responses differ in value, which means unsuccessful
 		mrUnsuccessful = new MultiResponse();
 		mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("1"), getUnErrorneousResponse("control_text"));
 		mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("2"), getRandomValueResponse());
 		mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("3"), getRandomValueResponse());
 		mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("4"), getRandomValueResponse());
-
 		// These responses have some exceptions, which means unsuccessful
 		mrErrorneous = new MultiResponse();
 		mrErrorneous.addSuccessfulResponse(getGoldenNodeServer("1"), getUnErrorneousResponse("control_text"));
@@ -65,31 +58,27 @@ public class TestMultiResponse {
 		mrErrorneous.addSuccessfulResponse(getGoldenNodeServer("3"), getUnErrorneousResponse("control_text"));
 		mrErrorneous.addErroneusResponse(getGoldenNodeServer("4"), new ClusterException());
 		mrErrorneous.addErroneusResponse(getGoldenNodeServer("5"), new ClusterException());
-
 		mrErrorneous2 = new MultiResponse();
 		mrErrorneous2.addSuccessfulResponse(getGoldenNodeServer("1"), getRandomValueResponse());
 		mrErrorneous2.addSuccessfulResponse(getGoldenNodeServer("2"), getRandomValueResponse());
 		mrErrorneous2.addSuccessfulResponse(getGoldenNodeServer("3"), getRandomValueResponse());
 		mrErrorneous2.addErroneusResponse(getGoldenNodeServer("4"), new ClusterException());
 		mrErrorneous2.addErroneusResponse(getGoldenNodeServer("5"), new ClusterException());
-
 		mrErrorneous3 = new MultiResponse();
 		mrErrorneous3.addErroneusResponse(getGoldenNodeServer("4"), new ClusterException());
 		mrErrorneous3.addErroneusResponse(getGoldenNodeServer("5"), new ClusterException());
 		mrErrorneous3.addSuccessfulResponse(getGoldenNodeServer("1"), getUnErrorneousResponse("control_text"));
 		mrErrorneous3.addSuccessfulResponse(getGoldenNodeServer("2"), getUnErrorneousResponse("control_text"));
 		mrErrorneous3.addSuccessfulResponse(getGoldenNodeServer("3"), getUnErrorneousResponse("control_text"));
-
 		mrNoResponse = new MultiResponse();
-
 	}
 
-	@Test(expected = InvalidResponseException.class)
+	@Test(expected = RuntimeException.class)
 	public void testAddSuccessfulResponse() throws ServerException {
 		mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("1"), null);
 	}
 
-	@Test(expected = InvalidResponseException.class)
+	@Test(expected = RuntimeException.class)
 	public void testAddErroneusResponse() throws ServerException {
 		mrUnsuccessful.addErroneusResponse(getGoldenNodeServer("1"), null);
 	}
@@ -104,26 +93,26 @@ public class TestMultiResponse {
 
 	@Test
 	public void testGetUnErrorneousServers() {
-		Assert.assertEquals(4, mrSuccessful.getUnErrorneousServers().size());
-		Assert.assertEquals(4, mrUnsuccessful.getUnErrorneousServers().size());
-		Assert.assertEquals(3, mrErrorneous.getUnErrorneousServers().size());
-		Assert.assertEquals(0, mrNoResponse.getUnErrorneousServers().size());
+		Assert.assertEquals(4, mrSuccessful.getServersWithNoError().size());
+		Assert.assertEquals(4, mrUnsuccessful.getServersWithNoError().size());
+		Assert.assertEquals(3, mrErrorneous.getServersWithNoError().size());
+		Assert.assertEquals(0, mrNoResponse.getServersWithNoError().size());
 	}
 
 	@Test
 	public void testGetSuccessfulServers() {
-		Assert.assertEquals(4, mrSuccessful.getSuccessfulServers("control_text").size());
-		Assert.assertEquals(1, mrUnsuccessful.getSuccessfulServers("control_text").size());
-		Assert.assertEquals(3, mrErrorneous.getSuccessfulServers("control_text").size());
-		Assert.assertEquals(0, mrNoResponse.getSuccessfulServers("control_text").size());
+		Assert.assertEquals(4, mrSuccessful.getServersWithNoErrorAndExpectedResult("control_text").size());
+		Assert.assertEquals(1, mrUnsuccessful.getServersWithNoErrorAndExpectedResult("control_text").size());
+		Assert.assertEquals(3, mrErrorneous.getServersWithNoErrorAndExpectedResult("control_text").size());
+		Assert.assertEquals(0, mrNoResponse.getServersWithNoErrorAndExpectedResult("control_text").size());
 	}
 
 	@Test
 	public void testGetResponsesNoCheck() {
-		Assert.assertEquals(4, mrSuccessful.getResponsesNoCheck().size());
-		Assert.assertEquals(4, mrUnsuccessful.getResponsesNoCheck().size());
-		Assert.assertEquals(5, mrErrorneous.getResponsesNoCheck().size());
-		Assert.assertEquals(0, mrNoResponse.getResponsesNoCheck().size());
+		Assert.assertEquals(4, mrSuccessful.getAllResponses().size());
+		Assert.assertEquals(4, mrUnsuccessful.getAllResponses().size());
+		Assert.assertEquals(5, mrErrorneous.getAllResponses().size());
+		Assert.assertEquals(0, mrNoResponse.getAllResponses().size());
 	}
 
 	@Test
@@ -134,9 +123,9 @@ public class TestMultiResponse {
 				.getReturnValue());
 	}
 
-	@Test(expected = ClusterException.class)
+	@Test
 	public void testGetResponseFromSingleServer2() throws ClusterException, ServerException {
-		mrErrorneous.getResponseFromSingleServer(getGoldenNodeServer("4")).getReturnValue();
+		Assert.assertNull(mrErrorneous.getResponseFromSingleServer(getGoldenNodeServer("4")));
 	}
 
 	@Test(expected = NoResponseException.class)
@@ -153,7 +142,6 @@ public class TestMultiResponse {
 	public void testGetResponseAssertAllResponsesSameAndSuccessful() throws ClusterException {
 		Assert.assertEquals("control_text", mrSuccessful.getResponseAssertAllResponsesSameAndSuccessful()
 				.getReturnValue());
-
 	}
 
 	@Test(expected = NonUniqueResultException.class)
