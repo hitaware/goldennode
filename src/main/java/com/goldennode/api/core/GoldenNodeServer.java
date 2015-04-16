@@ -62,8 +62,12 @@ public class GoldenNodeServer extends Server {
 	private int UNICAST_TCP_PORT = Integer.parseInt(SystemUtils.getSystemProperty("26002",
 			"com.goldennode.api.core.GoldenNodeServer.unicastTCPPort"));
 
+	public GoldenNodeServer(String serverId, LockService lockService) throws ServerException {
+		super(serverId, lockService);
+	}
+
 	public GoldenNodeServer(LockService lockService) throws ServerException {
-		super(lockService);
+		super(null, lockService);
 	}
 
 	private void processBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
@@ -137,7 +141,7 @@ public class GoldenNodeServer extends Server {
 				if (receivedObject instanceof Request
 						&& ((Request) receivedObject).getServerFrom().equals(GoldenNodeServer.this)
 						&& (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST || ((Request) receivedObject)
-						.getRequestType() == RequestType.MULTICAST)) {
+								.getRequestType() == RequestType.MULTICAST)) {
 					if (!RECEIVE_SELFMULTICAST) {
 						continue;
 					}

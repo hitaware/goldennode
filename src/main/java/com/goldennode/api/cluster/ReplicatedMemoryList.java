@@ -188,7 +188,7 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 	}
 
 	public boolean _base_removeAll(Collection<? extends E> c) {
-		return innerList.addAll(c);
+		return innerList.removeAll(c);
 	}
 
 	@Override

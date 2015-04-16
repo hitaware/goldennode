@@ -13,8 +13,8 @@ import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ReplicatedMemoryCounter;
 import com.goldennode.testutils.RepeatRule;
 
-public class TestReplicatedMemoryCounter {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestReplicatedMemoryCounter.class);
+public class ReplicatedMemoryCounterTest {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounterTest.class);
 	@Rule
 	public RepeatRule repeatRule = new RepeatRule();
 	private int counter1;

@@ -29,12 +29,14 @@ public class GoldenNodeCluster extends Cluster {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeCluster.class);
 	private static final int HANDSHAKING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.handshakingDelay"));
-	private static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
+	private static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.waitForMasterDelay"));
 	private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.lockTimeout"));
+	private static final int START_RETRY_COUNT = Integer.parseInt(SystemUtils.getSystemProperty("3",
+			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.startRetryCount"));
 	ClusteredObjectManager clusteredObjectManager;
-	private ClusteredServerManager clusteredServerManager;
+	ClusteredServerManager clusteredServerManager;
 	LeaderSelector leaderSelector;
 	private HeartbeatTimer heartBeatTimer;
 
@@ -47,6 +49,13 @@ public class GoldenNodeCluster extends Cluster {
 		server.createLock(LockTypes.HANDSHAKING.toString());
 		clusteredObjectManager = new ClusteredObjectManager();
 		clusteredServerManager = new ClusteredServerManager(server);
+		leaderSelector = new LeaderSelector(this, new LeaderSelectionListener() {
+			@Override
+			public void leaderChanged(String newLeaderId) {
+				clusteredServerManager.setMasterServer(newLeaderId);
+			}
+		});
+		heartBeatTimer = new HeartbeatTimer(this);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -412,16 +421,15 @@ public class GoldenNodeCluster extends Cluster {
 
 	@Override
 	public void start() throws ClusterException {
+		int retry = 0;
 		for (;;) {
+			retry++;
+			if (retry > START_RETRY_COUNT) {
+				throw new ClusterException("Can not start");
+			}
 			// TODO test leader selection
 			// start goldennodeserver
-			leaderSelector = new LeaderSelector(this, new LeaderSelectionListener() {
-				@Override
-				public void leaderChanged(String newLeaderId) {
-					clusteredServerManager.setMasterServer(newLeaderId);
-				}
-			});
-			heartBeatTimer = new HeartbeatTimer(this);
+			heartBeatTimer.start();
 			try {
 				getOwner().start();
 			} catch (ServerException e) {
@@ -431,6 +439,7 @@ public class GoldenNodeCluster extends Cluster {
 			LockHelper.sleep(HANDSHAKING_DELAY);
 			leaderSelector.joinElectionIfCandidate();
 			if (clusteredServerManager.getMasterServer(WAITFORMASTER_DELAY) == null) {
+				LOGGER.debug("REBOOTING... (" + retry + ")");
 				stop();
 			} else {
 				break;
@@ -445,6 +454,7 @@ public class GoldenNodeCluster extends Cluster {
 			heartBeatTimer.stop();
 			clusteredServerManager.clear();
 			clusteredObjectManager.clear();
+			leaderSelector.reset();
 		} catch (ServerException e) {
 			throw new ClusterException(e);
 		}

@@ -3,6 +3,7 @@ package com.goldennode.api.core;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,6 +17,11 @@ public class TestGoldenNodeServer {
 	@BeforeClass
 	public static void init() {
 		System.setProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast", "true");
+	}
+
+	@AfterClass
+	public static void teardown() {
+		System.clearProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast");
 	}
 
 	@Test

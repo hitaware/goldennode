@@ -99,7 +99,6 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 		innerSet.clear();
 	}
 
-	// TODO dist sync readers
 	@Override
 	public int size() {
 		return innerSet.size();

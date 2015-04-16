@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.goldennode.testutils.SerializationUtils;
 import com.goldennode.testutils.ThreadUtils;
 
-public class TestSerializeClusteredObject {
+public class SerializeClusteredObjectTest {
 	@Before
 	public void init() {
 		Thread.interrupted();

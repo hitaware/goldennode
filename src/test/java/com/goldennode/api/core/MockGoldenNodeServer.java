@@ -4,16 +4,15 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.goldennodecluster.TestReplicatedMemoryCounter;
+import com.goldennode.api.goldennodecluster.ReplicatedMemoryCounterTest;
 
 public class MockGoldenNodeServer extends Server {
-	public MockGoldenNodeServer(LockService lockService, String id) throws ServerException {
-		super(lockService);
-		super.setId(id);
+	public MockGoldenNodeServer(String id, LockService lockService) throws ServerException {
+		super(id, lockService);
 	}
 
 	private static final long serialVersionUID = 1L;
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestReplicatedMemoryCounter.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounterTest.class);
 
 	@Override
 	public int getMulticastPort() {

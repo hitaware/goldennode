@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.ReflectionUtils;
 
-public class TestMethodUtils {
+public class MethodUtilsTest {
 	static org.slf4j.Logger LOGGER = LoggerFactory
-			.getLogger(TestMethodUtils.class);
+			.getLogger(MethodUtilsTest.class);
 
 	public String method1(int index) {
 		return "1";
@@ -53,7 +53,7 @@ public class TestMethodUtils {
 	@Test
 	public void test() throws Exception {
 
-		TestMethodUtils rt = new TestMethodUtils();
+		MethodUtilsTest rt = new MethodUtilsTest();
 
 		Assert.assertEquals("2", ReflectionUtils.callMethod(rt, "method1",
 				new Object[] { new Integer(1) }));
@@ -74,7 +74,7 @@ public class TestMethodUtils {
 	@Test(expected = NoSuchMethodException.class)
 	public void test2() throws Exception {
 
-		TestMethodUtils rt = new TestMethodUtils();
+		MethodUtilsTest rt = new MethodUtilsTest();
 
 		ReflectionUtils.callMethod(rt, "method6", new Object[] { null, null });
 

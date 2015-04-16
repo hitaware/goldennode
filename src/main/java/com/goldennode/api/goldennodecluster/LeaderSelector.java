@@ -25,6 +25,11 @@ public class LeaderSelector {
 		this.listener = listener;
 	}
 
+	public void reset() {
+		provisionLeaderId = null;
+		leaderId = null;
+	}
+
 	public synchronized void IamCandidate() {
 		while (true) {
 			if (leaderId == null && amICandidate()) {

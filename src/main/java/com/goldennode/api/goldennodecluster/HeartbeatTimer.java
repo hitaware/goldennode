@@ -23,6 +23,9 @@ public class HeartbeatTimer {
 
 	public HeartbeatTimer(Cluster cluster) {
 		this.cluster = cluster;
+	}
+
+	public void start() {
 		timer = new Timer("Heartbeat Timer");
 	}
 

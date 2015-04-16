@@ -16,8 +16,8 @@ import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.testutils.RepeatRule;
 import com.goldennode.testutils.RepeatRule.Repeat;
 
-public class TestClusteredLock {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestClusteredLock.class);
+public class ClusteredLockTest {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLockTest.class);
 	private static final int THREAD_COUNT = 5;
 	private static final int LOOP_COUNT = 10;
 	private static final int PROTECTED_BLOK_TASK_DURATION = 5;
@@ -58,7 +58,7 @@ public class TestClusteredLock {
 			c[i] = ClusterFactory.getCluster();
 			c[i].start();
 			lock[i] = c[i].newClusteredObjectInstance("lock1", ClusteredLock.class);
-			th[i] = new Thread(new TestLockRunnerWithLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION));
+			th[i] = new Thread(new LockRunnerWithLockTest(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION));
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i].start();
@@ -77,7 +77,7 @@ public class TestClusteredLock {
 			c[i] = ClusterFactory.getCluster();
 			c[i].start();
 			lock[i] = c[i].newClusteredObjectInstance("lock1", ClusteredLock.class);
-			th[i] = new Thread(new TestLockRunnerWithoutLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION));
+			th[i] = new Thread(new LockRunnerWithoutLockTest(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION));
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i].start();

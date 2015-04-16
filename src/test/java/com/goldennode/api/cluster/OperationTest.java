@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestOperation {
+public class OperationTest {
 	private Operation oper1;
 	private Operation oper2;
 	private Operation oper3;

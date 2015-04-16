@@ -20,9 +20,13 @@ public abstract class Server implements Serializable {
 	private transient LockService lockService;
 	public static ThreadLocal<String> processId = new ThreadLocal<String>();
 
-	public Server(LockService lockService) throws ServerException {
+	public Server(String serverId, LockService lockService) throws ServerException {
 		try {
-			setId(java.util.UUID.randomUUID().toString());
+			if (serverId == null) {
+				setId(java.util.UUID.randomUUID().toString());
+			} else {
+				setId(serverId);
+			}
 			setHost(InetAddress.getLocalHost());
 			this.lockService = lockService;
 		} catch (UnknownHostException e) {

@@ -1,6 +1,6 @@
 package com.goldennode.api.cluster;
 
-public class TestUndo {
+public class UndoTest {
 	// List<String> list;
 	//
 	// @Before

@@ -15,10 +15,10 @@ public class ClusterFactory {
 	private ClusterFactory() {
 	}
 
-	public static Cluster getCluster(ClusterType type) throws ClusterException {
+	public static Cluster getCluster(String serverId, ClusterType type) throws ClusterException {
 		try {
 			LockService lockService = new LockServiceImpl();
-			Server server = new GoldenNodeServer(lockService);
+			Server server = new GoldenNodeServer(serverId, lockService);
 			if (type == ClusterType.GOLDENNODECLUSTER) {
 				return new GoldenNodeCluster(server);
 			}
@@ -28,7 +28,15 @@ public class ClusterFactory {
 		}
 	}
 
+	public static Cluster getCluster(ClusterType type) throws ClusterException {
+		return getCluster(null, type);
+	}
+
 	public static Cluster getCluster() throws ClusterException {
-		return getCluster(ClusterType.GOLDENNODECLUSTER);
+		return getCluster(null, ClusterType.GOLDENNODECLUSTER);
+	}
+
+	public static Cluster getCluster(String name) throws ClusterException {
+		return getCluster(name, ClusterType.GOLDENNODECLUSTER);
 	}
 }

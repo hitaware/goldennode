@@ -10,8 +10,8 @@ import com.goldennode.api.core.ServerAlreadyStartedException;
 import com.goldennode.api.core.ServerAlreadyStoppedException;
 import com.goldennode.api.helper.ExceptionUtils;
 
-public class TestGoldenNodeCluster {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestGoldenNodeCluster.class);
+public class GoldenNodeClusterTest {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterTest.class);
 
 	@Test(expected = ServerAlreadyStartedException.class)
 	public void TestIllegalStart() throws Throwable {

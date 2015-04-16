@@ -12,7 +12,7 @@ import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.TestGoldenNodeServer;
 
-public class TestMultiResponse {
+public class MultiResponseTest {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestGoldenNodeServer.class);
 	private MultiResponse mrSuccessful;
 	private MultiResponse mrErrorneous;
@@ -22,7 +22,7 @@ public class TestMultiResponse {
 	private MultiResponse mrErrorneous3;
 
 	private Server getGoldenNodeServer(String id) throws ServerException {
-		return new MockGoldenNodeServer(new LockServiceImpl(), id);
+		return new MockGoldenNodeServer(id, new LockServiceImpl());
 	}
 
 	private Response getUnErrorneousResponse(String text) {

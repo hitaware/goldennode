@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import com.goldennode.api.goldennodecluster.GoldenNodeCluster;
 
-public class TestClusterFactory {
+public class ClusterFactoryTest {
 	@Test
 	public void test1() throws ClusterException {
 		Cluster c1 = ClusterFactory.getCluster();
