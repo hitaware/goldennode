@@ -1,6 +1,5 @@
 package com.goldennode.api.goldennodecluster;
 
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
+import com.goldennode.api.cluster.ClusteredObject;
+import com.goldennode.api.cluster.ReplicatedMemorySet;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.RepeatRule;
 
@@ -105,30 +106,59 @@ public class ReplicatedMemorySetTest {
 		set.add(3);
 		Assert.assertTrue(CollectionUtils.verifySetContents(set, 1, 2, 3));
 		Assert.assertTrue(set.equals(set2));
-		ArrayList<Integer> c = new ArrayList<Integer>();
-		c.add(10);
-		c.add(11);
-		set.addAll(c);
+		set.add(10);
+		set.add(11);
 		Assert.assertTrue(CollectionUtils.verifySetContents(set, 1, 2, 3, 10, 11));
 		Assert.assertTrue(set.equals(set2));
 		set.remove(1);
 		Assert.assertTrue(CollectionUtils.verifySetContents(set, 2, 3, 10, 11));
 		Assert.assertTrue(set.equals(set2));
-		set.removeAll(c);
+		set.remove(10);
+		set.remove(11);
 		Assert.assertTrue(CollectionUtils.verifySetContents(set, 2, 3));
 		Assert.assertTrue(set.equals(set2));
 		set.add(10);
 		set.add(11);
 		Assert.assertTrue(CollectionUtils.verifySetContents(set, 2, 3, 10, 11));
 		Assert.assertTrue(set.equals(set2));
-		set.retainAll(c);
-		Assert.assertTrue(CollectionUtils.verifySetContents(set, 10, 11));
-		Assert.assertTrue(set.equals(set2));
 		Assert.assertTrue(set.add(12));
 		Assert.assertFalse(set.add(10));
-		Assert.assertTrue(CollectionUtils.verifySetContents(set, 10, 11, 12));
+		Assert.assertTrue(CollectionUtils.verifySetContents(set, 2, 3, 10, 11, 12));
 		Assert.assertTrue(set.equals(set2));
 		c1.stop();
 		c2.stop();
+	}
+
+	@Test
+	public void testUndo() throws ClusterException, InterruptedException {
+		Set<String> s = new ReplicatedMemorySet<String>();
+		Assert.assertEquals(1, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s));
+		s.add("1");
+		Assert.assertEquals(2, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s, "1"));
+		s.clear();
+		Assert.assertEquals(3, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s));
+		s.add("2");
+		s.add("3");
+		Assert.assertEquals(5, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s, "2", "3"));
+		s.remove("2");
+		Assert.assertEquals(6, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s, "3"));
+		((ClusteredObject) s).undo(6);
+		Assert.assertEquals(5, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s, "2", "3"));
+		((ClusteredObject) s).undo(5);
+		((ClusteredObject) s).undo(4);
+		Assert.assertEquals(3, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s));
+		((ClusteredObject) s).undo(3);
+		Assert.assertEquals(2, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s, "1"));
+		((ClusteredObject) s).undo(2);
+		Assert.assertEquals(1, ((ClusteredObject) s).getVersion());
+		Assert.assertTrue(CollectionUtils.verifySetContents(s));
 	}
 }

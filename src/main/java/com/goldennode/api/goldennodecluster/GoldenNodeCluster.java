@@ -147,7 +147,7 @@ public class GoldenNodeCluster extends Cluster {
 		MultiResponse mr = tcpMulticast(getPeers(), new Operation(null, "amIOwnerOf", publicName), new RequestOptions());
 		Collection<Server> col = mr.getServersWithNoErrorAndExpectedResult(true);
 		for (Server server : col) {
-			return server;
+			return server;// NOPMD
 		}
 		return null;
 	}
@@ -209,10 +209,8 @@ public class GoldenNodeCluster extends Cluster {
 
 	boolean amIOwnerOf(String publicName) {
 		ClusteredObject co = clusteredObjectManager.getClusteredObject(publicName);
-		if (co != null) {
-			if (co.getOwnerId().equals(getOwner().getId())) {
-				return true;
-			}
+		if (co != null && co.getOwnerId().equals(getOwner().getId())) {
+			return true;
 		}
 		return false;
 	}

@@ -23,6 +23,144 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 	}
 
 	@Override
+	public boolean add(E e) {
+		if (getCluster() == null) {
+			return _add(e);
+		}
+		return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
+	}
+
+	public boolean _add(E e) {
+		Boolean b = _base_add(e);
+		createUndoRecord(new Operation(getPublicName(), "base_remove", e));
+		return b;
+	}
+
+	public boolean _base_add(E e) {
+		return innerList.add(e);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public E set(int index, E element) {
+		if (getCluster() == null) {
+			return _set(index, element);
+		}
+		return (E) safeOperate(new Operation(getPublicName(), "set", index, element));
+	}
+
+	public E _set(int index, E element) {
+		E e = _base_set(index, element);
+		createUndoRecord(new Operation(getPublicName(), "base_set", index, e));
+		return e;
+	}
+
+	public E _base_set(int index, E element) {
+		E e = innerList.set(index, element);
+		return e;
+	}
+
+	@Override
+	public void add(int index, E element) {
+		if (getCluster() == null) {
+			_add(index, element);
+			return;
+		}
+		safeOperate(new Operation(getPublicName(), "add", index, element));
+	}
+
+	public void _add(int index, E element) {
+		_base_add(index, element);
+		createUndoRecord(new Operation(getPublicName(), "base_remove", index));
+	}
+
+	public void _base_add(int index, E element) {
+		innerList.add(index, element);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public E remove(int index) {
+		if (getCluster() == null) {
+			return _remove(index);
+		}
+		return (E) safeOperate(new Operation(getPublicName(), "remove", index));
+	}
+
+	public E _remove(int index) {
+		E e = _base_remove(index);
+		createUndoRecord(new Operation(getPublicName(), "base_add", index, e));
+		return e;
+	}
+
+	public E _base_remove(int index) {
+		E e = innerList.remove(index);
+		return e;
+	}
+
+	@Override
+	public void clear() {
+		if (getCluster() == null) {
+			_clear();
+			return;
+		}
+		safeOperate(new Operation(getPublicName(), "clear"));
+	}
+
+	public void _clear() {
+		ArrayList<E> al = new ArrayList<E>(innerList);
+		_base_clear();
+		createUndoRecord(new Operation(getPublicName(), "base_addAll", al));
+	}
+
+	public void _base_clear() {
+		innerList.clear();
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		if (getCluster() == null) {
+			return _remove(o);
+		}
+		return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
+	}
+
+	public boolean _remove(Object o) {
+		Boolean b = _base_remove(o);
+		createUndoRecord(new Operation(getPublicName(), "base_add", o));
+		return b;
+	}
+
+	public boolean _base_remove(Object o) {
+		return innerList.remove(o);
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean _base_addAll(Collection<? extends E> c) {
+		return innerList.addAll(c);
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		throw new UnsupportedOperationException();
+	}
+
+	// Methods below don't modify list.
+	@Override
 	public int size() {
 		return innerList.size();
 	}
@@ -52,159 +190,6 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 		return innerList.toArray(a);
 	}
 
-	// TODO Integer Object conflict
-	@Override
-	public boolean add(E e) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
-	}
-
-	public boolean _add(E e) {
-		Boolean b = _base_add(e);
-		// TODO getCluster().getProxy().createUndoRecord(
-		// new Operation(getPublicName(), "base_remove", e));
-		return b;
-	}
-
-	public boolean _base_add(E e) {
-		return innerList.add(e);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public E set(int index, E element) {
-		return (E) safeOperate(new Operation(getPublicName(), "set", index, element));
-	}
-
-	public E _set(int index, E element) {
-		E e = _base_set(index, element);
-		// TODO getCluster().getProxy().createUndoRecord(new
-		// Operation(getPublicName(), "base_set", index, e));
-		return e;
-	}
-
-	public E _base_set(int index, E element) {
-		E e = innerList.set(index, element);
-		return e;
-	}
-
-	@Override
-	public void add(int index, E element) {
-		safeOperate(new Operation(getPublicName(), "add", index, element));
-	}
-
-	public void _add(int index, E element) {
-		_base_add(index, element);
-		// TODO getCluster().getProxy().createUndoRecord(new
-		// Operation(getPublicName(), "base_remove", index));
-	}
-
-	public void _base_add(int index, E element) {
-		innerList.add(index, element);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public E remove(int index) {
-		return (E) safeOperate(new Operation(getPublicName(), "remove", index));
-	}
-
-	public E _remove(int index) {
-		E e = _base_remove(index);
-		// TODO getCluster().getProxy().createUndoRecord(new
-		// Operation(getPublicName(), "base_add", index, e));
-		return e;
-	}
-
-	public E _base_remove(int index) {
-		E e = innerList.remove(index);
-		return e;
-	}
-
-	@Override
-	public void clear() {
-		safeOperate(new Operation(getPublicName(), "clear"));
-	}
-
-	public void _clear() {
-		// TODO getCluster().getProxy().createUndoRecord(
-		// new Operation(getPublicName(), "base_addAll", new
-		// ArrayList<E>(innerList)));
-		_base_clear();
-	}
-
-	public void _base_clear() {
-		innerList.clear();
-	}
-
-	@Override
-	public boolean remove(Object o) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
-	}
-
-	public boolean _remove(Object o) {
-		Boolean b = _base_remove(o);
-		// TODOgetCluster().getProxy().createUndoRecord(new
-		// Operation(getPublicName(), "base_add", o));
-		return b;
-	}
-
-	public boolean _base_remove(Object o) {
-		return innerList.remove(o);
-	}
-
-	@Override
-	public boolean addAll(Collection<? extends E> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "addAll", c));
-	}
-
-	public boolean _addAll(Collection<? extends E> c) {
-		return _base_addAll(c);
-	}
-
-	public boolean _base_addAll(Collection<? extends E> c) {
-		return innerList.addAll(c);
-	}
-
-	@Override
-	public boolean addAll(int index, Collection<? extends E> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "addAll", index, c));
-	}
-
-	public boolean _addAll(int index, Collection<? extends E> c) {
-		return _base_addAll(index, c);
-	}
-
-	public boolean _base_addAll(int index, Collection<? extends E> c) {
-		return innerList.addAll(index, c);
-	}
-
-	@Override
-	public boolean removeAll(Collection<?> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "removeAll", c));
-	}
-
-	public boolean _removeAll(Collection<? extends E> c) {
-		return _base_removeAll(c);
-	}
-
-	public boolean _base_removeAll(Collection<? extends E> c) {
-		return innerList.removeAll(c);
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "retainAll", c));
-	}
-
-	public boolean _retainAll(Collection<?> c) {
-		return _base_retainAll(c);
-	}
-
-	public boolean _base_retainAll(Collection<?> c) {
-		return innerList.retainAll(c);
-	}
-
-	// Methods below don't modify list.
 	@Override
 	public boolean containsAll(Collection<?> c) {
 		return innerList.containsAll(c);

@@ -10,10 +10,10 @@ import com.goldennode.api.core.MockGoldenNodeServer;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
-import com.goldennode.api.core.TestGoldenNodeServer;
+import com.goldennode.api.core.GoldenNodeServerTest;
 
 public class MultiResponseTest {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestGoldenNodeServer.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
 	private MultiResponse mrSuccessful;
 	private MultiResponse mrErrorneous;
 	private MultiResponse mrUnsuccessful;

@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Test;
 
-public class TestLockServiceImpl {
+public class LockServiceImplTest {
 	@Test
 	public void testLockUsageEndToEnd1() {
 		LockService service = new LockServiceImpl();

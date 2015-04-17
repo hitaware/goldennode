@@ -1,5 +1,6 @@
 package com.goldennode.api.cluster;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,11 +24,16 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
 	@Override
 	public boolean add(E e) {
+		if (getCluster() == null) {
+			return _add(e);
+		}
 		return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
 	}
 
 	public boolean _add(E e) {
-		return _base_add(e);
+		Boolean b = _base_add(e);
+		createUndoRecord(new Operation(getPublicName(), "base_remove", e));
+		return b;
 	}
 
 	public boolean _base_add(E e) {
@@ -36,11 +42,16 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
 	@Override
 	public boolean remove(Object o) {
+		if (getCluster() == null) {
+			return _remove(o);
+		}
 		return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
 	}
 
 	public boolean _remove(Object o) {
-		return _base_remove(o);
+		Boolean b = _base_remove(o);
+		createUndoRecord(new Operation(getPublicName(), "base_add", o));
+		return b;
 	}
 
 	public boolean _base_remove(Object o) {
@@ -48,12 +59,27 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends E> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "addAll", c));
+	public void clear() {
+		if (getCluster() == null) {
+			_clear();
+			return;
+		}
+		safeOperate(new Operation(getPublicName(), "clear"));
 	}
 
-	public boolean _addAll(Collection<? extends E> c) {
-		return _base_addAll(c);
+	public void _clear() {
+		ArrayList<E> al = new ArrayList<E>(innerSet);
+		_base_clear();
+		createUndoRecord(new Operation(getPublicName(), "base_addAll", al));
+	}
+
+	public void _base_clear() {
+		innerSet.clear();
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		throw new UnsupportedOperationException();
 	}
 
 	public boolean _base_addAll(Collection<? extends E> c) {
@@ -62,41 +88,12 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "retainAll", c));
-	}
-
-	public boolean _retainAll(Collection<?> c) {
-		return _base_retainAll(c);
-	}
-
-	public boolean _base_retainAll(Collection<?> c) {
-		return innerSet.retainAll(c);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		return (boolean) safeOperate(new Operation(getPublicName(), "removeAll", c));
-	}
-
-	public boolean _removeAll(Collection<?> c) {
-		return _base_removeAll(c);
-	}
-
-	public boolean _base_removeAll(Collection<?> c) {
-		return innerSet.removeAll(c);
-	}
-
-	@Override
-	public void clear() {
-		safeOperate(new Operation(getPublicName(), "clear"));
-	}
-
-	public void _clear() {
-		_base_clear();
-	}
-
-	public void _base_clear() {
-		innerSet.clear();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

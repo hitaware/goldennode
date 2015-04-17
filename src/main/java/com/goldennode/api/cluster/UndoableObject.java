@@ -5,8 +5,7 @@ import java.util.Stack;
 
 import com.goldennode.api.helper.ReflectionUtils;
 
-public class UndoableObject implements Serializable {
-
+public abstract class UndoableObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 	protected Stack<Operation> history = new Stack<Operation>();
 	protected int version = 1;
@@ -39,7 +38,6 @@ public class UndoableObject implements Serializable {
 	}
 
 	private void doUndo() {
-
 		Operation operation = history.pop();
 		if (operation != null) {
 			try {
@@ -49,16 +47,12 @@ public class UndoableObject implements Serializable {
 				throw new OperationException(e);
 			}
 		}
-
 	}
-
 	/*
 	 * public void beginTransaction() { history.clear(); }
 	 * 
 	 * public void commitTransaction() { history.clear(); }
 	 * 
-	 * public void rollbackTransaction() throws ObjectOperationException { while
-	 * (!history.isEmpty()) { undo(); } }
+	 * public void rollbackTransaction() throws ObjectOperationException { while (!history.isEmpty()) { undo(); } }
 	 */
-
 }

@@ -1,16 +1,16 @@
 package com.goldennode.api.cluster;
 
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements Map<K, V> {
 	private static final long serialVersionUID = 1L;
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryMap.class);
-	protected Map<K, V> innerMap = new ConcurrentHashMap<K, V>();
+	protected Hashtable<K, V> innerMap = new Hashtable<K, V>();
 
 	public ReplicatedMemoryMap() {
 		super();
@@ -23,11 +23,23 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public V put(K key, V value) {
+		if (getCluster() == null) {
+			return _put(key, value);
+		}
 		return (V) safeOperate(new Operation(getPublicName(), "put", key, value));
 	}
 
 	public V _put(K key, V value) {
-		return _base_put(key, value);
+		V previousValue = null;
+		if (innerMap.containsKey(key)) {
+			previousValue = _base_put(key, value);
+			createUndoRecord(new Operation(getPublicName(), "base_put", key, previousValue));
+			return previousValue;
+		} else {
+			_base_put(key, value);
+			createUndoRecord(new Operation(getPublicName(), "base_remove", key));
+			return null;
+		}
 	}
 
 	public V _base_put(K key, V value) {
@@ -37,11 +49,20 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public V remove(Object key) {
+		if (getCluster() == null) {
+			return _remove(key);
+		}
 		return (V) safeOperate(new Operation(getPublicName(), "remove", key));
 	}
 
 	public V _remove(Object key) {
-		return _base_remove(key);
+		V previousValue = null;
+		if (innerMap.containsKey(key)) {
+			previousValue = _base_remove(key);
+			createUndoRecord(new Operation(getPublicName(), "base_put", key, previousValue));
+			return previousValue;
+		}
+		return null;
 	}
 
 	public V _base_remove(Object key) {
@@ -49,29 +70,32 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 	}
 
 	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
-		safeOperate(new Operation(getPublicName(), "putAll", m));
-	}
-
-	public void _putAll(Map<? extends K, ? extends V> m) {
-		_base_putAll(m);
-	}
-
-	public void _base_putAll(Map<? extends K, ? extends V> m) {
-		innerMap.putAll(m);
-	}
-
-	@Override
 	public void clear() {
+		if (getCluster() == null) {
+			_clear();
+			return;
+		}
 		safeOperate(new Operation(getPublicName(), "clear"));
 	}
 
 	public void _clear() {
+		@SuppressWarnings("unchecked")
+		Hashtable<K, V> ht = (Hashtable<K, V>) innerMap.clone();
 		_base_clear();
+		createUndoRecord(new Operation(getPublicName(), "base_putAll", ht));
 	}
 
 	public void _base_clear() {
 		innerMap.clear();
+	}
+
+	@Override
+	public void putAll(Map<? extends K, ? extends V> m) {
+		throw new UnsupportedOperationException();
+	}
+
+	public void _base_putAll(Map<? extends K, ? extends V> m) {
+		innerMap.putAll(m);
 	}
 
 	@Override
@@ -110,7 +134,7 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
+	public Set<Entry<K, V>> entrySet() {
 		return innerMap.entrySet();
 	}
 }

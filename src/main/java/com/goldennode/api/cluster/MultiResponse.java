@@ -91,7 +91,7 @@ public class MultiResponse {
 				throw (ClusterException) entry.getValue();
 			}
 			if (i > 1) {
-				if (previousValue == null && ((Response) entry.getValue()).getReturnValue() == null) {
+				if (previousValue == null && ((Response) entry.getValue()).getReturnValue() == null) {// NOPMD
 					// Don't do anything
 				} else if (previousValue == null && ((Response) entry.getValue()).getReturnValue() != null) {
 					throw new NonUniqueResultException("Previous > null. Current > "
@@ -116,7 +116,7 @@ public class MultiResponse {
 				Response r = (Response) entry.getValue();
 				if (r.getReturnValue() == null && expectedResult == null) {
 					list.add(entry.getKey());
-				} else if (r.getReturnValue() == null && expectedResult != null) {
+				} else if (r.getReturnValue() == null && expectedResult != null) {// NOPMD
 					// Don't do anything
 				}
 				if (r.getReturnValue().equals(expectedResult)) {

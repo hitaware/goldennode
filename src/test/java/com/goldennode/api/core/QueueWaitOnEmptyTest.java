@@ -6,7 +6,7 @@ import java.util.TimerTask;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestQueueWaitOnEmpty {
+public class QueueWaitOnEmptyTest {
 	@Test
 	public void test() throws InterruptedException {
 		LockService ls = new LockServiceImpl();

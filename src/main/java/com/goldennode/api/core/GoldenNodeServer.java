@@ -53,7 +53,7 @@ public class GoldenNodeServer extends Server {
 			"com.goldennode.api.core.GoldenNodeServer.requestProcessorThreadpoolSize"));
 	private transient boolean RECEIVE_SELFMULTICAST = Boolean.parseBoolean(SystemUtils.getSystemProperty("false",
 			"com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast"));
-	private transient String MULTICAST_ADDRESS = SystemUtils.getSystemProperty("225.4.5.6",
+	private transient String MULTICAST_ADDRESS = SystemUtils.getSystemProperty("225.4.5.6",// NOPMD
 			"com.goldennode.api.core.GoldenNodeServer.multicastAddress");
 	private int MULTICAST_PORT = Integer.parseInt(SystemUtils.getSystemProperty("25000",
 			"com.goldennode.api.core.GoldenNodeServer.multicastPort"));
@@ -108,7 +108,7 @@ public class GoldenNodeServer extends Server {
 		}
 	}
 
-	private void processNonBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
+	private void processNonBlockingRequest(Request r) throws ServerException {
 		if (isStarted()) {
 			if (getOperationBase() != null) {
 				try {
@@ -142,7 +142,7 @@ public class GoldenNodeServer extends Server {
 						&& ((Request) receivedObject).getServerFrom().equals(GoldenNodeServer.this)
 						&& (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST || ((Request) receivedObject)
 								.getRequestType() == RequestType.MULTICAST)) {
-					if (!RECEIVE_SELFMULTICAST) {
+					if (!RECEIVE_SELFMULTICAST) {// NOPMD
 						continue;
 					}
 				}
@@ -211,10 +211,11 @@ public class GoldenNodeServer extends Server {
 					}
 				}
 			} catch (EOFException e) {
-				// LOGGER.trace("eof occured");
+				LOGGER.trace("eof occured");
 			} catch (SocketException e) {
 				if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")
-						|| e.toString().contains("Broken pipe")) {
+						|| e.toString().contains("Broken pipe")) {// NOPMD
+					// Don't do anything
 				} else {
 					// stop();
 					LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
@@ -241,7 +242,7 @@ public class GoldenNodeServer extends Server {
 							processBlockingRequest((Request) receivedObject, packet.getAddress(), packet.getPort());
 						}
 						if (((Request) receivedObject).getRequestType() == RequestType.MULTICAST) {
-							processNonBlockingRequest((Request) receivedObject, packet.getAddress(), packet.getPort());
+							processNonBlockingRequest((Request) receivedObject);
 						}
 					}
 					if (receivedObject instanceof Response) {

@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.LockHelper;
 
-public class TestGoldenNodeServer {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TestGoldenNodeServer.class);
+public class GoldenNodeServerTest {
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
 
 	@BeforeClass
 	public static void init() {

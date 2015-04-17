@@ -1,11 +1,10 @@
 package com.goldennode.api.cluster;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 
-public abstract class ClusteredObject implements Serializable {
+public abstract class ClusteredObject extends UndoableObject {
 	private static final long serialVersionUID = 1L;
 	private String ownerId;
 	private String publicName;
