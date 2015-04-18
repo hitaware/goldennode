@@ -13,10 +13,6 @@ public class Operation implements Serializable {
 	private String objectPublicName;
 	private String objectMethod;
 
-	public Operation undo() {
-		return new Operation(objectPublicName, "undo");
-	}
-
 	public Operation(String objectPublicName, String objectMethod, Object... params) {
 		id = java.util.UUID.randomUUID().toString();
 		method = "op_";

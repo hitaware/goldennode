@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Lock;
 import org.slf4j.LoggerFactory;
 
 public class DistributedReentrantLock implements Lock {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LockServiceImpl.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLock.class);
 	private final Sync sync;
 
 	private static class Sync extends AbstractQueuedSynchronizer {

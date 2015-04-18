@@ -14,7 +14,7 @@ import com.goldennode.api.core.Server;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LeaderSelector.class);
+	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterOperationBaseImpl.class);
 	GoldenNodeCluster cluster;
 
 	GoldenNodeClusterOperationBaseImpl(GoldenNodeCluster cluster) {
