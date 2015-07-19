@@ -9,7 +9,7 @@ import com.goldennode.api.cluster.ClusterOperationBase;
 import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.cluster.OperationException;
-import com.goldennode.api.cluster.PeerNotReadyException;
+import com.goldennode.api.cluster.ClusteredObjectNotAvailableException;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.helper.ReflectionUtils;
 
@@ -58,7 +58,7 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 				}
 			} else {
 				LOGGER.debug("peer not ready, clusteredObject not found:" + operation.getObjectPublicName());
-				throw new PeerNotReadyException();
+				throw new ClusteredObjectNotAvailableException();
 			}
 		} else {
 			try {

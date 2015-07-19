@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusteredObject;
+import com.goldennode.api.cluster.ClusteredObjectNotAvailableException;
 import com.goldennode.api.cluster.MultiResponse;
 import com.goldennode.api.cluster.Operation;
-import com.goldennode.api.cluster.PeerNotReadyException;
 import com.goldennode.api.cluster.ReplicatedMemoryList;
 import com.goldennode.api.cluster.ReplicatedMemoryMap;
 import com.goldennode.api.cluster.ReplicatedMemorySet;
@@ -268,8 +268,8 @@ public class GoldenNodeCluster extends Cluster {
 					LOGGER.debug("Operation is on progress" + operation + "on server" + remoteServer);
 					mr.addSuccessfulResponse(remoteServer, unicastTCP(remoteServer, operation, options));
 				} catch (ClusterException e) {
-					if (ExceptionUtils.hasCause(e, PeerNotReadyException.class)) {
-						LOGGER.debug("Peer not ready for" + operation + "server" + remoteServer);
+					if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {
+						LOGGER.debug("ClusteredObjectNotAvailable " + operation + "server" + remoteServer);
 					} else {
 						mr.addErroneusResponse(remoteServer, e);
 						LOGGER.error("Error occured while processing operation" + operation + "on server"
