@@ -48,7 +48,7 @@ public class LockServiceImpl implements LockService {
 		if (locks.containsKey(lockName)) {
 			LOGGER.debug("will lock > " + lockName + " processId > " + processId);
 			locks.get(lockName).getLock().lock();
-			locks.get(lockName).setLastAcquire(new Date());
+			locks.get(lockName).setLastAcquire(new Date());//FIXME null pointer when deleteLock is called
 			locks.get(lockName).setLockedProcessId(processId);
 			locks.get(lockName).setTimeout(timeout);
 		} else {

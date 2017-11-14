@@ -152,7 +152,7 @@ public class GoldenNodeServer extends Server {
 				requestProcessorThreadPool.execute(getProcessor(receivedObject, packet));
 			} catch (SocketException e) {
 				if (e.toString().contains("Socket closed")) {
-					LOGGER.trace("socket closed");
+					//LOGGER.trace("socket closed");
 				} else {
 					LOGGER.error("Error occured", e);
 				}
@@ -177,7 +177,7 @@ public class GoldenNodeServer extends Server {
 			try {
 				s.close();
 			} catch (Exception e) {
-				LOGGER.trace("socket couldn't be closed");
+				//LOGGER.trace("socket couldn't be closed");
 			}
 			th.interrupt();
 		}
@@ -211,7 +211,7 @@ public class GoldenNodeServer extends Server {
 					}
 				}
 			} catch (EOFException e) {
-				LOGGER.trace("eof occured");
+				//LOGGER.trace("eof occured");
 			} catch (SocketException e) {
 				if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")
 						|| e.toString().contains("Broken pipe")) {// NOPMD
@@ -330,7 +330,7 @@ public class GoldenNodeServer extends Server {
 						}
 					} catch (SocketException e) {
 						if (e.toString().contains("Socket closed")) {
-							LOGGER.trace("socket closed");
+							//LOGGER.trace("socket closed");
 						} else {
 							LOGGER.error("Error occured", e);
 						}
@@ -458,7 +458,7 @@ public class GoldenNodeServer extends Server {
 					clientSocket.close();
 				}
 			} catch (IOException e) { //
-				LOGGER.trace("socket couldn't be closed");
+				//LOGGER.trace("socket couldn't be closed");
 			}
 		}
 	}

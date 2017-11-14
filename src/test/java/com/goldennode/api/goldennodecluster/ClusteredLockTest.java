@@ -5,6 +5,7 @@ import java.util.concurrent.locks.Lock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,12 @@ public class ClusteredLockTest {
 	public RepeatRule repeatRule = new RepeatRule();
 
 	public synchronized int getCounter() {
+	    LOGGER.debug("returning counter" + counter);
 		return counter;
 	}
 
 	public synchronized void setCounter(int counter) {
+	    LOGGER.debug("counter is being set to " + counter);
 		this.counter = counter;
 	}
 
