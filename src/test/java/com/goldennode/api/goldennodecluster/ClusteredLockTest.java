@@ -55,7 +55,7 @@ public class ClusteredLockTest {
 	}
 
 	@Test
-	@Repeat(times = 2)
+	@Repeat(times = 1)
 	public void testWithLock() throws Exception {
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			c[i] = ClusterFactory.getCluster();
@@ -73,6 +73,7 @@ public class ClusteredLockTest {
 		System.out.println("Counter > " + getCounter());
 	}
 
+	@Ignore
 	@Test
 	@Repeat(times = 2)
 	public void testWithoutLock() throws Exception {

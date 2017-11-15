@@ -7,7 +7,7 @@ public class LockBag {
 	private Lock lock;
 	private Date lastAcquire;
 	private Date creationDate;
-	private long timeout;// miliseconds
+	private long timeoutInMs;
 	private String lockedProcessId;
 
 	public LockBag(Lock lock) {
@@ -39,12 +39,12 @@ public class LockBag {
 		this.creationDate = creationDate;
 	}
 
-	public long getTimeout() {
-		return timeout;
+	public long getTimeoutInMs() {
+		return timeoutInMs;
 	}
 
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
+	public void setTimeoutInMs(long timeoutInMs) {
+		this.timeoutInMs = timeoutInMs;
 	}
 
 	public String getLockedProcessId() {
