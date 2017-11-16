@@ -43,10 +43,10 @@ public class GoldenNodeCluster extends Cluster {
 	public GoldenNodeCluster(Server server) throws ClusterException {
 		server.setOperationBase(new GoldenNodeClusterOperationBaseImpl(this));
 		server.addServerStateListener(new GoldenNodeClusterServerStateListenerImpl(this));
-		server.createLock(LockTypes.APPLICATION.toString());
-		server.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
-		server.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString());
-		server.createLock(LockTypes.HANDSHAKING.toString());
+		server.createLock(LockTypes.APPLICATION.toString(),LOCK_TIMEOUT);
+		server.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString(),LOCK_TIMEOUT);
+		server.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(),LOCK_TIMEOUT);
+		server.createLock(LockTypes.HANDSHAKING.toString(),LOCK_TIMEOUT);
 		clusteredObjectManager = new ClusteredObjectManager();
 		clusteredServerManager = new ClusteredServerManager(server);
 		leaderSelector = new LeaderSelector(this, new LeaderSelectionListener() {
@@ -160,7 +160,7 @@ public class GoldenNodeCluster extends Cluster {
 		co.setCluster(this);
 		clusteredObjectManager.addClusteredObject(co);
 		if (co.getOwnerId().equals(getOwner().getId())) {
-			getOwner().createLock(co.getPublicName());
+			getOwner().createLock(co.getPublicName(),LOCK_TIMEOUT);
 		}
 	}
 
@@ -283,40 +283,24 @@ public class GoldenNodeCluster extends Cluster {
 		}
 	}
 
-	void serverLock(String publicName, long timeout) {
-		getOwner().lock(publicName, timeout);
+	void serverLock(String publicName) {
+		getOwner().lock(publicName);
 	}
 
 	void serverUnlock(String publicName) {
 		getOwner().unlock(publicName);
 	}
 
-	int serverNewCondition(String lockName) {
-		return getOwner().newCondition(lockName);
-	}
-
-	void serverAwait(int conditionId) throws InterruptedException {
-		getOwner().await(conditionId);
-	}
-
-	void serverSignal(int conditionId) {
-		getOwner().signal(conditionId);
-	}
-
-	void serverSignalAll(int conditionId) {
-		getOwner().signalAll(conditionId);
-	}
-
-	void serverLockInterruptibly(String lockName, long timeout) throws InterruptedException {
-		getOwner().lockInterruptibly(lockName, timeout);
+	void serverLockInterruptibly(String lockName) throws InterruptedException {
+		getOwner().lockInterruptibly(lockName);
 	}
 
 	boolean serverTryLock(String lockName, long timeout) {
 		return getOwner().tryLock(lockName, timeout);
 	}
 
-	boolean serverTryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws InterruptedException {
-		return getOwner().tryLock(lockName, timeout, unit, lockTimeout);
+	boolean serverTryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
+		return getOwner().tryLock(lockName, timeout, unit);
 	}
 
 	private void lock(String lockName) throws ClusterException {

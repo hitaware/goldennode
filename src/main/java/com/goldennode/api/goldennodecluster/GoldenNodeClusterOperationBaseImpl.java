@@ -89,39 +89,23 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 		return cluster.leaderSelector.releaseLeadership(id);
 	}
 
-	public void _lock(String publicName, long timeout) {
-		cluster.serverLock(publicName, timeout);
+	public void _lock(String publicName) {
+		cluster.serverLock(publicName);
 	}
 
 	public void _unlock(String publicName) {
 		cluster.serverUnlock(publicName);
 	}
 
-	public int _newCondition(String lockName) {
-		return cluster.serverNewCondition(lockName);
-	}
-
-	public void _await(int conditionId) throws InterruptedException {
-		cluster.serverAwait(conditionId);
-	}
-
-	public void _signal(int conditionId) {
-		cluster.serverSignal(conditionId);
-	}
-
-	public void _signalAll(int conditionId) {
-		cluster.serverSignalAll(conditionId);
-	}
-
-	public void _lockInterruptibly(String lockName, long timeout) throws InterruptedException {
-		cluster.serverLockInterruptibly(lockName, timeout);
+	public void _lockInterruptibly(String lockName) throws InterruptedException {
+		cluster.serverLockInterruptibly(lockName);
 	}
 
 	public boolean _tryLock(String lockName, long timeout) {
 		return cluster.serverTryLock(lockName, timeout);
 	}
 
-	public boolean _tryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws InterruptedException {
-		return cluster.serverTryLock(lockName, timeout, unit, lockTimeout);
+	public boolean _tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
+		return cluster.serverTryLock(lockName, timeout, unit);
 	}
 }

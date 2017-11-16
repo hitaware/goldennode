@@ -34,48 +34,32 @@ public abstract class Server implements Serializable {
 		}
 	}
 
-	public void lock(String lockName, long timeout) {
-		lockService.lock(lockName, processId.get(), timeout);
+	public void lock(String lockName) {
+		lockService.lock(lockName, processId.get());
 	}
 
 	public void unlock(String lockName) {
 		lockService.unlock(lockName, processId.get());
 	}
 
-	public void createLock(String lockName) {
-		lockService.createLock(lockName);
+	public void createLock(String lockName,long lockTimeoutInMs) {
+		lockService.createLock(lockName, lockTimeoutInMs);
 	}
 
 	public void deleteLock(String lockName) {
 		lockService.deleteLock(lockName);
 	}
 
-	public int newCondition(String lockName) {
-		return lockService.newCondition(lockName);
-	}
-
-	public void await(int conditionId) throws InterruptedException {
-		lockService.await(conditionId, processId.get());
-	}
-
-	public void signal(int conditionId) {
-		lockService.signal(conditionId, processId.get());
-	}
-
-	public void signalAll(int conditionId) {
-		lockService.signalAll(conditionId, processId.get());
-	}
-
-	public void lockInterruptibly(String lockName, long timeout) throws InterruptedException {
-		lockService.lockInterruptibly(lockName, processId.get(), timeout);
+	public void lockInterruptibly(String lockName) throws InterruptedException {
+		lockService.lockInterruptibly(lockName, processId.get());
 	}
 
 	public boolean tryLock(String lockName, long timeout) {
 		return lockService.tryLock(lockName, processId.get(), timeout);
 	}
 
-	public boolean tryLock(String lockName, long timeout, TimeUnit unit, long lockTimeout) throws InterruptedException {
-		return lockService.tryLock(lockName, processId.get(), timeout, unit, lockTimeout);
+	public boolean tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
+		return lockService.tryLock(lockName, processId.get(), timeout, unit);
 	}
 
 	public InetAddress getHost() {

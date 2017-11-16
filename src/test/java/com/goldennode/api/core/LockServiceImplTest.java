@@ -12,7 +12,7 @@ public class LockServiceImplTest {
 	@Test
 	public void testLockUsageEndToEnd1() {
 		LockService service = new LockServiceImpl();
-		service.createLock("lock1");
+		service.createLock("lock1",LOCK_TIMEOUT);
 		service.lock("lock1", Thread.currentThread().getName(), 60000);
 		service.unlock("lock1", Thread.currentThread().getName());
 		service.deleteLock("lock1");
@@ -54,26 +54,6 @@ public class LockServiceImplTest {
 		service.createLock("lock1");
 		service.lock("lock1", Thread.currentThread().getName(), 60000);
 		service.unlock("lock1", "dummyId");
-		service.deleteLock("lock1");
-	}
-
-	@Test
-	public void testLockUsageEndToEnd7() throws InterruptedException {
-		final LockService service = new LockServiceImpl();
-		service.createLock("lock1");
-		service.lock("lock1", Thread.currentThread().getName(), 60000);
-		final int c = service.newCondition("lock1");
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				service.lock("lock1", Thread.currentThread().getName(), 60000);
-				service.signal(c, Thread.currentThread().getName());
-				service.unlock("lock1", Thread.currentThread().getName());
-			}
-		};
-		new Timer().schedule(task, 3000);
-		service.await(c, Thread.currentThread().getName());
-		service.unlock("lock1", Thread.currentThread().getName());
 		service.deleteLock("lock1");
 	}
 
