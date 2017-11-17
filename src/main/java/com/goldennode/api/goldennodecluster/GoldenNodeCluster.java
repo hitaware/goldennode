@@ -164,7 +164,7 @@ public class GoldenNodeCluster extends Cluster {
         co.setCluster(this);
         clusteredObjectManager.addClusteredObject(co);
         if (co.getOwnerId().equals(getOwner().getId())) {
-            createLock1(co.getPublicName(), LOCK_TIMEOUT);
+            createLock(co.getPublicName(), LOCK_TIMEOUT);
         }
     }
 
@@ -269,7 +269,7 @@ public class GoldenNodeCluster extends Cluster {
             MultiResponse mr = new MultiResponse();
             for (Server remoteServer : servers) {
                 try {
-                    LOGGER.debug("Operation is on progress" + operation + "on server" + remoteServer);
+                    LOGGER.debug("Operation is in progress" + operation + "on server" + remoteServer);
                     mr.addSuccessfulResponse(remoteServer, unicastTCP(remoteServer, operation, options));
                 } catch (ClusterException e) {
                     if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {
@@ -287,35 +287,27 @@ public class GoldenNodeCluster extends Cluster {
         }
     }
 
-    public void createLock1(String lockName, long lockTimeoutInMs) {
+    public void createLock(String lockName, long lockTimeoutInMs) {
         lockService.createLock(lockName, lockTimeoutInMs);
     }
 
-    public void deleteLock1(String lockName) {
+    public void deleteLock(String lockName) {
         lockService.deleteLock(lockName);
     }
 
-    private void lock(String lockName) throws ClusterException {
-        lock(lockName, LOCK_TIMEOUT);
-    }
-
     private void lock(Server server, String lockName) throws ClusterException {
-        unicastTCP(server, new Operation(null, "lock", lockName, LOCK_TIMEOUT), new RequestOptions());
+        unicastTCP(server, new Operation(null, "lock", lockName), new RequestOptions());
     }
 
-    private void lock(String lockName, long timeout) throws ClusterException {
-        unicastTCP(clusteredServerManager.getMasterServer(), new Operation(null, "lock", lockName, timeout),
+    private void lock(String lockName) throws ClusterException {
+        unicastTCP(clusteredServerManager.getMasterServer(), new Operation(null, "lock", lockName),
                 new RequestOptions());
     }
 
     @Override
     protected void lock(ClusteredObject co) throws ClusterException {
-        lock(co, LOCK_TIMEOUT);
-    }
-
-    private void lock(ClusteredObject co, long timeout) throws ClusterException {
-        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "lock", co.getPublicName(), timeout), new RequestOptions());
+        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()), new Operation(null, "lock", co.getPublicName()),
+                new RequestOptions());
     }
 
     private void unlock(String lockName) throws ClusterException {
@@ -335,32 +327,20 @@ public class GoldenNodeCluster extends Cluster {
 
     @Override
     protected void lockInterruptibly(ClusteredObject co) throws ClusterException {
-        lockInterruptibly(co, LOCK_TIMEOUT);
-    }
-
-    private void lockInterruptibly(ClusteredObject co, long timeout) throws ClusterException {
         unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "lockInterruptibly", co.getPublicName(), timeout), new RequestOptions());
+                new Operation(null, "lockInterruptibly", co.getPublicName()), new RequestOptions());
     }
 
     @Override
     protected boolean tryLock(ClusteredObject co) throws ClusterException {
-        return tryLock(co, LOCK_TIMEOUT);
-    }
-
-    private boolean tryLock(ClusteredObject co, long timeout) throws ClusterException {
         return (boolean) unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "tryLock", co.getPublicName(), timeout), new RequestOptions()).getReturnValue();
+                new Operation(null, "tryLock", co.getPublicName()), new RequestOptions()).getReturnValue();
     }
 
     @Override
     protected boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit) throws ClusterException {
-        return tryLock(co, timeout, unit, LOCK_TIMEOUT);
-    }
-
-    private boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit, long lockTimeout) throws ClusterException {
         return (boolean) unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "tryLock", co.getPublicName(), timeout, unit, lockTimeout), new RequestOptions())
+                new Operation(null, "tryLock", co.getPublicName(), timeout, unit), new RequestOptions())
                         .getReturnValue();
     }
 

@@ -15,7 +15,7 @@ public class DistributedReentrantLock implements Lock {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLock.class);
     private final Sync sync;
     private long lockTimeoutInMs;
-    private Timer lockReleaser = new Timer();
+    private Timer lockReleaser;
     private String lockName;
 
     public long getLockTimeoutInMs() {
@@ -108,22 +108,27 @@ public class DistributedReentrantLock implements Lock {
     }
 
     private void scheduleLockReleaser() {
-        lockReleaser.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                String lockingProcessId = sync.getOwnerThread();
-                LockContext.threadProcessId.set(lockingProcessId);
-                LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
-                unlock();
+        if (lockReleaser == null) {
+            lockReleaser = new Timer();
 
-            }
-        }, 0, lockTimeoutInMs);
+            lockReleaser.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    String lockingProcessId = sync.getOwnerThread();
+                    LockContext.threadProcessId.set(lockingProcessId);
+                    LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
+                    unlock();
+
+                }
+            }, lockTimeoutInMs);
+        }
     }
 
     @Override
     public void unlock() {
-        sync.release(1);
         lockReleaser.cancel();
+        lockReleaser = null;
+        sync.release(1);
     }
 
     @Override
