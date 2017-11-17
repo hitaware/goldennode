@@ -1,4 +1,4 @@
-package com.goldennode.api.core;
+package com.goldennode.api.goldennodecluster;
 
 import java.util.concurrent.TimeUnit;
 

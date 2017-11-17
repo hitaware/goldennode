@@ -5,11 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.api.core.MockGoldenNodeServer;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
+import com.goldennode.api.goldennodecluster.LockServiceImpl;
 
 public class MultiResponseTest {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MultiResponseTest.class);
@@ -21,7 +21,7 @@ public class MultiResponseTest {
 	private MultiResponse mrErrorneous3;
 
 	private Server getGoldenNodeServer(String id) throws ServerException {
-		return new MockGoldenNodeServer(id, new LockServiceImpl());
+		return new MockGoldenNodeServer(id);
 	}
 
 	private Response getUnErrorneousResponse(String text) {

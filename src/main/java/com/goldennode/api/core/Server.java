@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public abstract class Server implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -17,10 +16,9 @@ public abstract class Server implements Serializable {
 	private InetAddress host;
 	private String id;
 	private boolean master;
-	private transient LockService lockService;
 	public static ThreadLocal<String> processId = new ThreadLocal<String>();
 
-	public Server(String serverId, LockService lockService) throws ServerException {
+	public Server(String serverId) throws ServerException {
 		try {
 			if (serverId == null) {
 				setId(java.util.UUID.randomUUID().toString());
@@ -28,38 +26,9 @@ public abstract class Server implements Serializable {
 				setId(serverId);
 			}
 			setHost(InetAddress.getLocalHost());
-			this.lockService = lockService;
 		} catch (UnknownHostException e) {
 			throw new ServerException(e);
 		}
-	}
-
-	public void lock(String lockName) {
-		lockService.lock(lockName, processId.get());
-	}
-
-	public void unlock(String lockName) {
-		lockService.unlock(lockName, processId.get());
-	}
-
-	public void createLock(String lockName,long lockTimeoutInMs) {
-		lockService.createLock(lockName, lockTimeoutInMs);
-	}
-
-	public void deleteLock(String lockName) {
-		lockService.deleteLock(lockName);
-	}
-
-	public void lockInterruptibly(String lockName) throws InterruptedException {
-		lockService.lockInterruptibly(lockName, processId.get());
-	}
-
-	public boolean tryLock(String lockName, long timeout) {
-		return lockService.tryLock(lockName, processId.get(), timeout);
-	}
-
-	public boolean tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
-		return lockService.tryLock(lockName, processId.get(), timeout, unit);
 	}
 
 	public InetAddress getHost() {

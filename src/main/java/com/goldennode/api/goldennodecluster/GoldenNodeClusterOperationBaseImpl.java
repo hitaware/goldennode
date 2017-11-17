@@ -88,24 +88,24 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 	public boolean _releaseLeadership(String id) {
 		return cluster.leaderSelector.releaseLeadership(id);
 	}
-
+	
 	public void _lock(String publicName) {
-		cluster.serverLock(publicName);
+	    cluster.lockService.lock(publicName, Server.processId.get());
 	}
 
 	public void _unlock(String publicName) {
-		cluster.serverUnlock(publicName);
+	    cluster.lockService.unlock(publicName, Server.processId.get());
 	}
 
 	public void _lockInterruptibly(String lockName) throws InterruptedException {
-		cluster.serverLockInterruptibly(lockName);
+	    cluster.lockService.lockInterruptibly(lockName, Server.processId.get());
 	}
 
 	public boolean _tryLock(String lockName, long timeout) {
-		return cluster.serverTryLock(lockName, timeout);
+	    return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout);
 	}
 
 	public boolean _tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
-		return cluster.serverTryLock(lockName, timeout, unit);
+	    return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout, unit);
 	}
 }

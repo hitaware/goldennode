@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.goldennodecluster.LockService;
+
 public class MockGoldenNodeServer extends Server {
 	private static final long serialVersionUID = 1L;
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockGoldenNodeServer.class);
 
-	public MockGoldenNodeServer(String id, LockService lockService) throws ServerException {
-		super(id, lockService);
+	public MockGoldenNodeServer(String id) throws ServerException {
+		super(id);
 	}
 
 	@Override
@@ -66,23 +68,4 @@ public class MockGoldenNodeServer extends Server {
 		return null;
 	}
 
-	@Override
-	public void lock(String locker, long timeout) {
-		LOGGER.debug("acquired lock");
-	}
-
-	@Override
-	public void unlock(String locker) {
-		LOGGER.debug("released lock");
-	}
-
-	@Override
-	public void createLock(String lockName) {
-		LOGGER.debug("created lock");
-	}
-
-	@Override
-	public void deleteLock(String lockName) {
-		LOGGER.debug("deleted lock");
-	}
 }

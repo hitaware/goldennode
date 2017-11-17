@@ -9,6 +9,8 @@ import java.util.concurrent.locks.Lock;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.goldennodecluster.LockContext;
+
 public class DistributedReentrantLock implements Lock {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLock.class);
     private final Sync sync;

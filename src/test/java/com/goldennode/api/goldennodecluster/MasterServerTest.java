@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.goldennode.api.cluster.ClusterException;
-import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.api.core.MockGoldenNodeServer;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.testutils.ThreadUtils;
@@ -12,8 +11,7 @@ import com.goldennode.testutils.ThreadUtils;
 public class MasterServerTest {
 	@Test
 	public void testGetMasterServer() throws ServerException, ClusterException, InterruptedException {
-		final ClusteredServerManager csm = new ClusteredServerManager(new MockGoldenNodeServer("1",
-				new LockServiceImpl()));
+		final ClusteredServerManager csm = new ClusteredServerManager(new MockGoldenNodeServer("1"));
 		ThreadUtils.run(new Runnable() {
 			@Override
 			public void run() {

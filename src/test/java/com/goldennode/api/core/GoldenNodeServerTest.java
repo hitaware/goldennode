@@ -29,8 +29,7 @@ public class GoldenNodeServerTest {
 		GoldenNodeServer server = null;
 		try {
 			OperationBase proxy = new OperationBaseImpl();
-			LockService lockService = new LockServiceImpl();
-			server = new GoldenNodeServer(lockService);
+     		server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
@@ -66,8 +65,7 @@ public class GoldenNodeServerTest {
 		GoldenNodeServer server = null;
 		try {
 			OperationBase proxy = new OperationBaseImpl();
-			LockService lockService = new LockServiceImpl();
-			server = new GoldenNodeServer(lockService);
+			server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
@@ -92,8 +90,7 @@ public class GoldenNodeServerTest {
 		GoldenNodeServer server = null;
 		try {
 			OperationBase proxy = new OperationBaseImpl();
-			LockService lockService = new LockServiceImpl();
-			server = new GoldenNodeServer(lockService);
+			server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
@@ -123,8 +120,7 @@ public class GoldenNodeServerTest {
 		GoldenNodeServer server = null;
 		try {
 			OperationBase proxy = new OperationBaseImpl();
-			LockService lockService = new LockServiceImpl();
-			server = new GoldenNodeServer(lockService);
+			server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
@@ -147,8 +143,7 @@ public class GoldenNodeServerTest {
 		GoldenNodeServer server = null;
 		try {
 			OperationBase proxy = new OperationBaseImpl();
-			LockService lockService = new LockServiceImpl();
-			server = new GoldenNodeServer(lockService);
+			server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();

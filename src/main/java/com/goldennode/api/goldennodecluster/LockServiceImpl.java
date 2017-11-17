@@ -1,4 +1,4 @@
-package com.goldennode.api.core;
+package com.goldennode.api.goldennodecluster;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.slf4j.LoggerFactory;
+
+import com.goldennode.api.core.DistributedReentrantLock;
 
 public class LockServiceImpl implements LockService {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LockServiceImpl.class);
