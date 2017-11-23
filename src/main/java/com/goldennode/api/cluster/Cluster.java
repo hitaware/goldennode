@@ -13,6 +13,8 @@ import com.goldennode.api.core.Server;
 public abstract class Cluster {
     public abstract Server getOwner();
 
+    public abstract Server getCandidateServer();
+
     public abstract <T extends ClusteredObject> T attach(T t) throws ClusterException;
 
     public abstract <T extends ClusteredObject> T newClusteredObjectInstance(String publicName, Class<T> claz)
@@ -55,5 +57,8 @@ public abstract class Cluster {
     @Override
     public String toString() {
         return " > Cluster [owner=" + getOwner() + "] ";
+    }
+
+    public void reboot() {
     }
 }

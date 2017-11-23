@@ -1,44 +1,73 @@
 package com.goldennode.api.goldennodecluster;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.core.Server;
 
 public class ClusteredServerManager {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredServerManager.class);
-	private Map<String, Server> clusteredServers = new ConcurrentHashMap<String, Server>();
+	private HashSet<Server> clusteredServers = new HashSet<Server>();
+	private TreeSet<Server> allServers = new TreeSet<Server>();
 	private Server owner;
+	private Cluster cluster;
 
-	public ClusteredServerManager(Server owner) {
+	public ClusteredServerManager(Server owner, Cluster cluster) {
 		this.owner = owner;
+		this.cluster = cluster;
+		allServers.add(owner);
 	}
 
-	public void removeClusteredServer(Server server) {
+	public synchronized void removeClusteredServer(Server server) {
 		LOGGER.debug("Server removed from the cluster: " + server);
-		clusteredServers.remove(server.getId());
+		clusteredServers.remove(server);
+		allServers.remove(server);
 	}
 
-	public void addClusteredServer(Server server) {
+	public synchronized void addClusteredServer(Server server) {
 		LOGGER.debug("Server added to the cluster: " + server);
-		clusteredServers.put(server.getId(), server);
+		clusteredServers.add(server);
+		allServers.add(server);
 	}
 
-	public void clear() {
+	public synchronized void clear() {
 		clusteredServers.clear();
+		allServers.clear();
 	}
 
-	public Collection<Server> getServers() {
-		return new ArrayList<Server>(clusteredServers.values());
+	@SuppressWarnings("unchecked")
+	public synchronized Collection<Server> getPeers() {
+		return (HashSet<Server>) clusteredServers.clone();
 	}
 
 	public synchronized Server getClusteredServer(String key) {
-		return clusteredServers.get(key);
+		for (Server server : clusteredServers) {
+			if (key.equals(server.getId()))
+				return server;
+		}
+
+		return null;
+	}
+
+	public synchronized Server getCandidateServer() {
+		StringBuffer sb = new StringBuffer();
+		for (Server s : getPeers()) {
+			sb.append(s.getId() + ", ");
+		}
+		LOGGER.debug("candidate is " + allServers.first().getId() + " out of " + allServers.size() + " servers > " + sb.toString());
+		
+		return allServers.first();
 	}
 
 	public synchronized Server getMasterServer(int timeout) {
@@ -84,7 +113,7 @@ public class ClusteredServerManager {
 	public synchronized Collection<Server> getAllServers() {
 		List<Server> allServers = new ArrayList<Server>();
 		allServers.add(getOwner());
-		allServers.addAll(getServers());
+		allServers.addAll(getPeers());
 		return allServers;
 	}
 

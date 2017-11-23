@@ -24,6 +24,10 @@ public class Request implements Serializable {
 		return id;
 	}
 
+	public String getShortId() {
+		return id.toString().substring(id.length() - 4, id.length());
+	}
+
 	public String getMethod() {
 		return method;
 	}
@@ -93,7 +97,7 @@ public class Request implements Serializable {
 
 	@Override
 	public String toString() {
-		return " > Request [id=" + id + ", method=" + method + ", params=" + params + ", requestType=" + requestType
-				+ ", serverFrom=" + serverFrom + "] ";
+		return " > Request [id=" + getShortId() + ", method=" + method + ", params=" + params + ", requestType="
+				+ requestType + ", serverFrom=" + serverFrom + "] ";
 	}
 }

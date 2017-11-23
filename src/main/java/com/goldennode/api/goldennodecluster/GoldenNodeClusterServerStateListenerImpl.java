@@ -20,12 +20,13 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 	}
 
 	/**
-	 * This method is called when local server is started. addServerToCluster is called within cluster
+	 * This method is called when local server is started. addServerToCluster is
+	 * called within cluster
 	 */
 	@Override
 	public void serverStarted(Server server) {
 		try {
-			LOGGER.debug("***server started... id : " + server.getId());
+			LOGGER.debug("***server started... id : " + server.getShortId());
 			cluster.multicast(new Operation(null, "announceServerJoining", server), new RequestOptions());
 		} catch (ClusterException e) {
 			LOGGER.error("Error Occured", e);
@@ -34,16 +35,18 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 
 	@Override
 	public void serverStopping(Server server) {
-		LOGGER.debug("***server stopped... id : " + server.getId());
+		LOGGER.debug("***server stopped... id : " + server.getShortId());
 		// try {
-		// cluster.safeMulticast(new Operation(null, "announceServerLeaving", server));
+		// cluster.safeMulticast(new Operation(null, "announceServerLeaving",
+		// server));
 		// } catch (ClusterException e) {
 		// LOGGER.error("Error Occured", e);
 		// }
 	}
 
 	/**
-	 * This method is called when local server is stopped. removeServerFromCluster is called within cluster
+	 * This method is called when local server is stopped.
+	 * removeServerFromCluster is called within cluster
 	 */
 	@Override
 	public void serverStopped(Server server) {

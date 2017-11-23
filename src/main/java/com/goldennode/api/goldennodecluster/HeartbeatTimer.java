@@ -26,7 +26,7 @@ public class HeartbeatTimer {
 	}
 
 	public void start() {
-		timer = new Timer("Heartbeat Timer");
+		timer = new Timer("Heartbeat Timer " + cluster.getOwner().getShortId());
 	}
 
 	public void stop() {

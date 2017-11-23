@@ -106,4 +106,9 @@ public class MockCluster extends Cluster {
     public <T extends ClusteredObject> T attach(T t) throws ClusterException {
         return null;
     }
+
+    @Override
+    public Server getCandidateServer() {
+        return null;
+    }
 }

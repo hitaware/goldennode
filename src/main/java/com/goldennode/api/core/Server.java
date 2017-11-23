@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Server implements Serializable {
+public abstract class Server implements Serializable, Comparable<Server> {
 	private static final long serialVersionUID = 1L;
 	transient private OperationBase operationBase;
 	transient private List<ServerStateListener> serverStateListeners = Collections
@@ -75,6 +75,10 @@ public abstract class Server implements Serializable {
 		return id.toString();
 	}
 
+	public String getShortId() {
+		return id.length() > 4 ? id.toString().substring(id.length() - 4, id.length()) : id;
+	}
+
 	protected void setId(String id) {
 		this.id = id;
 	}
@@ -101,7 +105,7 @@ public abstract class Server implements Serializable {
 
 	@Override
 	public String toString() {
-		return " > Server [id=" + id + ", host=" + host + ", master=" + master + ", multicastPort="
+		return " > Server [id=" + getShortId() + ", host=" + host + ", master=" + master + ", multicastPort="
 				+ getMulticastPort() + ", unicastUDPPort=" + getUnicastUDPPort() + ", unicastTCPPort="
 				+ getUnicastTCPPort() + "] ";
 	}
@@ -109,6 +113,13 @@ public abstract class Server implements Serializable {
 	@Override
 	public int hashCode() {
 		return id.hashCode();
+	}
+
+	@Override
+	public int compareTo(Server o) {
+		if (o == null)
+			return 1;
+		return getId().compareTo(o.getId());
 	}
 
 	@Override
@@ -136,4 +147,5 @@ public abstract class Server implements Serializable {
 	public String createProcessId() {
 		return getId() + "_" + Thread.currentThread().getId();
 	}
+
 }

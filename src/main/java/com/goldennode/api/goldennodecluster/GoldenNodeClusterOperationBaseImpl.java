@@ -70,7 +70,7 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 	}
 
 	public String _ping(String str) {
-		return "pong " + cluster.getOwner().getId();
+		return "pong " + cluster.getOwner().getShortId();
 	}
 
 	public boolean _acquireProvisionalLeadership(String id) {
@@ -88,24 +88,24 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 	public boolean _releaseLeadership(String id) {
 		return cluster.leaderSelector.releaseLeadership(id);
 	}
-	
+
 	public void _lock(String publicName) {
-	    cluster.lockService.lock(publicName, Server.processId.get());
+		cluster.lockService.lock(publicName, Server.processId.get());
 	}
 
 	public void _unlock(String publicName) {
-	    cluster.lockService.unlock(publicName, Server.processId.get());
+		cluster.lockService.unlock(publicName, Server.processId.get());
 	}
 
 	public void _lockInterruptibly(String lockName) throws InterruptedException {
-	    cluster.lockService.lockInterruptibly(lockName, Server.processId.get());
+		cluster.lockService.lockInterruptibly(lockName, Server.processId.get());
 	}
 
 	public boolean _tryLock(String lockName, long timeout) {
-	    return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout);
+		return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout);
 	}
 
 	public boolean _tryLock(String lockName, long timeout, TimeUnit unit) throws InterruptedException {
-	    return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout, unit);
+		return cluster.lockService.tryLock(lockName, Server.processId.get(), timeout, unit);
 	}
 }
