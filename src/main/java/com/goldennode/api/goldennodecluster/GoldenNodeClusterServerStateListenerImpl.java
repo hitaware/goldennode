@@ -25,29 +25,20 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 	 */
 	@Override
 	public void serverStarted(Server server) {
-		try {
-			LOGGER.debug("***server started... id : " + server.getShortId());
-			cluster.multicast(new Operation(null, "announceServerJoining", server), new RequestOptions());
-		} catch (ClusterException e) {
-			LOGGER.error("Error Occured", e);
-		}
+		LOGGER.debug("***server started... id : " + server.getShortId());
 	}
 
 	@Override
 	public void serverStopping(Server server) {
-		LOGGER.debug("***server stopped... id : " + server.getShortId());
-		// try {
-		// cluster.safeMulticast(new Operation(null, "announceServerLeaving",
-		// server));
-		// } catch (ClusterException e) {
-		// LOGGER.error("Error Occured", e);
-		// }
+		LOGGER.debug("***server stopping... id : " + server.getShortId());
+		try {
+			cluster.multicast(new Operation(null, "announceServerLeaving", cluster.getOwner()), new RequestOptions());
+		} catch (ClusterException e) {
+			LOGGER.error("Can't announce server leaving: " + cluster.getOwner());
+			// This shouldn't never happen.
+		}
 	}
 
-	/**
-	 * This method is called when local server is stopped.
-	 * removeServerFromCluster is called within cluster
-	 */
 	@Override
 	public void serverStopped(Server server) {
 	}

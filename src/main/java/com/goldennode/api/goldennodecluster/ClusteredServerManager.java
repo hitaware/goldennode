@@ -1,19 +1,13 @@
 package com.goldennode.api.goldennodecluster;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.core.Server;
 
 public class ClusteredServerManager {
@@ -21,22 +15,19 @@ public class ClusteredServerManager {
 	private HashSet<Server> clusteredServers = new HashSet<Server>();
 	private TreeSet<Server> allServers = new TreeSet<Server>();
 	private Server owner;
-	private Cluster cluster;
 
-	public ClusteredServerManager(Server owner, Cluster cluster) {
+	public ClusteredServerManager(Server owner) {
 		this.owner = owner;
-		this.cluster = cluster;
 		allServers.add(owner);
 	}
 
-	public synchronized void removeClusteredServer(Server server) {
-		LOGGER.debug("Server removed from the cluster: " + server);
+	public synchronized void removePeer(Server server) {
+		LOGGER.debug("Peer removed from the cluster: " + server);
 		clusteredServers.remove(server);
 		allServers.remove(server);
 	}
 
-	public synchronized void addClusteredServer(Server server) {
-		LOGGER.debug("Server added to the cluster: " + server);
+	public synchronized void addPeer(Server server) {
 		clusteredServers.add(server);
 		allServers.add(server);
 	}
@@ -51,7 +42,7 @@ public class ClusteredServerManager {
 		return (HashSet<Server>) clusteredServers.clone();
 	}
 
-	public synchronized Server getClusteredServer(String key) {
+	public synchronized Server getPeer(String key) {
 		for (Server server : clusteredServers) {
 			if (key.equals(server.getId()))
 				return server;
@@ -62,12 +53,12 @@ public class ClusteredServerManager {
 
 	public synchronized Server getCandidateServer() {
 		StringBuffer sb = new StringBuffer();
-		for (Server s : getPeers()) {
+		for (Server s : (TreeSet<Server>) allServers.clone()) {
 			sb.append(s.getId() + ", ");
 		}
-		LOGGER.debug("candidate is " + allServers.first().getId() + " out of " + allServers.size() + " servers > " + sb.toString());
+		LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > " + sb.toString());
 		
-		return allServers.first();
+		return allServers.last();
 	}
 
 	public synchronized Server getMasterServer(int timeout) {

@@ -22,8 +22,11 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 	}
 
 	public void _announceServerJoining(Server s) throws ClusterException {
-		cluster.incomingServer(s);
-		cluster.sendOwnServerIdentiy(s);
+		if (cluster.clusteredServerManager.getServer(s.getId()) == null) {
+			LOGGER.debug("Server announced that it is joining. Server: " + s);
+			cluster.incomingServer(s);
+			cluster.sendOwnServerIdentiy(s);
+		}
 	}
 
 	public ClusteredObject _receiveClusteredObject(String publicName) throws ClusterException {
@@ -31,11 +34,16 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 	}
 
 	public void _announceServerLeaving(Server s) throws ClusterException {
-		LOGGER.debug("server is leaving" + s);
+		LOGGER.debug("Server announced that it is leaving. Server: " + s);
+		cluster.heartBeatTimer.cancelTaskForServer(s);
+		cluster.serverIsDeadOperation(s);
 	}
 
 	public void _sendOwnServerIdentity(Server s) {
-		cluster.incomingServer(s);
+		if (cluster.clusteredServerManager.getServer(s.getId()) == null) {
+			LOGGER.debug("Server sent its identity: " + s);
+			cluster.incomingServer(s);
+		}
 	}
 
 	public void _addClusteredObject(ClusteredObject obj) throws ClusterException {
@@ -73,16 +81,8 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 		return "pong " + cluster.getOwner().getShortId();
 	}
 
-	public boolean _acquireProvisionalLeadership(String id) {
-		return cluster.leaderSelector.acquireProvisionalLeadership(id);
-	}
-
 	public boolean _acquireLeadership(String id) {
 		return cluster.leaderSelector.acquireLeadership(id);
-	}
-
-	public boolean _releaseProvisionalLeadership(String id) {
-		return cluster.leaderSelector.releaseProvisionalLeadership(id);
 	}
 
 	public boolean _releaseLeadership(String id) {

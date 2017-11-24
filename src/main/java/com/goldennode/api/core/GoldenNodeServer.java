@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +150,8 @@ public class GoldenNodeServer extends Server {
 				if (receivedObject instanceof Request) {
 					processId.set(((Request) receivedObject).getProcessId());
 				}
-				requestProcessorThreadPool.execute(getProcessor(receivedObject, packet));
+				requestProcessorThreadPool.execute(new UDPProcessor(receivedObject, packet));
+
 			} catch (SocketException e) {
 				if (e.toString().contains("Socket closed")) {
 					// LOGGER.trace("socket closed");
@@ -166,9 +168,9 @@ public class GoldenNodeServer extends Server {
 		private Socket s;
 		private Thread th;
 
-		public TCPProcessor(Socket s, String serverId) {
+		public TCPProcessor(Socket s, String shortServerId) {
 			this.s = s;
-			th = new Thread(this, "TCPProcessor " + serverId);
+			th = new Thread(this, shortServerId + " TCPProcessor");
 			tcpProcessors.add(this);
 			th.start();
 		}
@@ -228,64 +230,73 @@ public class GoldenNodeServer extends Server {
 		}
 	}
 
-	private Runnable getProcessor(final Object receivedObject, final DatagramPacket packet) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (receivedObject instanceof Request) {
-						LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
-						if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
-								|| ((Request) receivedObject).getRequestType() == RequestType.UNICAST_UDP) {
-							processBlockingRequest((Request) receivedObject, packet.getAddress(), packet.getPort());
-						}
-						if (((Request) receivedObject).getRequestType() == RequestType.MULTICAST) {
-							processNonBlockingRequest((Request) receivedObject);
+	class UDPProcessor implements Runnable {
+
+		private DatagramPacket packet;
+		private Object receivedObject;
+
+		UDPProcessor(final Object receivedObject, final DatagramPacket packet) {
+			this.receivedObject = receivedObject;
+			this.packet = packet;
+		}
+
+		@Override
+		public void run() {
+
+			try {
+				Thread.currentThread().setName(GoldenNodeServer.this.getShortId() + " UDPProcessor");
+				if (receivedObject instanceof Request) {
+					LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
+					if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
+							|| ((Request) receivedObject).getRequestType() == RequestType.UNICAST_UDP) {
+						processBlockingRequest((Request) receivedObject, packet.getAddress(), packet.getPort());
+					}
+					if (((Request) receivedObject).getRequestType() == RequestType.MULTICAST) {
+						processNonBlockingRequest((Request) receivedObject);
+					}
+				}
+				if (receivedObject instanceof Response) {
+					LOGGER.debug("Receiving " + ((Response) receivedObject).getRequest().getRequestType() + " "
+							+ receivedObject);
+					if (((Response) receivedObject).getRequest().getRequestType() == RequestType.UNICAST_UDP) {
+						Object lock = unicastLocks.get(((Response) receivedObject).getRequest().getId());
+						if (lock != null) {
+							htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
+									(Response) receivedObject);
+							synchronized (lock) {
+								lock.notifyAll();
+							}
+						} else {
+							LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
+									+ receivedObject);
 						}
 					}
-					if (receivedObject instanceof Response) {
-						LOGGER.debug("Receiving " + ((Response) receivedObject).getRequest().getRequestType() + " "
-								+ receivedObject);
-						if (((Response) receivedObject).getRequest().getRequestType() == RequestType.UNICAST_UDP) {
-							Object lock = unicastLocks.get(((Response) receivedObject).getRequest().getId());
-							if (lock != null) {
-								htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
-										(Response) receivedObject);
-								synchronized (lock) {
-									lock.notifyAll();
-								}
-							} else {
-								LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType()
-										+ " " + receivedObject);
-							}
-						}
-						if (((Response) receivedObject).getRequest()
-								.getRequestType() == RequestType.BLOCKING_MULTICAST) {
-							Object lock = blockingMulticastLocks.get(((Response) receivedObject).getRequest().getId());
-							if (lock != null) {
-								htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
-										(Response) receivedObject);
-								List<Response> l = htBlockingMulticastResponse
-										.get(((Response) receivedObject).getRequest().getId());
-								if (l != null) {
-									boolean b = l.add((Response) receivedObject);
-									if (!b) {// list is full notify
-										synchronized (lock) {
-											lock.notifyAll();
-										}
+					if (((Response) receivedObject).getRequest().getRequestType() == RequestType.BLOCKING_MULTICAST) {
+						Object lock = blockingMulticastLocks.get(((Response) receivedObject).getRequest().getId());
+						if (lock != null) {
+							htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
+									(Response) receivedObject);
+							List<Response> l = htBlockingMulticastResponse
+									.get(((Response) receivedObject).getRequest().getId());
+							if (l != null) {
+								boolean b = l.add((Response) receivedObject);
+								if (!b) {// list is full notify
+									synchronized (lock) {
+										lock.notifyAll();
 									}
 								}
-							} else {
-								LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType()
-										+ " " + receivedObject);
 							}
+						} else {
+							LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
+									+ receivedObject);
 						}
 					}
-				} catch (ServerException e) {
-					LOGGER.error("Error occured", e);
 				}
+			} catch (ServerException e) {
+				LOGGER.error("Error occured", e);
 			}
-		};
+
+		}
 	}
 
 	@Override
@@ -311,13 +322,13 @@ public class GoldenNodeServer extends Server {
 				public void run() {
 					processUDPRequests(multicastSocket);
 				}
-			});
+			}, getShortId() + " multicastProcessor ");
 			thUnicastUDPProcessor = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					processUDPRequests(unicastSocket);
 				}
-			});
+			}, getShortId() + " UnicastUDPProcessor");
 			thTCPServerSocket = new Thread(new Runnable() {
 				@Override
 				public void run() {

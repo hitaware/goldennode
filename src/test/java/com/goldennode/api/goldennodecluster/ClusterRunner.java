@@ -43,6 +43,7 @@ public class ClusterRunner extends Thread {
 
 	@Override
 	public void run() {
+		setName(clusterId);
 		doJob();
 	}
 }

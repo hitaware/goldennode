@@ -13,10 +13,9 @@ import com.goldennode.api.core.Server;
 public class LeaderSelector {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LeaderSelector.class);
 	private Cluster cluster;
-	private volatile String provisionLeaderId;
 	private volatile String leaderId;
-	private static final int WAIT_TIMEOUT = 1000;
-	private static final int REQUESTS_TIMEOUT = 10000;
+	private static final int RETRY_TIMEOUT = 1000;
+	private static final int REQUESTS_TIMEOUT = 5000;
 	private Object waitObject = new Object();
 	private LeaderSelectionListener listener;
 
@@ -30,18 +29,16 @@ public class LeaderSelector {
 			if (leaderId == null) {
 				if (cluster.getCandidateServer().equals(cluster.getOwner())) {
 					LOGGER.debug("I am candidate for leadership");
-					if (getLeadership(true)) {
-						if (getLeadership(false)) {
-							LOGGER.debug("Got leadership.");
-							break;
-						}
-						LOGGER.debug("Couldnt get lead. Will retry");
-					} else {
-						LOGGER.debug("Couldnt get provisional lead. Will retry");
+
+					if (getLeadership()) {
+						LOGGER.debug("Got leadership.");
+						break;
 					}
+					LOGGER.warn("Couldnt get lead. Will retry");
+
 					synchronized (waitObject) {
 						try {
-							wait(WAIT_TIMEOUT);
+							wait(RETRY_TIMEOUT);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 						}
@@ -57,19 +54,16 @@ public class LeaderSelector {
 		}
 	}
 
-	private boolean getLeadership(boolean provisonal) {
+	private boolean getLeadership() {
 		try {
-			LOGGER.trace("begin getLeadership. isProvisional? " + provisonal);
+			LOGGER.trace("begin getLeadership.");
 			LOGGER.debug("trying to get leadership");
 			String methodName = null;
 			boolean selfResponse = false;
-			if (provisonal) {
-				selfResponse = acquireProvisionalLeadership(cluster.getOwner().getId());
-				methodName = "acquireProvisionalLeadership";
-			} else {
-				selfResponse = acquireLeadership(cluster.getOwner().getId());
-				methodName = "acquireLeadership";
-			}
+
+			selfResponse = acquireLeadership(cluster.getOwner().getId());
+			methodName = "acquireLeadership";
+
 			if (!selfResponse) {
 				LOGGER.debug("cant acquire lead on own. can't  get leadership");
 				return false;
@@ -78,33 +72,27 @@ public class LeaderSelector {
 					new Operation(null, methodName, cluster.getOwner().getId()), new RequestOptions(REQUESTS_TIMEOUT));
 			if (responses.size() > 0 && !responses.isSuccessfulCall(true)) {
 				LOGGER.debug("rollback acquire");
-				if (provisonal) {
-					releaseLeadership(responses.getServersWithNoErrorAndExpectedResult(true), true);
-				}
+				releaseLeadership(responses.getServersWithNoErrorAndExpectedResult(true));
 				return false;
 			}
-			LOGGER.debug("got leadership successfully. isProvisional? " + provisonal);
+			LOGGER.debug("got leadership successfully.");
 			return true;
 		} finally {
-			LOGGER.trace("end getLeadership. isProvisional? " + provisonal);
+			LOGGER.trace("end getLeadership.");
 		}
 	}
 
-	private boolean releaseLeadership(Collection<Server> servers, boolean provisonal) {
+	private boolean releaseLeadership(Collection<Server> servers) {
 		try {
-			LOGGER.trace("begin releaseLeadership" + provisonal);
+			LOGGER.trace("begin releaseLeadership");
 			LOGGER.debug("trying to release leadership");
-			String methodName = null;
 			boolean selfResponse = false;
-			if (provisonal) {
-				selfResponse = releaseProvisionalLeadership(cluster.getOwner().getId());
-				methodName = "releaseProvisionalLeadership";
-			} else {
-				selfResponse = releaseLeadership(cluster.getOwner().getId());
-				methodName = "releaseLeadership";
-			}
+
+			selfResponse = releaseLeadership(cluster.getOwner().getId());
+
 			MultiResponse responses = cluster.tcpMulticast(servers,
-					new Operation(null, methodName, cluster.getOwner().getId()), new RequestOptions(REQUESTS_TIMEOUT));
+					new Operation(null, "releaseLeadership", cluster.getOwner().getId()),
+					new RequestOptions(REQUESTS_TIMEOUT));
 			boolean result = responses.size() > 0 && responses.isSuccessfulCall(true);
 			if (!result) {
 				LOGGER.debug("cant release lead from (a) server(s)");
@@ -117,57 +105,23 @@ public class LeaderSelector {
 			}
 			return result && selfResponse;
 		} finally {
-			LOGGER.trace("end releaseLeadership" + provisonal);
-		}
-	}
-
-	public boolean acquireProvisionalLeadership(String id) {
-		try {
-			LOGGER.trace("begin _acquireProvisionalLeadership");
-			LOGGER.debug("trying to acquire provisional lead with id > " + id);
-			if (provisionLeaderId != null) {
-				LOGGER.debug("provisonal lead has already been acquired by > " + provisionLeaderId);
-				return false;
-			}
-			if (leaderId != null) {
-				LOGGER.debug("lead has already been acquired by > " + leaderId);
-				return false;
-			}
-			synchronized (this) {
-				if (provisionLeaderId != null) {
-					LOGGER.debug("provisonal lead has already been acquired by > " + provisionLeaderId);
-					return false;
-				}
-				if (leaderId != null) {
-					LOGGER.debug("lead has already been acquired by > " + leaderId);
-					return false;
-				}
-				LOGGER.debug("acquired provisional lead with id > " + id);
-				provisionLeaderId = id;
-				return true;
-			}
-		} finally {
-			LOGGER.trace("end _acquireProvisionalLeadership");
+			LOGGER.trace("end releaseLeadership");
 		}
 	}
 
 	public boolean acquireLeadership(String id) {
 		try {
+			
 			LOGGER.trace("begin _acquireLeadership");
-			LOGGER.debug("trying to acquire lead with id > " + id);
-			if (provisionLeaderId == null || !provisionLeaderId.equals(id)) {
-				LOGGER.debug("lead has already been acquired by > " + provisionLeaderId);
-				return false;
-			}
+			LOGGER.debug("trying to acquire lead with id > " + id+ " Thread Name:"+ Thread.currentThread().getName());
+			
+
 			if (leaderId != null) {
 				LOGGER.debug("lead has already been acquired by > " + leaderId);
 				return false;
 			}
 			synchronized (this) {
-				if (provisionLeaderId == null || !provisionLeaderId.equals(id)) {
-					LOGGER.debug("lead has already been acquired by > " + provisionLeaderId);
-					return false;
-				}
+
 				if (leaderId != null) {
 					LOGGER.debug("lead has already been acquired by > " + leaderId);
 					return false;
@@ -182,30 +136,12 @@ public class LeaderSelector {
 		}
 	}
 
-	public synchronized boolean releaseProvisionalLeadership(String id) {
-		try {
-			LOGGER.trace("begin _releaseProvisionalLeadership");
-			LOGGER.debug("trying to release provisonal lead with id > " + id);
-			if (provisionLeaderId != null && provisionLeaderId.equals(id)) {
-				provisionLeaderId = null;
-				LOGGER.debug("released lead with id > " + id);
-				return true;
-			}
-			LOGGER.debug("cant release provisional lead. provisonal lead has already been acquired by > "
-					+ provisionLeaderId);
-			return false;
-		} finally {
-			LOGGER.trace("end _releaseProvisionalLeadership");
-		}
-	}
-
 	public synchronized boolean releaseLeadership(String id) {
 		try {
 			LOGGER.trace("begin _releaseLeadership");
 			LOGGER.debug("trying to release lead with id > " + id);
 			if (leaderId != null && leaderId.equals(id)) {
 				leaderId = null;
-				provisionLeaderId = null;
 				LOGGER.debug("released lead with id > " + id);
 				return true;
 			}
@@ -215,24 +151,25 @@ public class LeaderSelector {
 			LOGGER.trace("end _releaseLeadership");
 		}
 	}
-	
-	//Called when incomingServer 
-	public synchronized void setLeaderId(String newLeaderId) {
-        if (leaderId == null) {//on newly initializing server and other server are on the cluster already.
-            LOGGER.debug("setting leader to > " + newLeaderId);
-            leaderId = newLeaderId;
-            listener.leaderChanged(newLeaderId);
-        } else {
-        	//newly initializing serve is master??? and other server are on the cluster already.
-            // This shouldn't happen!!! reboot
-            LOGGER.error("cant set leader. aldready set to > " + leaderId);
-            cluster.reboot();
-        }
-    }
 
+	// Called when incomingServer
+	public synchronized void setLeaderId(String newLeaderId) {
+		if (leaderId == null) {// on newly initializing server and other server
+							   // are on the cluster already.
+			LOGGER.debug("setting leader to > " + newLeaderId);
+			leaderId = newLeaderId;
+			listener.leaderChanged(newLeaderId);
+		} else {
+			// newly initializing serve is master??? and other server are on the
+			// cluster already.
+			// This shouldn't happen!!! reboot
+			LOGGER.error("cant set leader. aldready set to > " + leaderId);
+			cluster.reboot();
+		}
+	}
 
 	public void reset() {
-		provisionLeaderId = null;
+
 		leaderId = null;
 	}
 

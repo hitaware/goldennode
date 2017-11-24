@@ -27,8 +27,8 @@ import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeCluster extends Cluster {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeCluster.class);
-	private static final int HANDSHAKING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
-			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.handshakingDelay"));
+	static final int SERVER_ANNOUNCING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
+			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.serverAnnouncingDelay"));
 	private static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.waitForMasterDelay"));
 	private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
@@ -36,7 +36,8 @@ public class GoldenNodeCluster extends Cluster {
 	ClusteredObjectManager clusteredObjectManager;
 	ClusteredServerManager clusteredServerManager;
 	LeaderSelector leaderSelector;
-	private HeartbeatTimer heartBeatTimer;
+	HeartbeatTimer heartBeatTimer;
+	private ServerAnnounceTimer serverAnnounceTimer;
 	LockService lockService;
 
 	public GoldenNodeCluster(Server server, LockService lockService) throws ClusterException {
@@ -49,7 +50,7 @@ public class GoldenNodeCluster extends Cluster {
 		lockService.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(), LOCK_TIMEOUT);
 		lockService.createLock(LockTypes.HANDSHAKING.toString(), LOCK_TIMEOUT);
 		clusteredObjectManager = new ClusteredObjectManager();
-		clusteredServerManager = new ClusteredServerManager(server, this);
+		clusteredServerManager = new ClusteredServerManager(server);
 		leaderSelector = new LeaderSelector(this, new LeaderSelectionListener() {
 			@Override
 			public void leaderChanged(String newLeaderId) {
@@ -57,6 +58,7 @@ public class GoldenNodeCluster extends Cluster {
 			}
 		});
 		heartBeatTimer = new HeartbeatTimer(this);
+		serverAnnounceTimer = new ServerAnnounceTimer(this);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -167,7 +169,7 @@ public class GoldenNodeCluster extends Cluster {
 	}
 
 	void serverIsDeadOperation(Server server) {
-		clusteredServerManager.removeClusteredServer(server);
+		clusteredServerManager.removePeer(server);
 		// TODO nullifyOwnerIdClusteredObjects(server);
 		LOGGER.debug("is dead server master?");
 		if (server.isMaster()) {
@@ -179,20 +181,21 @@ public class GoldenNodeCluster extends Cluster {
 	}
 
 	void incomingServer(final Server server) {
-		clusteredServerManager.addClusteredServer(server);
-		heartBeatTimer.schedule(server, new HearbeatStatusListener() {
-			@Override
-			// TODO Try a preset times
-			public void serverUnreachable(Server server) {
-				LOGGER.debug("server is dead" + server);
-				serverIsDeadOperation(server);
+		if (clusteredServerManager.getServer(server.getId()) == null) {
+			clusteredServerManager.addPeer(server);
+			heartBeatTimer.schedule(server, new HearbeatStatusListener() {
+				@Override
+				public void serverUnreachable(Server server) {
+					LOGGER.warn("server is dead" + server);
+					serverIsDeadOperation(server);
+				}
+			});
+			if (server.isMaster()) {
+				LOGGER.debug("joining server is master" + server);
+				leaderSelector.setLeaderId(server.getId());
+			} else {
+				LOGGER.debug("joining server is non-master" + server);
 			}
-		});
-		if (server.isMaster()) {
-			LOGGER.debug("new incoming master server" + server);
-			leaderSelector.setLeaderId(server.getId());
-		} else {
-			LOGGER.debug("new incoming non-master server" + server);
 		}
 	}
 
@@ -357,8 +360,9 @@ public class GoldenNodeCluster extends Cluster {
 		} catch (ServerException e) {
 			throw new ClusterException(e);
 		}
-		// Wait for handshaking of peers
-		LockHelper.sleep(HANDSHAKING_DELAY);
+		serverAnnounceTimer.schedule();
+		LockHelper.sleep(SERVER_ANNOUNCING_DELAY);
+		serverAnnounceTimer.stop();
 		leaderSelector.candidateDecisionLogic();
 		if (clusteredServerManager.getMasterServer(WAITFORMASTER_DELAY) == null) {
 			LOGGER.debug("REBOOTING...");
@@ -389,4 +393,5 @@ public class GoldenNodeCluster extends Cluster {
 	public Server getCandidateServer() {
 		return clusteredServerManager.getCandidateServer();
 	}
+
 }
