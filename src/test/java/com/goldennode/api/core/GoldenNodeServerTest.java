@@ -36,17 +36,17 @@ public class GoldenNodeServerTest {
 			Request r = server.prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			List<Response> l = server.blockingMulticast(r);
-			Assert.assertEquals(l.size(), 1);
+			Assert.assertEquals(1,l.size());
 			Assert.assertEquals(7, ((Integer) l.get(0).getReturnValue()).intValue());
 			r = server.prepareRequest("_echo", new RequestOptions(), "Hello ozgen");
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(l.size(), 1);
+			Assert.assertEquals(1,l.size());
 			Assert.assertNull(l.get(0).getReturnValue());
 			r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(l.size(), 1);
+			Assert.assertEquals(1,l.size());
 			Assert.assertTrue(l.get(0).getReturnValue() instanceof InvocationTargetException);
 			Assert.assertTrue(((InvocationTargetException) l.get(0).getReturnValue()).getCause() instanceof RuntimeException);
 		} catch (ServerException e) {
