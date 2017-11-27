@@ -16,15 +16,14 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.LoggerFactory;
 
@@ -164,12 +163,14 @@ public class GoldenNodeServer extends Server {
 		}
 	}
 
-	public class TCPProcessor implements Runnable {
+	public class TCPProcessor implements Runnable,Comparable<TCPProcessor> {
 		private Socket s;
 		private Thread th;
+		private String shortServerId;
 
 		public TCPProcessor(Socket s, String shortServerId) {
 			this.s = s;
+			this.shortServerId=shortServerId;
 			th = new Thread(this, shortServerId + " TCPProcessor");
 			tcpProcessors.add(this);
 			th.start();
@@ -192,7 +193,7 @@ public class GoldenNodeServer extends Server {
 				ObjectOutputStream outToClient = new ObjectOutputStream(s.getOutputStream());
 				while (isStarted()) {
 					final Object receivedObject = inFromClient.readObject();
-					LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
+					//LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
 					r = (Request) receivedObject;
 					processId.set(r.getProcessId());
 					Response rs = new Response();
@@ -227,6 +228,11 @@ public class GoldenNodeServer extends Server {
 				stop();
 				tcpProcessors.remove(this);
 			}
+		}
+
+		@Override
+		public int compareTo(TCPProcessor o) {
+			return shortServerId.compareTo(o.shortServerId);
 		}
 	}
 
@@ -312,7 +318,7 @@ public class GoldenNodeServer extends Server {
 			htBlockingMulticastResponse = new ConcurrentHashMap<String, List<Response>>();
 			unicastLocks = new ConcurrentHashMap<String, Object>();
 			blockingMulticastLocks = new ConcurrentHashMap<String, Object>();
-			tcpProcessors = new HashSet<TCPProcessor>();
+			tcpProcessors = new ConcurrentSkipListSet<TCPProcessor>();
 			createMulticastSocket();
 			createUnicastSocket();
 			getTcpServerSocket();
@@ -387,15 +393,14 @@ public class GoldenNodeServer extends Server {
 				Thread.currentThread().interrupt();
 			}
 			requestProcessorThreadPool.shutdown();
-			for (ServerStateListener listener : getServerStateListeners()) {
-				listener.serverStopped(GoldenNodeServer.this);
-			}
 			Iterator<TCPProcessor> iter = tcpProcessors.iterator();
 			while (iter.hasNext()) {
 				TCPProcessor s = iter.next();
 				s.stop();
 			}
-			tcpProcessors.clear();
+			for (ServerStateListener listener : getServerStateListeners()) {
+				listener.serverStopped(GoldenNodeServer.this);
+			}
 		} catch (IOException e) {
 			throw new ServerException(e);
 		}
@@ -433,14 +438,14 @@ public class GoldenNodeServer extends Server {
 		try {
 			if (isStarted()) {
 				request.setRequestType(RequestType.UNICAST_TCP);
-				LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+				//LOGGER.debug("Sending " + request.getRequestType() + " " + request);
 				clientSocket = new Socket(remoteServer.getHost(), remoteServer.getUnicastTCPPort());
 				clientSocket.setSoTimeout(request.getTimeout());
 				outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 				inFromServer = new ObjectInputStream(clientSocket.getInputStream());
 				outToServer.writeObject(request);
 				Response response = (Response) inFromServer.readObject();
-				LOGGER.debug("Received " + request.getRequestType() + " " + response);
+				//LOGGER.debug("Received " + request.getRequestType() + " " + response);
 				if (response.getReturnValue() instanceof Exception) {
 					throw new ServerException((Exception) response.getReturnValue());
 				}

@@ -15,7 +15,13 @@ public class ClusterRunner extends Thread {
 
 	public void stopCluster() throws ClusterException {
 		c.stop();
-		interrupt();
+		synchronized (this) {
+			notify();
+		}
+	}
+
+	public String getClusterId() throws ClusterException {
+		return clusterId;
 	}
 
 	public String getLeaderId() throws ClusterException {
@@ -34,8 +40,6 @@ public class ClusterRunner extends Thread {
 			synchronized (this) {
 				wait();
 			}
-		} catch (InterruptedException e) {
-			// leave thread
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

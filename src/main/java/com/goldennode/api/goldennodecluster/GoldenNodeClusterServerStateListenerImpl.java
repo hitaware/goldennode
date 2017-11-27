@@ -6,7 +6,9 @@ import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Server;
+import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.ServerStateListener;
+import com.goldennode.api.helper.LockHelper;
 
 public class GoldenNodeClusterServerStateListenerImpl implements ServerStateListener {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterServerStateListenerImpl.class);
@@ -26,6 +28,10 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 	@Override
 	public void serverStarted(Server server) {
 		LOGGER.debug("***server started... id : " + server.getShortId());
+		cluster.serverAnnounceTimer.schedule();
+		LockHelper.sleep(GoldenNodeCluster.SERVER_ANNOUNCING_DELAY);
+		cluster.serverAnnounceTimer.stop();
+		cluster.leaderSelector.candidateDecisionLogic();
 	}
 
 	@Override
@@ -41,10 +47,19 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 
 	@Override
 	public void serverStopped(Server server) {
+		LOGGER.debug("***server serverStopped... id : " + server.getShortId());
+
+		cluster.heartBeatTimer.stop();
+		cluster.clusteredServerManager.clear();
+		cluster.clusteredObjectManager.clear();
+		cluster.leaderSelector.reset();
+
 	}
 
 	@Override
 	public void serverStarting(Server server) {
-		//
+		LOGGER.debug("***server starting... id : " + server.getShortId());
+		cluster.heartBeatTimer.start();
+
 	}
 }

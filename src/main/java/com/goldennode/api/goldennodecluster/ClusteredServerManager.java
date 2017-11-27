@@ -27,14 +27,21 @@ public class ClusteredServerManager {
 		allServers.remove(server);
 	}
 
-	public synchronized void addPeer(Server server) {
-		clusteredServers.add(server);
-		allServers.add(server);
+	public synchronized boolean addPeer(Server server) {
+		//Server master = getMasterServer(0);
+		//if (master == null || !server.equals(master)) {
+			clusteredServers.add(server);
+			allServers.add(server);
+			return true;
+		//} else {
+		//	return false;
+		//}
 	}
 
 	public synchronized void clear() {
 		clusteredServers.clear();
 		allServers.clear();
+		allServers.add(owner);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -51,13 +58,15 @@ public class ClusteredServerManager {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public synchronized Server getCandidateServer() {
 		StringBuffer sb = new StringBuffer();
 		for (Server s : (TreeSet<Server>) allServers.clone()) {
 			sb.append(s.getId() + ", ");
 		}
-		LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > " + sb.toString());
-		
+		LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > "
+				+ sb.toString());
+
 		return allServers.last();
 	}
 

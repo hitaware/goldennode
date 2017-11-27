@@ -19,7 +19,7 @@ public class HeartbeatTimer {
 	private Cluster cluster;
 	private static final int TASK_DELAY = Integer
 			.parseInt(SystemUtils.getSystemProperty("1000", "com.goldennode.api.cluster.HeartbeatTimer.taskDelay"));
-	private static final int TASK_PERIOD = Integer
+	public static final int TASK_PERIOD = Integer
 			.parseInt(SystemUtils.getSystemProperty("2000", "com.goldennode.api.cluster.HeartbeatTimer.taskPeriod"));
 	private static final int TASK_RETRY = Integer
 			.parseInt(SystemUtils.getSystemProperty("3", "com.goldennode.api.cluster.HeartbeatTimer.retry"));
@@ -31,7 +31,7 @@ public class HeartbeatTimer {
 	}
 
 	public void start() {
-		timer = new Timer(cluster.getOwner().getShortId() + " Heartbeat Timer for server ");
+		timer = new Timer(cluster.getOwner().getShortId() + " Heartbeat Timer");
 		errorCountByServer = new HashMap<>();
 		tasks = new HashMap<>();
 	}
@@ -43,8 +43,14 @@ public class HeartbeatTimer {
 	}
 
 	public void cancelTaskForServer(final Server server) {
-		tasks.get(server.getId()).cancel();
-		tasks.remove(server.getId());
+		TimerTask task = tasks.get(server.getId());
+		if (task != null) {
+			task.cancel();
+			tasks.remove(server.getId());
+		} else {
+
+			LOGGER.warn("Task already cancelled for server " + server);
+		}
 	}
 
 	public void schedule(final Server server, final HearbeatStatusListener listener) {
@@ -56,10 +62,13 @@ public class HeartbeatTimer {
 					cluster.unicastTCP(server, new Operation(null, "ping", cluster.getOwner().getId()),
 							new RequestOptions());
 				} catch (ClusterException e) {
-					int count = errorCountByServer.get(server.getId());
-					if (count > TASK_RETRY) {
+					Integer count = null;
+
+					count = errorCountByServer.get(server.getId());
+
+					if (count == null || count > TASK_RETRY) {
 						cancel();
-						tasks.remove(cluster.getOwner().getId());
+						tasks.remove(server.getId());
 						listener.serverUnreachable(server);
 					} else {
 						LOGGER.error("Can't ping peer. Will retry. Server: " + server);

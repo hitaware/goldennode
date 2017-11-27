@@ -20,16 +20,16 @@ import com.goldennode.api.cluster.ReplicatedMemorySet;
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
+import com.goldennode.api.core.ServerAlreadyStoppedException;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.helper.ExceptionUtils;
-import com.goldennode.api.helper.LockHelper;
 import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeCluster extends Cluster {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeCluster.class);
 	static final int SERVER_ANNOUNCING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.serverAnnouncingDelay"));
-	private static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
+	static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.waitForMasterDelay"));
 	private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
 			"com.goldennode.api.goldennodecluster.GoldenNodeCluster.lockTimeout"));
@@ -37,7 +37,7 @@ public class GoldenNodeCluster extends Cluster {
 	ClusteredServerManager clusteredServerManager;
 	LeaderSelector leaderSelector;
 	HeartbeatTimer heartBeatTimer;
-	private ServerAnnounceTimer serverAnnounceTimer;
+	ServerAnnounceTimer serverAnnounceTimer;
 	LockService lockService;
 
 	public GoldenNodeCluster(Server server, LockService lockService) throws ClusterException {
@@ -180,9 +180,14 @@ public class GoldenNodeCluster extends Cluster {
 		}
 	}
 
-	void incomingServer(final Server server) {
+	void incomingServer(final Server server) throws ClusterException {
 		if (clusteredServerManager.getServer(server.getId()) == null) {
-			clusteredServerManager.addPeer(server);
+
+			if (!clusteredServerManager.addPeer(server)) {
+				LOGGER.warn("2 masters" + server + "and  master server" + clusteredServerManager.getMasterServer());
+				throw new ClusterException("Master already set");
+			}
+
 			heartBeatTimer.schedule(server, new HearbeatStatusListener() {
 				@Override
 				public void serverUnreachable(Server server) {
@@ -272,9 +277,20 @@ public class GoldenNodeCluster extends Cluster {
 			for (Server remoteServer : servers) {
 				try {
 					LOGGER.debug("Operation is in progress" + operation + "on server" + remoteServer);
-					mr.addSuccessfulResponse(remoteServer, unicastTCP(remoteServer, operation, options));
+					mr.addSuccessfulResponse(remoteServer, unicastTCP(remoteServer, operation, options));// TODO
+																										 // run
+																										 // tcp
+																										 // requests
+																										 // in
+																										 // threads
 				} catch (ClusterException e) {
-					if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {
+					if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {// TODO
+																								 // what
+																								 // the
+																								 // hell
+																								 // clusteredobject
+																								 // related
+						// things are here?
 						LOGGER.debug("ClusteredObjectNotAvailable " + operation + "server" + remoteServer);
 					} else {
 						mr.addErroneusResponse(remoteServer, e);
@@ -354,19 +370,10 @@ public class GoldenNodeCluster extends Cluster {
 	@Override
 	public void start() throws ClusterException {
 
-		heartBeatTimer.start();
 		try {
 			getOwner().start();
 		} catch (ServerException e) {
 			throw new ClusterException(e);
-		}
-		serverAnnounceTimer.schedule();
-		LockHelper.sleep(SERVER_ANNOUNCING_DELAY);
-		serverAnnounceTimer.stop();
-		leaderSelector.candidateDecisionLogic();
-		if (clusteredServerManager.getMasterServer(WAITFORMASTER_DELAY) == null) {
-			LOGGER.debug("REBOOTING...");
-			reboot();
 		}
 
 	}
@@ -375,10 +382,8 @@ public class GoldenNodeCluster extends Cluster {
 	public void stop() throws ClusterException {
 		try {
 			getOwner().stop();
-			heartBeatTimer.stop();
-			clusteredServerManager.clear();
-			clusteredObjectManager.clear();
-			leaderSelector.reset();
+		} catch (ServerAlreadyStoppedException e) {
+			LOGGER.debug("Server already stopped. Server " + getOwner());
 		} catch (ServerException e) {
 			throw new ClusterException(e);
 		}

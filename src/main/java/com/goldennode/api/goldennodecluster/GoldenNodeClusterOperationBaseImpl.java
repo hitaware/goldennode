@@ -39,7 +39,7 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 		cluster.serverIsDeadOperation(s);
 	}
 
-	public void _sendOwnServerIdentity(Server s) {
+	public void _sendOwnServerIdentity(Server s)  throws ClusterException{
 		if (cluster.clusteredServerManager.getServer(s.getId()) == null) {
 			LOGGER.debug("Server sent its identity: " + s);
 			cluster.incomingServer(s);
@@ -83,10 +83,6 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 
 	public boolean _acquireLeadership(String id) {
 		return cluster.leaderSelector.acquireLeadership(id);
-	}
-
-	public boolean _releaseLeadership(String id) {
-		return cluster.leaderSelector.releaseLeadership(id);
 	}
 
 	public void _lock(String publicName) {

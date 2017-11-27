@@ -1,8 +1,6 @@
 package com.goldennode.api.goldennodecluster;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -14,33 +12,40 @@ public class ClusterJoinTest {
 	private static int THREAD_COUNT;
 	private ClusterRunner[] th;
 
-	// @Test
+	@Test
 	public void testJoining1() throws Exception {
+		LOGGER.debug("testJoining1 start");
 		THREAD_COUNT = 5;
 		th = new ClusterRunner[THREAD_COUNT];
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i] = new ClusterRunner(new Integer(i).toString());
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
+			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
-		Set<String> s = new HashSet<String>();
+		Set<String> set = new HashSet<String>();
 		for (int i = 0; i < THREAD_COUNT; i++) {
-			s.add(th[i].getLeaderId());
+			set.add(th[i].getLeaderId());
 		}
-		Assert.assertTrue(s.size() == 1);
-		Assert.assertTrue(s.contains(new Integer(THREAD_COUNT - 1).toString()));
+		Assert.assertTrue("Leader info: " + getListContents(set), set.size() == 1);
+		Assert.assertTrue("Leader info: " + getListContents(set), set.contains(new Integer(THREAD_COUNT - 1).toString()));
+
 		for (int i = 0; i < THREAD_COUNT; i++) {
+			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
 			th[i].stopCluster();
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i].join();
 		}
+		LOGGER.debug("testJoining1 end");
 	}
 
-	// @Test
+	@Test
+	
 	public void testJoining2() throws Exception {
+		LOGGER.debug("testJoining2 start");
 		THREAD_COUNT = 10;
 		th = new ClusterRunner[THREAD_COUNT];
 		for (int i = 0; i < THREAD_COUNT; i++) {
@@ -59,25 +64,35 @@ public class ClusterJoinTest {
 			if (i == 8) {
 				Thread.sleep(1000);
 			}
+			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
-		Set<String> s = new HashSet<String>();
+		Set<String> set = new HashSet<String>();
 		for (int i = 0; i < THREAD_COUNT; i++) {
-			s.add(th[i].getLeaderId());
+			set.add(th[i].getLeaderId());
 		}
-		Assert.assertTrue(s.size() == 1);
-		Assert.assertTrue(s.contains("2"));
+		Assert.assertTrue("Leader info: " + getListContents(set), set.size() == 1);
+		Assert.assertTrue("Leader info: " + getListContents(set), set.contains("2"));
+		LOGGER.debug("testJoining2 end");
 		for (int i = 0; i < THREAD_COUNT; i++) {
+			if (i == 2) {
+				continue;
+			}
+			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
 			th[i].stopCluster();
 		}
+		th[2].stopCluster();
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i].join();
 		}
+		
+		LOGGER.debug("testJoining2 end.");
 	}
 
 	@Test
 	public void testJoining3() throws Exception {
+		LOGGER.debug("testJoining3 start");
 		THREAD_COUNT = 10;
 		th = new ClusterRunner[THREAD_COUNT];
 		for (int i = 0; i < THREAD_COUNT; i++) {
@@ -96,6 +111,7 @@ public class ClusterJoinTest {
 			if (i == 8) {
 				Thread.sleep(1000);
 			}
+			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
@@ -103,10 +119,11 @@ public class ClusterJoinTest {
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			set.add(th[i].getLeaderId());
 		}
-		Assert.assertTrue("Leader info: " + getListContents(set),set.size() == 1);
+		Assert.assertTrue("Leader info: " + getListContents(set), set.size() == 1);
 		Assert.assertTrue("Leader info: " + getListContents(set), set.contains("2"));
+		LOGGER.debug("Stopping serverId= " + th[2].getClusterId());
 		th[2].stopCluster();
-		Thread.sleep(10000);
+		Thread.sleep(15000);
 		set = new HashSet<>();
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			if (i == 2) {
@@ -114,17 +131,19 @@ public class ClusterJoinTest {
 			}
 			set.add(th[i].getLeaderId());
 		}
-		Assert.assertTrue("Leader info: " + getListContents(set),set.size() == 1);
+		Assert.assertTrue("Leader info: " + getListContents(set), set.size() == 1);
 		Assert.assertTrue("Leader info: " + getListContents(set), set.contains("9"));
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			if (i == 2) {
 				continue;
 			}
+			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
 			th[i].stopCluster();
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
 			th[i].join();
 		}
+		LOGGER.debug("testJoining3 end");
 	}
 
 	String getListContents(Set<String> list) {

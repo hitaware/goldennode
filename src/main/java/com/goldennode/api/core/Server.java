@@ -51,11 +51,11 @@ public abstract class Server implements Serializable, Comparable<Server> {
 		return serverStateListeners.toArray(new ServerStateListener[0]);
 	}
 
-	public boolean isMaster() {
+	public synchronized boolean isMaster() {
 		return master;
 	}
 
-	public void setMaster(boolean master) {
+	public synchronized void setMaster(boolean master) {
 		this.master = master;
 	}
 

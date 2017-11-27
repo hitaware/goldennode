@@ -20,7 +20,6 @@ public class ServerAnnounceTimer {
 
 	public ServerAnnounceTimer(Cluster cluster) {
 		this.cluster = cluster;
-		timer = new Timer(cluster.getOwner().getShortId() + " ServerAnnounce Timer");
 	}
 
 	public void stop() {
@@ -28,6 +27,7 @@ public class ServerAnnounceTimer {
 	}
 
 	public void schedule() {
+		timer = new Timer(cluster.getOwner().getShortId() + " ServerAnnounce Timer");
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
