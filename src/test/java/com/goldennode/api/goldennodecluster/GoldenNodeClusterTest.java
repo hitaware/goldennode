@@ -27,17 +27,13 @@ public class GoldenNodeClusterTest {
 		}
 	}
 
-	@Test(expected = ServerAlreadyStoppedException.class)
-	public void TestIlleagalStop() throws Throwable {
+	@Test
+	public void TestIlleagalStop() throws Exception {
 		Cluster c = null;
-		try {
-			c = ClusterFactory.getCluster();
-			c.stop();
-		} catch (ClusterException e) {
-			ExceptionUtils.throwCauseIfThereIs(e, ServerAlreadyStoppedException.class);
-			throw e;
-		} finally {
-		}
+
+		c = ClusterFactory.getCluster();
+		c.stop();
+
 	}
 
 	@Test
