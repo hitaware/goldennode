@@ -27,28 +27,66 @@ public class GoldenNodeServerTest {
 	@Test
 	public void testBlockingMulticast() throws ServerException {
 		GoldenNodeServer server = null;
+
 		try {
-			OperationBase proxy = new OperationBaseImpl();
-     		server = new GoldenNodeServer();
+			final OperationBase proxy = new OperationBaseImpl();
+			final OperationBase proxy2 = new OperationBaseImpl();
+			server = new GoldenNodeServer("1");
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+
+					try {
+						GoldenNodeServer server2 = new GoldenNodeServer("2");
+						server2.addServerStateListener((ServerStateListener) proxy2);
+						server2.setOperationBase(proxy2);
+						server2.start();
+						synchronized (this) {
+							try {
+								wait();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					} catch (ServerException e) {
+						e.printStackTrace();
+					}
+
+				}
+			}).start();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
 			Request r = server.prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			List<Response> l = server.blockingMulticast(r);
-			Assert.assertEquals(1,l.size());
+			Assert.assertEquals(2, l.size());
 			Assert.assertEquals(7, ((Integer) l.get(0).getReturnValue()).intValue());
 			r = server.prepareRequest("_echo", new RequestOptions(), "Hello ozgen");
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(1,l.size());
+			Assert.assertEquals(2, l.size());
 			Assert.assertNull(l.get(0).getReturnValue());
 			r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(1,l.size());
+			Assert.assertEquals(2, l.size());
 			Assert.assertTrue(l.get(0).getReturnValue() instanceof InvocationTargetException);
-			Assert.assertTrue(((InvocationTargetException) l.get(0).getReturnValue()).getCause() instanceof RuntimeException);
+			Assert.assertTrue(
+					((InvocationTargetException) l.get(0).getReturnValue()).getCause() instanceof RuntimeException);
 		} catch (ServerException e) {
 			throw e;
 		} finally {
@@ -61,6 +99,7 @@ public class GoldenNodeServerTest {
 	}
 
 	@Test
+
 	public void testMulticast() throws ServerException {
 		GoldenNodeServer server = null;
 		try {
@@ -86,6 +125,7 @@ public class GoldenNodeServerTest {
 	}
 
 	@Test(expected = ServerException.class)
+
 	public void testUnicastUDP() throws ServerException {
 		GoldenNodeServer server = null;
 		try {

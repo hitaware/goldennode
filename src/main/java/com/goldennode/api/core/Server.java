@@ -18,13 +18,13 @@ public abstract class Server implements Serializable, Comparable<Server> {
 	private boolean master;
 	public static ThreadLocal<String> processId = new ThreadLocal<String>();
 
+	public Server() throws ServerException {
+		this(java.util.UUID.randomUUID().toString());
+	}
+
 	public Server(String serverId) throws ServerException {
 		try {
-			if (serverId == null) {
-				setId(java.util.UUID.randomUUID().toString());
-			} else {
-				setId(serverId);
-			}
+			setId(serverId);
 			setHost(InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
 			throw new ServerException(e);

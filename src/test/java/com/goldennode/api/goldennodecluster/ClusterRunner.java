@@ -6,11 +6,11 @@ import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.core.Server;
 
 public class ClusterRunner extends Thread {
-	private String clusterId;
+	private String serverId;
 	private Cluster c;
 
-	public ClusterRunner(String clusterId) {
-		this.clusterId = clusterId;
+	public ClusterRunner(String serverId) {
+		this.serverId = serverId;
 	}
 
 	public void stopCluster() throws ClusterException {
@@ -20,8 +20,8 @@ public class ClusterRunner extends Thread {
 		}
 	}
 
-	public String getClusterId() throws ClusterException {
-		return clusterId;
+	public String getServerId() throws ClusterException {
+		return serverId;
 	}
 
 	public String getLeaderId() throws ClusterException {
@@ -35,7 +35,7 @@ public class ClusterRunner extends Thread {
 
 	private void doJob() {
 		try {
-			c = ClusterFactory.getCluster(clusterId);
+			c = ClusterFactory.getCluster(serverId);
 			c.start();
 			synchronized (this) {
 				wait();
@@ -47,7 +47,7 @@ public class ClusterRunner extends Thread {
 
 	@Override
 	public void run() {
-		setName(clusterId);
+		setName(serverId);
 		doJob();
 	}
 }

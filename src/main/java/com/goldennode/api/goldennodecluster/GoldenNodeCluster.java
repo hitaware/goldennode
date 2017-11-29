@@ -20,6 +20,7 @@ import com.goldennode.api.cluster.ReplicatedMemorySet;
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
+import com.goldennode.api.core.ServerAlreadyStartedException;
 import com.goldennode.api.core.ServerAlreadyStoppedException;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.helper.ExceptionUtils;
@@ -40,7 +41,7 @@ public class GoldenNodeCluster extends Cluster {
 	ServerAnnounceTimer serverAnnounceTimer;
 	LockService lockService;
 
-	public GoldenNodeCluster(Server server, LockService lockService) throws ClusterException {
+	public GoldenNodeCluster(Server server, LockService lockService) {
 		this.lockService = lockService;
 		server.setOperationBase(new GoldenNodeClusterOperationBaseImpl(this));
 		server.addServerStateListener(new GoldenNodeClusterServerStateListenerImpl(this));
@@ -372,6 +373,8 @@ public class GoldenNodeCluster extends Cluster {
 
 		try {
 			getOwner().start();
+		} catch (ServerAlreadyStartedException e) {
+			LOGGER.debug("Server already started. Server " + getOwner());
 		} catch (ServerException e) {
 			throw new ClusterException(e);
 		}

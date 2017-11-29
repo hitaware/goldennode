@@ -21,7 +21,7 @@ public class ClusterJoinTest {
 			th[i] = new ClusterRunner(new Integer(i).toString());
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
-			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
+			LOGGER.debug("Starting serverId= " + th[i].getServerId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
@@ -33,7 +33,7 @@ public class ClusterJoinTest {
 		Assert.assertTrue("Leader info: " + getListContents(set), set.contains(new Integer(THREAD_COUNT - 1).toString()));
 
 		for (int i = 0; i < THREAD_COUNT; i++) {
-			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
+			LOGGER.debug("Stopping serverId= " + th[i].getServerId());
 			th[i].stopCluster();
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {
@@ -64,7 +64,7 @@ public class ClusterJoinTest {
 			if (i == 8) {
 				Thread.sleep(1000);
 			}
-			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
+			LOGGER.debug("Starting serverId= " + th[i].getServerId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
@@ -79,7 +79,7 @@ public class ClusterJoinTest {
 			if (i == 2) {
 				continue;
 			}
-			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
+			LOGGER.debug("Stopping serverId= " + th[i].getServerId());
 			th[i].stopCluster();
 		}
 		th[2].stopCluster();
@@ -111,7 +111,7 @@ public class ClusterJoinTest {
 			if (i == 8) {
 				Thread.sleep(1000);
 			}
-			LOGGER.debug("Starting serverId= " + th[i].getClusterId());
+			LOGGER.debug("Starting serverId= " + th[i].getServerId());
 			th[i].start();
 		}
 		Thread.sleep(10000);
@@ -121,7 +121,7 @@ public class ClusterJoinTest {
 		}
 		Assert.assertTrue("Leader info: " + getListContents(set), set.size() == 1);
 		Assert.assertTrue("Leader info: " + getListContents(set), set.contains("2"));
-		LOGGER.debug("Stopping serverId= " + th[2].getClusterId());
+		LOGGER.debug("Stopping serverId= " + th[2].getServerId());
 		th[2].stopCluster();
 		Thread.sleep(15000);
 		set = new HashSet<>();
@@ -137,7 +137,7 @@ public class ClusterJoinTest {
 			if (i == 2) {
 				continue;
 			}
-			LOGGER.debug("Stopping serverId= " + th[i].getClusterId());
+			LOGGER.debug("Stopping serverId= " + th[i].getServerId());
 			th[i].stopCluster();
 		}
 		for (int i = 0; i < THREAD_COUNT; i++) {

@@ -35,11 +35,11 @@ public class GoldenNodeServer extends Server {
 	private static final long serialVersionUID = 1L;
 	private transient MulticastSocket multicastSocket;
 	private transient DatagramSocket unicastSocket;
-	private transient ServerSocket tcpSocket;
+	private transient ServerSocket tcpServerSocket;
 	private transient Map<String, Response> htUnicastResponse;
 	private transient Map<String, List<Response>> htBlockingMulticastResponse;
 	private transient Map<String, Object> unicastLocks;
-	private transient Map<String, Object> blockingMulticastLocks;
+	private transient volatile Map<String, Object> blockingMulticastLocks;
 	private transient Thread thMulticastProcessor;
 	private transient Thread thUnicastUDPProcessor;
 	private transient Thread thTCPServerSocket;
@@ -56,18 +56,28 @@ public class GoldenNodeServer extends Server {
 	private transient String MULTICAST_ADDRESS = SystemUtils.getSystemProperty("225.4.5.6", // NOPMD
 			"com.goldennode.api.core.GoldenNodeServer.multicastAddress");
 	private int MULTICAST_PORT = Integer
-			.parseInt(SystemUtils.getSystemProperty("25000", "com.goldennode.api.core.GoldenNodeServer.multicastPort"));
+			.parseInt(SystemUtils.getSystemProperty("27000", "com.goldennode.api.core.GoldenNodeServer.multicastPort"));
 	private int UNICAST_UDP_PORT = Integer.parseInt(
-			SystemUtils.getSystemProperty("25002", "com.goldennode.api.core.GoldenNodeServer.unicastUDPPort"));
+			SystemUtils.getSystemProperty("26002", "com.goldennode.api.core.GoldenNodeServer.unicastUDPPort"));
 	private int UNICAST_TCP_PORT = Integer.parseInt(
-			SystemUtils.getSystemProperty("26002", "com.goldennode.api.core.GoldenNodeServer.unicastTCPPort"));
+			SystemUtils.getSystemProperty("25002", "com.goldennode.api.core.GoldenNodeServer.unicastTCPPort"));
+
+	public GoldenNodeServer(String serverId, int multicastPort) throws ServerException {
+		super(serverId);
+		MULTICAST_PORT = multicastPort;
+	}
+
+	public GoldenNodeServer(int multicastPort) throws ServerException {
+		super();
+		MULTICAST_PORT = multicastPort;
+	}
 
 	public GoldenNodeServer(String serverId) throws ServerException {
 		super(serverId);
 	}
 
 	public GoldenNodeServer() throws ServerException {
-		super(null);
+		super();
 	}
 
 	private void processBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
@@ -163,14 +173,14 @@ public class GoldenNodeServer extends Server {
 		}
 	}
 
-	public class TCPProcessor implements Runnable,Comparable<TCPProcessor> {
+	public class TCPProcessor implements Runnable, Comparable<TCPProcessor> {
 		private Socket s;
 		private Thread th;
 		private String shortServerId;
 
 		public TCPProcessor(Socket s, String shortServerId) {
 			this.s = s;
-			this.shortServerId=shortServerId;
+			this.shortServerId = shortServerId;
 			th = new Thread(this, shortServerId + " TCPProcessor");
 			tcpProcessors.add(this);
 			th.start();
@@ -183,6 +193,11 @@ public class GoldenNodeServer extends Server {
 				// LOGGER.trace("socket couldn't be closed");
 			}
 			th.interrupt();
+			try {
+				th.join();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
 
 		@Override
@@ -193,7 +208,8 @@ public class GoldenNodeServer extends Server {
 				ObjectOutputStream outToClient = new ObjectOutputStream(s.getOutputStream());
 				while (isStarted()) {
 					final Object receivedObject = inFromClient.readObject();
-					//LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
+					// LOGGER.debug("Receiving " + ((Request)
+					// receivedObject).getRequestType() + " " + receivedObject);
 					r = (Request) receivedObject;
 					processId.set(r.getProcessId());
 					Response rs = new Response();
@@ -255,7 +271,10 @@ public class GoldenNodeServer extends Server {
 					LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
 					if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
 							|| ((Request) receivedObject).getRequestType() == RequestType.UNICAST_UDP) {
-						processBlockingRequest((Request) receivedObject, packet.getAddress(), packet.getPort());
+						System.out.println(packet.getSocketAddress());
+						processBlockingRequest((Request) receivedObject,
+								((Request) receivedObject).getServerFrom().getHost(),
+								((Request) receivedObject).getServerFrom().getUnicastUDPPort());
 					}
 					if (((Request) receivedObject).getRequestType() == RequestType.MULTICAST) {
 						processNonBlockingRequest((Request) receivedObject);
@@ -273,15 +292,13 @@ public class GoldenNodeServer extends Server {
 								lock.notifyAll();
 							}
 						} else {
-							LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
+							LOGGER.error("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
 									+ receivedObject);
 						}
 					}
 					if (((Response) receivedObject).getRequest().getRequestType() == RequestType.BLOCKING_MULTICAST) {
 						Object lock = blockingMulticastLocks.get(((Response) receivedObject).getRequest().getId());
 						if (lock != null) {
-							htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
-									(Response) receivedObject);
 							List<Response> l = htBlockingMulticastResponse
 									.get(((Response) receivedObject).getRequest().getId());
 							if (l != null) {
@@ -293,9 +310,10 @@ public class GoldenNodeServer extends Server {
 								}
 							}
 						} else {
-							LOGGER.debug("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
+							LOGGER.error("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
 									+ receivedObject);
 						}
+
 					}
 				}
 			} catch (ServerException e) {
@@ -340,7 +358,7 @@ public class GoldenNodeServer extends Server {
 				public void run() {
 					try {
 						while (isStarted()) {
-							Socket s = tcpSocket.accept();
+							Socket s = tcpServerSocket.accept();
 							TCPProcessor tc = new TCPProcessor(s, GoldenNodeServer.this.getShortId());
 							tcpProcessors.add(tc);
 						}
@@ -381,7 +399,7 @@ public class GoldenNodeServer extends Server {
 			setStarted(false);
 			multicastSocket.close();
 			unicastSocket.close();
-			tcpSocket.close();
+			tcpServerSocket.close();
 			thMulticastProcessor.interrupt();
 			thUnicastUDPProcessor.interrupt();
 			thTCPServerSocket.interrupt();
@@ -438,14 +456,16 @@ public class GoldenNodeServer extends Server {
 		try {
 			if (isStarted()) {
 				request.setRequestType(RequestType.UNICAST_TCP);
-				//LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+				// LOGGER.debug("Sending " + request.getRequestType() + " " +
+				// request);
 				clientSocket = new Socket(remoteServer.getHost(), remoteServer.getUnicastTCPPort());
 				clientSocket.setSoTimeout(request.getTimeout());
 				outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
 				inFromServer = new ObjectInputStream(clientSocket.getInputStream());
 				outToServer.writeObject(request);
 				Response response = (Response) inFromServer.readObject();
-				//LOGGER.debug("Received " + request.getRequestType() + " " + response);
+				// LOGGER.debug("Received " + request.getRequestType() + " " +
+				// response);
 				if (response.getReturnValue() instanceof Exception) {
 					throw new ServerException((Exception) response.getReturnValue());
 				}
@@ -538,6 +558,7 @@ public class GoldenNodeServer extends Server {
 				blockingMulticastLocks.put(request.getId(), lock);
 				htBlockingMulticastResponse.put(request.getId(),
 						Collections.synchronizedList(new FixedSizeList<Response>(maxResponses)));
+
 				multicastSocket.send(packet);
 				synchronized (lock) {
 					try {
@@ -595,7 +616,7 @@ public class GoldenNodeServer extends Server {
 		while (i < 1000) {
 			try {
 				UNICAST_TCP_PORT = UNICAST_TCP_PORT + i;
-				tcpSocket = new ServerSocket(UNICAST_TCP_PORT);
+				tcpServerSocket = new ServerSocket(UNICAST_TCP_PORT);
 				return;
 			} catch (IOException e) {
 				i++;

@@ -72,6 +72,7 @@ public class HeartbeatTimer {
 						listener.serverUnreachable(server);
 					} else {
 						LOGGER.error("Can't ping peer. Will retry. Server: " + server);
+						errorCountByServer.put(server.getId(), ++count);
 					}
 
 				}
