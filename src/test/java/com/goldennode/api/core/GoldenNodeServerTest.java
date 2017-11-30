@@ -31,7 +31,7 @@ public class GoldenNodeServerTest {
 		try {
 			final OperationBase proxy = new OperationBaseImpl();
 			final OperationBase proxy2 = new OperationBaseImpl();
-			server = new GoldenNodeServer("1");
+			server = new GoldenNodeServer();
 			server.addServerStateListener((ServerStateListener) proxy);
 			server.setOperationBase(proxy);
 			server.start();
@@ -41,16 +41,15 @@ public class GoldenNodeServerTest {
 				e.printStackTrace();
 			}
 
-			new Thread(new Runnable() {
-
+			Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
-
+					GoldenNodeServer server = null;
 					try {
-						GoldenNodeServer server2 = new GoldenNodeServer("2");
-						server2.addServerStateListener((ServerStateListener) proxy2);
-						server2.setOperationBase(proxy2);
-						server2.start();
+						server = new GoldenNodeServer();
+						server.addServerStateListener((ServerStateListener) proxy2);
+						server.setOperationBase(proxy2);
+						server.start();
 						synchronized (this) {
 							try {
 								wait();
@@ -58,32 +57,38 @@ public class GoldenNodeServerTest {
 								e.printStackTrace();
 							}
 						}
+						server.stop();
 					} catch (ServerException e) {
 						e.printStackTrace();
-					}
+					} finally {
+						try {
+							server.stop();
+						} catch (ServerException e) {
 
+						}
+					}
 				}
-			}).start();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			};
+
+			new Thread(runnable).start();
+			new Thread(runnable).start();
+			new Thread(runnable).start();
+			LockHelper.sleep(100);
 
 			Request r = server.prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			List<Response> l = server.blockingMulticast(r);
-			Assert.assertEquals(2, l.size());
+			Assert.assertEquals(4, l.size());
 			Assert.assertEquals(7, ((Integer) l.get(0).getReturnValue()).intValue());
 			r = server.prepareRequest("_echo", new RequestOptions(), "Hello ozgen");
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(2, l.size());
+			Assert.assertEquals(4, l.size());
 			Assert.assertNull(l.get(0).getReturnValue());
 			r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
 			r.setTimeout(1000);
 			l = server.blockingMulticast(r);
-			Assert.assertEquals(2, l.size());
+			Assert.assertEquals(4, l.size());
 			Assert.assertTrue(l.get(0).getReturnValue() instanceof InvocationTargetException);
 			Assert.assertTrue(
 					((InvocationTargetException) l.get(0).getReturnValue()).getCause() instanceof RuntimeException);
