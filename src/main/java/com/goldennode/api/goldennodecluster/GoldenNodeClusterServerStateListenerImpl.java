@@ -6,7 +6,6 @@ import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Server;
-import com.goldennode.api.core.ServerException;
 import com.goldennode.api.core.ServerStateListener;
 import com.goldennode.api.helper.LockHelper;
 
