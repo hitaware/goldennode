@@ -34,7 +34,7 @@ public abstract class Cluster {
 
 	public abstract MultiResponse tcpMulticast(Collection<Server> peers, Operation operation, RequestOptions options);
 
-	public abstract Response unicastTCP(Server server, Operation operation, RequestOptions options)
+	public abstract Response unicastTCP(Server remoteServer, Operation operation, RequestOptions options)
 			throws ClusterException;
 
 	public abstract Response unicastUDP(Server remoteServer, Operation operation, RequestOptions options)
