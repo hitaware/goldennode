@@ -25,12 +25,8 @@ public class ClusterRunner extends Thread {
 	}
 
 	public String getLeaderId() throws ClusterException {
-		Server s = ((GoldenNodeCluster) c).clusteredServerManager.getMasterServer();
-		if (s != null) {
-			return s.getId();
-		} else {
-			return null;
-		}
+		return ((GoldenNodeCluster) c).leaderSelector.getLeaderId();
+		
 	}
 
 	private void doJob() {

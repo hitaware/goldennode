@@ -11,47 +11,45 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 public class Clone {
-	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Clone.class);
+    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Clone.class);
 
-	List<InnerObject> list;
-	List<InnerObject> list2;
+    List<InnerObject> list;
+    List<InnerObject> list2;
 
-	@Before
-	public void init() {
+    @Before
+    public void init() {
 
-		list = Collections.synchronizedList(new ArrayList<InnerObject>());
-		list.add(new InnerObject(new Date()));
-		list.add(new InnerObject(new Date()));
+        list = Collections.synchronizedList(new ArrayList<InnerObject>());
+        list.add(new InnerObject(new Date()));
+        list.add(new InnerObject(new Date()));
 
-		list2 = new ArrayList<InnerObject>();
-		list2.add(new InnerObject(new Date()));
-		list2.add(new InnerObject(new Date()));
-	}
+        list2 = new ArrayList<InnerObject>();
+        list2.add(new InnerObject(new Date()));
+        list2.add(new InnerObject(new Date()));
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void test() throws Exception {
+    @SuppressWarnings("unchecked")
+    @Test
+    public void test() throws Exception {
 
-		LOGGER.debug("Cloning lists");
-		List<InnerObject> cloneList = Collections
-				.synchronizedList(new ArrayList<InnerObject>(list));
-		List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList<InnerObject>) list2)
-				.clone();
+        LOGGER.debug("Cloning lists");
+        List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
+        List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList<InnerObject>) list2).clone();
 
-		cloneList.add(new InnerObject(new Date()));
-		cloneList2.add(new InnerObject(new Date()));
+        cloneList.add(new InnerObject(new Date()));
+        cloneList2.add(new InnerObject(new Date()));
 
-		Assert.assertNotEquals(list.size(), cloneList.size());
-		Assert.assertNotEquals(list2.size(), cloneList2.size());
+        Assert.assertNotEquals(list.size(), cloneList.size());
+        Assert.assertNotEquals(list2.size(), cloneList2.size());
 
-	}
+    }
 
-	class InnerObject {
-		public Date str;
+    class InnerObject {
+        public Date str;
 
-		public InnerObject(Date str) {
-			this.str = str;
-		}
+        public InnerObject(Date str) {
+            this.str = str;
+        }
 
-	}
+    }
 }

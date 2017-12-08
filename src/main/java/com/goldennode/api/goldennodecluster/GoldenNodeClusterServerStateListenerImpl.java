@@ -50,7 +50,7 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 
 		cluster.heartBeatTimer.stop();
 		cluster.clusteredServerManager.clear();
-		cluster.clusteredObjectManager.clear();
+		cluster.clusteredObjectManager.clearAll();
 		cluster.leaderSelector.reset();
 
 	}

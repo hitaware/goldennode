@@ -12,7 +12,7 @@ import com.goldennode.testutils.ThreadUtils;
 public class SerializeClusteredObjectTest {
 	@Before
 	public void init() {
-		Thread.interrupted();
+		Thread.interrupted();//TODO why?
 	}
 
 	@Test

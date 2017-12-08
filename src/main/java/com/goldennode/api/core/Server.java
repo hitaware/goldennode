@@ -90,9 +90,13 @@ public abstract class Server implements Serializable, Comparable<Server> {
 	public abstract int getUnicastTCPPort();
 
 	public abstract void start() throws ServerException;
+	
+	public abstract void start(int delay) throws ServerException;
+
+	public abstract void stop(int delay) throws ServerException;
 
 	public abstract void stop() throws ServerException;
-
+	
 	public abstract Request prepareRequest(String method, RequestOptions options, Object... params);
 
 	public abstract Response unicastTCP(Server remoteServer, Request request) throws ServerException;

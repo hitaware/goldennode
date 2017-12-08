@@ -21,7 +21,7 @@
 		<rpm-version>2.0.1</rpm-version>
 		<slf4j-version>1.7.10</slf4j-version>
 		<log4j-version>1.2.17</log4j-version>
-		<junit-version>4.11</junit-version>
+		<junit-version>4.12</junit-version>
 		<findbugs-version>3.0.1</findbugs-version>
 	</properties>
 
@@ -48,6 +48,7 @@
 	</dependencyManagement>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -182,7 +183,7 @@
 
 	<scm>
 		<developerConnection>scm:git:https://github.com/hitaware/goldennode.git</developerConnection>
-		
+
 	</scm>
 
 	<organization>

@@ -3,11 +3,11 @@ package com.goldennode.api.cluster;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.GoldenNodeServer;
+import com.goldennode.api.core.LockService;
+import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.goldennodecluster.GoldenNodeCluster;
-import com.goldennode.api.goldennodecluster.LockService;
-import com.goldennode.api.goldennodecluster.LockServiceImpl;
 
 public class ClusterFactory {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterFactory.class);

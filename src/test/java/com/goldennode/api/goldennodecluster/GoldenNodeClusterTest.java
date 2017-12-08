@@ -1,10 +1,5 @@
 package com.goldennode.api.goldennodecluster;
 
-import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.ServerSocket;
-import java.net.SocketException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;

@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +15,10 @@ import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.ReplicatedMemorySet;
 import com.goldennode.testutils.CollectionUtils;
-import com.goldennode.testutils.RepeatRule;
 
 public class ReplicatedMemorySetTest {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemorySetTest.class);
-	@Rule
-	public RepeatRule repeatRule = new RepeatRule();
+
 	private int counter1;
 	private int counter2;
 
