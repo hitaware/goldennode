@@ -26,7 +26,6 @@ import com.goldennode.api.core.ServerAlreadyStartedException;
 import com.goldennode.api.core.ServerAlreadyStoppedException;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.api.helper.ExceptionUtils;
-import com.goldennode.api.helper.LockHelper;
 import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeCluster extends Cluster {

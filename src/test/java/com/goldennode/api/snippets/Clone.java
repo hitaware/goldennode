@@ -36,8 +36,17 @@ public class Clone {
         List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
         List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList<InnerObject>) list2).clone();
 
+        Assert.assertEquals(cloneList, list);
+        Assert.assertNotSame(cloneList, list);
+        Assert.assertEquals(cloneList2, list2);
+        Assert.assertNotSame(cloneList2, list2);
+
         cloneList.add(new InnerObject(new Date()));
         cloneList2.add(new InnerObject(new Date()));
+        Assert.assertNotEquals(cloneList, list);
+        Assert.assertNotSame(cloneList, list);
+        Assert.assertNotEquals(cloneList2, list2);
+        Assert.assertNotSame(cloneList2, list2);
 
         Assert.assertNotEquals(list.size(), cloneList.size());
         Assert.assertNotEquals(list2.size(), cloneList2.size());

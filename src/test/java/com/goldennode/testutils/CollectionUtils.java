@@ -1,7 +1,6 @@
 package com.goldennode.testutils;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,21 +60,8 @@ public class CollectionUtils {
         return true;
     }
 
-    public static void main(String arg[]) {
-
-        HashSet<Object> s = new HashSet<>();
-        s.add("1");
-        s.add("3");
-        s.add("2");
-        s.add("7");
-        s.add("4");
-        s.add("10");
-        s.add("9");
-        System.out.println(getContents(s));
-    }
-
     public static String getContents(Collection<?> set) {
         return set.stream().map(Object::toString).collect(Collectors.joining(","));
-        
+
     }
 }
