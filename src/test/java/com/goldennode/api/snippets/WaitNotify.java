@@ -2,7 +2,9 @@ package com.goldennode.api.snippets;
 
 import org.slf4j.LoggerFactory;
 
-public class WaitNotify {
+import com.goldennode.testutils.GoldenNodeJunitRunner;
+
+public class WaitNotify  {
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(WaitNotify.class);
 	Object lck = new Object();
 

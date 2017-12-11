@@ -9,9 +9,10 @@ import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.core.ServerAlreadyStartedException;
 import com.goldennode.api.helper.ExceptionUtils;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.PortUtils;
 
-public class GoldenNodeClusterTest {
+public class GoldenNodeClusterTest  extends GoldenNodeJunitRunner{
 	static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterTest.class);
 
 	@Test

@@ -4,7 +4,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class OperationTest {
+import com.goldennode.testutils.GoldenNodeJunitRunner;
+
+public class OperationTest extends GoldenNodeJunitRunner {
     private Operation oper1;
     private Operation oper2;
     private Operation oper3;

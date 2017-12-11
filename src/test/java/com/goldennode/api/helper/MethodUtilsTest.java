@@ -5,8 +5,9 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.ReflectionUtils;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class MethodUtilsTest {
+public class MethodUtilsTest  extends GoldenNodeJunitRunner{
 	static org.slf4j.Logger LOGGER = LoggerFactory
 			.getLogger(MethodUtilsTest.class);
 

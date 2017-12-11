@@ -2,6 +2,8 @@ package com.goldennode.api.snippets;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.testutils.GoldenNodeJunitRunner;
+
 /**
  * Java program to demonstrate How to use notify and notifyAll method in Java
  * and How notify and notifyAll method notifies thread, which thread gets woke

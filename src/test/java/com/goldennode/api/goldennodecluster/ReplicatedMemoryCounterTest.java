@@ -10,8 +10,9 @@ import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ReplicatedMemoryCounter;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ReplicatedMemoryCounterTest {
+public class ReplicatedMemoryCounterTest  extends GoldenNodeJunitRunner{
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounterTest.class);
 
     private int counter1;

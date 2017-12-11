@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-public class Clone {
+import com.goldennode.testutils.GoldenNodeJunitRunner;
+
+public class Clone  extends GoldenNodeJunitRunner{
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Clone.class);
 
     List<InnerObject> list;

@@ -2,9 +2,10 @@ package com.goldennode.api.helper;
 
 import org.junit.Test;
 
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.ThreadUtils;
 
-public class LockHelperTest {
+public class LockHelperTest  extends GoldenNodeJunitRunner{
 
     @Test
     public void sleep() {

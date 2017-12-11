@@ -4,10 +4,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.goldennode.api.goldennodecluster.GoldenNodeCluster;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ClusterFactoryTest {
+
+public class ClusterFactoryTest extends GoldenNodeJunitRunner {
+    
+    
+       
 	@Test
-	public void test1() throws ClusterException {
+	public void createVariousClusterObjects() throws ClusterException {
 		Cluster c1 = ClusterFactory.getCluster();
 		Cluster c2 = ClusterFactory.getCluster(ClusterType.GOLDENNODECLUSTER);
 		Cluster c3 = ClusterFactory.getCluster(ClusterType.GOLDENNODECLUSTER);

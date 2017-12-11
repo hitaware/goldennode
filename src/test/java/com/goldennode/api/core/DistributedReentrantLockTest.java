@@ -1,20 +1,22 @@
 package com.goldennode.api.core;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.LockHelper;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
+import com.goldennode.testutils.RepeatedTestRule;
 import com.goldennode.testutils.ThreadUtils;
 
-public class DistributedReentrantLockTest {
-
+public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
+  
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLock.class);
 
     private Lock lock;
@@ -23,7 +25,7 @@ public class DistributedReentrantLockTest {
 
     @Before
     public void set() {
-        lockTimeOut = 2000;
+        lockTimeOut = 100;
         lockName = "testLock";
         lock = new DistributedReentrantLock(lockName, lockTimeOut);
     }
@@ -39,6 +41,7 @@ public class DistributedReentrantLockTest {
     }
 
     @Test(expected = RuntimeException.class)
+    @RepeatTest(times = 10)
     public void lock1_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
         LockContext.threadProcessId.set(null);
         lock.lock();
@@ -46,7 +49,9 @@ public class DistributedReentrantLockTest {
     }
 
     @Test
+    @RepeatTest(times = 10)
     public void lock2_lockReleaser_should_be_null_after_unlocking_the_lock() {
+
         LockContext.threadProcessId.set("1");
         lock.lock();
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
@@ -56,6 +61,7 @@ public class DistributedReentrantLockTest {
     }
 
     @Test(expected = IllegalMonitorStateException.class)
+    @RepeatTest(times = 10)
     public void lock3_unlocking_the_lock_with_another_thread_should_throw_exception() {
         LockContext.threadProcessId.set("3");
         lock.lock();
@@ -66,14 +72,15 @@ public class DistributedReentrantLockTest {
     }
 
     @Test()
+    @RepeatTest(times = 10)
     public void lock4_autorelease_should_happen() {
-        final long before = 1000;
+       
         LockContext.threadProcessId.set("5");
         lock.lock();
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
-        LockHelper.sleep(lockTimeOut - before);
+        LockHelper.sleep(lockTimeOut/2);
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
-        LockHelper.sleep(before * 2);
+        LockHelper.sleep((int)(lockTimeOut * 1.1));
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser == null);
     }
 
@@ -83,16 +90,18 @@ public class DistributedReentrantLockTest {
     }
 
     @Test(expected = InterruptedException.class)
+    @RepeatTest(times = 10)
     public void lockInterruptibly() throws InterruptedException {
         LockContext.threadProcessId.set("6");
         lock.lock();
-        ThreadUtils.threadInterrupter(Thread.currentThread(), 1000);
+        ThreadUtils.threadInterrupter(Thread.currentThread(), 10);
         LockContext.threadProcessId.set("7");
         lock.lockInterruptibly();
         Assert.fail();
     }
 
     @Test
+    @RepeatTest(times = 10)
     public void tryLock() {
         LockContext.threadProcessId.set("8");
         Assert.assertTrue(lock.tryLock());
@@ -103,13 +112,13 @@ public class DistributedReentrantLockTest {
     }
 
     @Test(expected = InterruptedException.class)
+    @RepeatTest(times = 10)
     public void tryLockTimeOut() throws InterruptedException {
-        final long before = 1000;
         LockContext.threadProcessId.set("10");
         lock.lock();
-        ThreadUtils.threadInterrupter(Thread.currentThread(), before);
+        ThreadUtils.threadInterrupter(Thread.currentThread(), lockTimeOut/2);
         LockContext.threadProcessId.set("11");
-        lock.tryLock(before, TimeUnit.MILLISECONDS);
+        lock.tryLock(lockTimeOut, TimeUnit.MILLISECONDS);
         Assert.fail();
     }
 

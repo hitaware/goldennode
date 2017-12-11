@@ -2,14 +2,14 @@ package com.goldennode.api.goldennodecluster;
 
 import org.slf4j.LoggerFactory;
 
-public class LockRunnerWithLockTest implements Runnable {
-    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LockRunnerWithLockTest.class);
+public class LockRunnerWithLock implements Runnable {
+    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LockRunnerWithLock.class);
 	private int threadNo;
 	private ClusteredLockTest tl;
 	private int loopCount;
 	private int taskDuration;
 
-	public LockRunnerWithLockTest(ClusteredLockTest tl, int threadNo, int loopCount, int taskDuration) {
+	public LockRunnerWithLock(ClusteredLockTest tl, int threadNo, int loopCount, int taskDuration) {
 		this.threadNo = threadNo;
 		this.tl = tl;
 		this.loopCount = loopCount;

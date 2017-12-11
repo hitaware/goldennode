@@ -3,7 +3,7 @@ package com.goldennode.api.goldennodecluster;
 import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
-import com.goldennode.api.core.Server;
+import com.goldennode.api.goldennodecluster.GoldenNodeCluster;
 
 public class ClusterRunner extends Thread {
 	private String serverId;

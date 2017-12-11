@@ -8,8 +8,9 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.testutils.CollectionUtils;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ClusterJoinTest {
+public class ClusterJoinTest  extends GoldenNodeJunitRunner{
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterJoinTest.class);
     private static int THREAD_COUNT;
     private ClusterRunner[] th;

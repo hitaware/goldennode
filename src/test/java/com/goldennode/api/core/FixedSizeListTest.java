@@ -7,8 +7,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.goldennode.testutils.CollectionUtils;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class FixedSizeListTest {
+public class FixedSizeListTest  extends GoldenNodeJunitRunner{
 
     private static ArrayList<Integer> anotherList;
 

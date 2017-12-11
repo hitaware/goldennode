@@ -13,8 +13,9 @@ import com.goldennode.api.cluster.Cluster;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ClusteredLock;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ClusteredLockTest {
+public class ClusteredLockTest  extends GoldenNodeJunitRunner{
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLockTest.class);
     private static final int THREAD_COUNT = 50;
     private static final int LOOP_COUNT = 10;
@@ -62,7 +63,7 @@ public class ClusteredLockTest {
         }
         for (int i = 0; i < THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock1", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithLockTest(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
+            th[i] = new Thread(new LockRunnerWithLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
                     c[i].getOwner().getId());
             Thread.sleep(1000);
         }
@@ -89,7 +90,7 @@ public class ClusteredLockTest {
         }
         for (int i = 0; i < THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock2", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithLockTest(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_100),
+            th[i] = new Thread(new LockRunnerWithLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_100),
                     c[i].getOwner().getId());
             Thread.sleep(1000);
         }
@@ -116,7 +117,7 @@ public class ClusteredLockTest {
         }
         for (int i = 0; i < THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock3", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithLockTest(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
+            th[i] = new Thread(new LockRunnerWithoutLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
                     c[i].getOwner().getId());
             Thread.sleep(5000);
         }

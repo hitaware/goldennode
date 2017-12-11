@@ -10,18 +10,16 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.testutils.CollectionUtils;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.RepeatedTestRule;
 import com.goldennode.testutils.ThreadUtils;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GoldenNodeServerTest {
+public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
 
-    @Rule
-    public RepeatedTestRule rule = new RepeatedTestRule();
-
+  
     @Test()
     @RepeatTest(times = 10)
     public void testBlockingMulticast() throws ServerException, InterruptedException {
@@ -183,8 +181,7 @@ public class GoldenNodeServerTest {
             resp = server.unicastTCP(server2, r);
             resp = server.unicastTCP(server2, r);
             Assert.assertNull(resp.getReturnValue());
-            // TODO Class should be public for this to work. Fix it, it should
-            // work even if the class is an inner class
+            //Class should be public and not inner class for this to work.
             r = server.prepareRequest("_nullParamTest", new RequestOptions(), (Object) null);
             resp = server.unicastTCP(server2, r);
             resp = server.unicastTCP(server2, r);
@@ -239,8 +236,7 @@ public class GoldenNodeServerTest {
             resp = server.unicastUDP(server2, r);
             resp = server.unicastUDP(server2, r);
             Assert.assertNull(resp.getReturnValue());
-            // TODO Class should be public for this to work. Fix it, it should
-            // work even if the class is an inner class
+            //Class should be public and not inner class for this to work.
             r = server.prepareRequest("_nullParamTest", new RequestOptions(), (Object) null);
             resp = server.unicastUDP(server2, r);
             resp = server.unicastUDP(server2, r);

@@ -11,8 +11,9 @@ import org.junit.Test;
 import com.goldennode.api.core.LockException;
 import com.goldennode.api.core.LockService;
 import com.goldennode.api.core.LockServiceImpl;
+import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class LockServiceImplTest {
+public class LockServiceImplTest  extends GoldenNodeJunitRunner{
     @Test
     public void testLockUsageEndToEnd1() {
         LockService service = new LockServiceImpl();
