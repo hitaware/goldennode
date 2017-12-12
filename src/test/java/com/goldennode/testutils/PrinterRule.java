@@ -9,7 +9,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public class TestCasePrinterRule implements TestRule {
+public class PrinterRule implements TestRule {
 
     private OutputStream out = null;
     private final TestCasePrinter printer = new TestCasePrinter();
@@ -19,7 +19,7 @@ public class TestCasePrinterRule implements TestRule {
     private long timeStart;
     private long timeEnd;
 
-    public TestCasePrinterRule(OutputStream os) {
+    public PrinterRule(OutputStream os) {
         out = os;
     }
 

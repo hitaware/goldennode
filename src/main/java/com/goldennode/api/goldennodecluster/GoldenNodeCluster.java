@@ -121,6 +121,7 @@ public class GoldenNodeCluster extends Cluster {
         return (T) initClusteredObject(tt);
     }
 
+    @SuppressWarnings("PMD")
     private ClusteredObject initClusteredObject(ClusteredObject co) throws ClusterException {
         try {
             lock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());

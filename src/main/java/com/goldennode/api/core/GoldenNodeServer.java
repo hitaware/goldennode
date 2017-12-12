@@ -78,8 +78,8 @@ public class GoldenNodeServer extends Server {
         super();
     }
 
-    private void processBlockingRequest(Request r, DatagramSocket socket, InetAddress remoteAddress, int remotePort)
-            throws ServerException {
+    @SuppressWarnings("PMD")
+    private void processBlockingRequest(Request r, InetAddress remoteAddress, int remotePort) throws ServerException {
         Response rs = new Response();
         rs.setRequest(r);
         rs.setServerFrom(this);
@@ -97,11 +97,10 @@ public class GoldenNodeServer extends Server {
         } else {
             rs.setReturnValue(new ServerNotStartedException());
         }
-        respondToRequest(socket, rs, remoteAddress, remotePort);
+        respondToRequest(rs, remoteAddress, remotePort);
     }
 
-    private void respondToRequest(DatagramSocket socket, Response rs, InetAddress remoteAddress, int remotePort)
-            throws ServerException {
+    void respondToRequest(Response rs, InetAddress remoteAddress, int remotePort) throws ServerException {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream gos = new ObjectOutputStream(bos);
@@ -119,6 +118,7 @@ public class GoldenNodeServer extends Server {
         }
     }
 
+    @SuppressWarnings("PMD")
     private void processNonBlockingRequest(Request r) throws ServerException {
         if (isStarted()) {
             if (getOperationBase() != null) {
@@ -160,12 +160,12 @@ public class GoldenNodeServer extends Server {
                 if (receivedObject instanceof Request) {
                     processId.set(((Request) receivedObject).getProcessId());
                 }
-                UDPProcessor udpProcessor = new UDPProcessor(socket, receivedObject, packet, this.getShortId());
+                UDPProcessor udpProcessor = new UDPProcessor(socket, receivedObject, this.getShortId());
                 udpProcessor.start();
             }
         } catch (SocketException e) {
-            if (e.toString().contains("Socket closed")) {
-                // LOGGER.trace("socket closed");
+            if (e.toString().contains("Socket closed")) {//NOPMD
+                //LOGGER.trace("socket closed");
             } else {
                 LOGGER.error("Error occured", e);
             }
@@ -194,8 +194,8 @@ public class GoldenNodeServer extends Server {
         public void stop() {
             try {
                 socket.close();
-            } catch (Exception e) {
-                // LOGGER.trace("socket couldn't be closed");
+            } catch (Exception e) {//NOPMD
+                LOGGER.trace("socket couldn't be closed");
             }
 
             try {
@@ -214,8 +214,7 @@ public class GoldenNodeServer extends Server {
                 ObjectOutputStream outToClient = new ObjectOutputStream(socket.getOutputStream());
                 while (isStarted()) {
                     final Object receivedObject = inFromClient.readObject();
-                    // LOGGER.debug("Receiving " + ((Request)
-                    // receivedObject).getRequestType() + " " + receivedObject);
+                    //LOGGER.trace("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     r = (Request) receivedObject;
                     processId.set(r.getProcessId());
                     Response rs = new Response();
@@ -233,8 +232,8 @@ public class GoldenNodeServer extends Server {
                         rs.setReturnValue(new NoOperationBaseException());
                     }
                 }
-            } catch (EOFException e) {
-                // LOGGER.trace("eof occured");
+            } catch (EOFException e) {//NOPMD
+                //LOGGER.trace("eof occured");
             } catch (SocketException e) {
                 if (e.toString().contains("Socket closed") || e.toString().contains("Connection reset")
                         || e.toString().contains("Broken pipe")) {// NOPMD
@@ -265,8 +264,7 @@ public class GoldenNodeServer extends Server {
         private String shortServerId;
         private DatagramSocket socket;
 
-        UDPProcessor(final DatagramSocket socket, final Object receivedObject, final DatagramPacket packet,
-                String shortServerId) {
+        UDPProcessor(final DatagramSocket socket, final Object receivedObject, String shortServerId) {
             this.receivedObject = receivedObject;
             this.socket = socket;
             this.shortServerId = shortServerId;
@@ -302,7 +300,7 @@ public class GoldenNodeServer extends Server {
                     LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
                             || ((Request) receivedObject).getRequestType() == RequestType.UNICAST_UDP) {
-                        processBlockingRequest((Request) receivedObject, socket,
+                        processBlockingRequest((Request) receivedObject,
                                 ((Request) receivedObject).getServerFrom().getHost(),
                                 ((Request) receivedObject).getServerFrom().getUnicastUDPPort());
                     }
@@ -409,8 +407,8 @@ public class GoldenNodeServer extends Server {
                             tc.start();
                         }
                     } catch (SocketException e) {
-                        if (e.toString().contains("Socket closed")) {
-                            // LOGGER.trace("socket closed");
+                        if (e.toString().contains("Socket closed")) {//NOPMD
+                            //LOGGER.trace("socket closed");
                         } else {
                             LOGGER.error("Error occured", e);
                         }
@@ -526,16 +524,14 @@ public class GoldenNodeServer extends Server {
         try {
             if (isStarted()) {
                 request.setRequestType(RequestType.UNICAST_TCP);
-                // LOGGER.debug("Sending " + request.getRequestType() + " " +
-                // request);
+                //LOGGER.trace("Sending " + request.getRequestType() + " " + request);
                 clientSocket = new Socket(remoteServer.getHost(), remoteServer.getUnicastTCPPort());
                 clientSocket.setSoTimeout(request.getTimeout());
                 outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
                 inFromServer = new ObjectInputStream(clientSocket.getInputStream());
                 outToServer.writeObject(request);
                 Response response = (Response) inFromServer.readObject();
-                // LOGGER.debug("Received " + request.getRequestType() + " " +
-                // response);
+                //LOGGER.trace("Received " + request.getRequestType() + " " + response);
                 if (response.getReturnValue() instanceof Exception) {
                     throw new ServerException((Exception) response.getReturnValue());
                 }
@@ -560,8 +556,8 @@ public class GoldenNodeServer extends Server {
                 if (clientSocket != null) {
                     clientSocket.close();
                 }
-            } catch (IOException e) { //
-                // LOGGER.trace("socket couldn't be closed");
+            } catch (IOException e) { //NOPMD
+                //LOGGER.trace("socket couldn't be closed");
             }
         }
     }

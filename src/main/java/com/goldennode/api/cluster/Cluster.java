@@ -66,8 +66,8 @@ public abstract class Cluster {
 			stop();
 			LockHelper.sleep(HeartbeatTimer.TASK_PERIOD * 2);
 			start();
-		} catch (Exception e) {
-			//
+		} catch (Exception e) {//NOPMD
+			//Nothing to do
 		}
 	}
 }
