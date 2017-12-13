@@ -321,7 +321,7 @@ public class MethodUtils {
 		 * </p>
 		 * 
 		 * <p>
-		 * For example:<br />
+		 * For example:<br>
 		 * {@code myVersion.atLeast(JavaVersion.JAVA_1_4)}
 		 * <p>
 		 * 

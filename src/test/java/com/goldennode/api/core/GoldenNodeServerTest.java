@@ -207,7 +207,7 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
     }
 
     @Test(expected = ServerException.class)
-    @RepeatTest(times = 100)
+    @RepeatTest(times = 10)
     public void testUnicastUDP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         GoldenNodeServer server = null;
