@@ -26,9 +26,9 @@ public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
     public void teardown() throws ClusterException {
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 2 + 15000)
     @RepeatTest(times = 1)
-    public void test1() throws ClusterException, InterruptedException {
+    public void testCounter() throws ClusterException, InterruptedException {
         final Cluster c1 = ClusterFactory.getCluster();
         c1.start();
         final Cluster c2 = ClusterFactory.getCluster();
@@ -40,7 +40,7 @@ public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
                 for (int i = 0; i < 20; i++) {
                     counter.inccounter();
                 }
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 counter1 = counter.getcounter();
             } catch (ClusterException e1) {
                 throw new RuntimeException(e1);
@@ -55,7 +55,7 @@ public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
                 for (int i = 0; i < 20; i++) {
                     counter.inccounter();
                 }
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 counter2 = counter.getcounter();
             } catch (ClusterException e1) {
                 throw new RuntimeException(e1);

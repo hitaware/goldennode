@@ -11,20 +11,22 @@ import com.goldennode.testutils.SerializationUtils;
 import com.goldennode.testutils.ThreadUtils;
 
 public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
-    @Test
+    static final int DELAY = 100;
+
+    @Test(timeout = DELAY + 100)
     @RepeatTest(times = 1)
     public void testGetOwnerId1() {
         ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
-        ThreadUtils.threadInterrupter(Thread.currentThread(), 500);
+        ThreadUtils.threadInterrupter(Thread.currentThread(), DELAY);
         Assert.assertNull(cl.getOwnerId());
         Thread.interrupted();
     }
 
-    @Test
+    @Test(timeout = DELAY + 100)
     @RepeatTest(times = 1)
     public void testGetOwnerId2() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
-        ThreadUtils.run(() -> cl.setOwnerId("1"), 500);
+        ThreadUtils.run(() -> cl.setOwnerId("1"), DELAY);
         Assert.assertEquals("1", cl.getOwnerId());
     }
 

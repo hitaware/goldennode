@@ -30,8 +30,10 @@ import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeCluster extends Cluster {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeCluster.class);
-    static final int SERVER_ANNOUNCING_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("5000",
-            "com.goldennode.api.goldennodecluster.GoldenNodeCluster.serverAnnouncingDelay"));
+    static final int DEFAULT_SERVER_ANNOUNCING_DELAY = 5000;
+    static final int SERVER_ANNOUNCING_DELAY = Integer
+            .parseInt(SystemUtils.getSystemProperty(String.valueOf(DEFAULT_SERVER_ANNOUNCING_DELAY),
+                    "com.goldennode.api.goldennodecluster.GoldenNodeCluster.serverAnnouncingDelay"));
     static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
             "com.goldennode.api.goldennodecluster.GoldenNodeCluster.waitForMasterDelay"));
     private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",

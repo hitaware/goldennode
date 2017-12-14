@@ -16,7 +16,7 @@ import com.goldennode.testutils.RepeatTest;
 public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterTest.class);
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 1 + 100)
     @RepeatTest(times = 1)
     public void TestIllegalStartWithoutStopping() throws Throwable {
         Cluster c = null;
@@ -46,7 +46,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 1 + 100)
     @RepeatTest(times = 1)
     public void TestStop() throws Throwable {
         Cluster c = null;
@@ -60,7 +60,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 1 + 100)
     @RepeatTest(times = 1)
     public void TestStart() throws Throwable {
         Cluster c = null;
@@ -73,7 +73,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 3 + 100)
     @RepeatTest(times = 1)
     public void TestStopStart() throws Throwable {
         Cluster c = null;

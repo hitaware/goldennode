@@ -16,8 +16,10 @@ import com.goldennode.testutils.ThreadUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
+    static final int BLOCKING_MULTICAST_TIMEOUT = 500;
+    static final int MULTICAST_DELAY = 500;
 
-    @Test()
+    @Test(timeout = BLOCKING_MULTICAST_TIMEOUT * 3 + 500)
     @RepeatTest(times = 1)
     public void testBlockingMulticast() throws ServerException, InterruptedException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -33,17 +35,17 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             }
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
             Request r = server[0].prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
-            r.setTimeout(1000);
+            r.setTimeout(BLOCKING_MULTICAST_TIMEOUT);
             List<Response> l = server[0].blockingMulticast(r);
             Assert.assertEquals(4, l.size());
             Assert.assertEquals(7, ((Integer) l.get(0).getReturnValue()).intValue());
             r = server[0].prepareRequest("_echo", new RequestOptions(), "Hello ozgen");
-            r.setTimeout(1000);
+            r.setTimeout(BLOCKING_MULTICAST_TIMEOUT);
             l = server[0].blockingMulticast(r);
             Assert.assertEquals(4, l.size());
             Assert.assertNull(l.get(0).getReturnValue());
             r = server[0].prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
-            r.setTimeout(1000);
+            r.setTimeout(BLOCKING_MULTICAST_TIMEOUT);
             l = server[0].blockingMulticast(r);
             Assert.assertEquals(4, l.size());
             Assert.assertTrue(l.get(0).getReturnValue() instanceof InvocationTargetException);
@@ -60,7 +62,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test()
+    @Test(timeout = MULTICAST_DELAY * 2 + 500)
     @RepeatTest(times = 1)
     public void testMulticastSelfReceiveActive() throws ServerException {
         System.setProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast", "true");
@@ -86,8 +88,8 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             server.multicast(r);
             r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
             server.multicast(r);
-            server.stop(1000);
-            server2.stop(1000);
+            server.stop(MULTICAST_DELAY);
+            server2.stop(MULTICAST_DELAY);
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getGetSumCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getEchoCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());
@@ -100,7 +102,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test()
+    @Test(timeout = MULTICAST_DELAY * 2 + 500)
     @RepeatTest(times = 1)
     public void testMulticastNoSelfReceive() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -128,8 +130,8 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
             server.multicast(r);
             server.multicast(r);
-            server.stop(1000);
-            server2.stop(1000);
+            server.stop(MULTICAST_DELAY);
+            server2.stop(MULTICAST_DELAY);
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getEchoCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());
@@ -141,7 +143,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test(expected = ServerException.class)
+    @Test(expected = ServerException.class, timeout = 1000)
     @RepeatTest(times = 1)
     public void testUnicastTCP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -182,8 +184,8 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             Assert.assertTrue(e.getCause().getCause() instanceof RuntimeException);
             throw e;
         } finally {
-            server.stop(1000);
-            server2.stop(1000);
+            server.stop();
+            server2.stop();
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getEchoCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());
@@ -194,7 +196,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test(expected = ServerException.class)
+    @Test(expected = ServerException.class, timeout = 500)
     @RepeatTest(times = 1)
     public void testUnicastUDP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -235,8 +237,8 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             Assert.assertTrue(e.getCause().getCause() instanceof RuntimeException);
             throw e;
         } finally {
-            server.stop(1000);
-            server2.stop(1000);
+            server.stop();
+            server2.stop();
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getEchoCalled());
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());

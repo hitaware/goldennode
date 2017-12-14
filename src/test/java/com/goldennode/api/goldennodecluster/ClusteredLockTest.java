@@ -2,15 +2,10 @@ package com.goldennode.api.goldennodecluster;
 
 import java.util.concurrent.locks.Lock;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.cluster.Cluster;
-import com.goldennode.api.cluster.ClusterException;
-import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
@@ -18,15 +13,12 @@ import com.goldennode.testutils.RepeatTest;
 
 public class ClusteredLockTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLockTest.class);
-    private static final int THREAD_COUNT = 5;
+    private static final int THREAD_COUNT = 3;
     private static final int LOOP_COUNT = 10;
     private static final int PROTECTED_BLOK_TASK_DURATION_0 = 0;
     private static final int PROTECTED_BLOK_TASK_DURATION_100 = 100;
     private int counter;
-    private Cluster[] c;
     Lock[] lock;
-    private Thread[] th;
-    private int index = 0;
 
     public synchronized int getCounter() {
         LOGGER.debug("returning counter" + counter);
@@ -38,40 +30,29 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
         this.counter = counter;
     }
 
-    @Before
-    public void init() throws ClusterException {
-        c = new Cluster[ClusteredLockTest.THREAD_COUNT];
-        lock = new Lock[ClusteredLockTest.THREAD_COUNT];
-        th = new Thread[ClusteredLockTest.THREAD_COUNT];
-        counter = 0;
-    }
-
-    @After
-    public void teardown() throws ClusterException {
-        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i].stop();
-        }
-    }
-
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY
+            + ClusteredLockTest.THREAD_COUNT * (LOOP_COUNT) * 200)
     @RepeatTest(times = 1)
     public void testWithLock_No_Wait() throws Exception {
-        index++;
+        ClusterRunner[] cr = new ClusterRunner[ClusteredLockTest.THREAD_COUNT];
+        lock = new Lock[ClusteredLockTest.THREAD_COUNT];
+        Thread[] th = new Thread[ClusteredLockTest.THREAD_COUNT];
+        counter = 0;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30001);
+            cr[i] = new ClusterRunner(Integer.toString(i));
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i].start();
+            cr[i].start();
         }
+        Thread.sleep(GoldenNodeCluster.SERVER_ANNOUNCING_DELAY + 1000);
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            lock[i] = c[i].newClusteredObjectInstance("lock1", ClusteredLock.class);
+            lock[i] = cr[i].getCluster().newClusteredObjectInstance("lock1", ClusteredLock.class);
             th[i] = new Thread(new LockRunnerWithLock(this, i, ClusteredLockTest.LOOP_COUNT,
-                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), c[i].getOwner().getId());
-            Thread.sleep(1000);
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), cr[i].getCluster().getOwner().getId());
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
+            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(cr[i].getCluster().getPeers()),
+                    cr[i].getCluster().getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
@@ -79,27 +60,34 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
         }
         Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
         LOGGER.debug("Counter > " + getCounter());
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            cr[i].getCluster().stop();
+        }
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY
+            + ClusteredLockTest.THREAD_COUNT * (LOOP_COUNT * PROTECTED_BLOK_TASK_DURATION_100) * 3)
     @RepeatTest(times = 1)
     public void testWithLock_100ms_wait() throws Exception {
-        index++;
+        ClusterRunner[] cr = new ClusterRunner[ClusteredLockTest.THREAD_COUNT];
+        lock = new Lock[ClusteredLockTest.THREAD_COUNT];
+        Thread[] th = new Thread[ClusteredLockTest.THREAD_COUNT];
+        counter = 0;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30002);
+            cr[i] = new ClusterRunner(Integer.toString(i));
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i].start();
+            cr[i].start();
         }
+        Thread.sleep(GoldenNodeCluster.SERVER_ANNOUNCING_DELAY + 1000);
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            lock[i] = c[i].newClusteredObjectInstance("lock2", ClusteredLock.class);
+            lock[i] = cr[i].getCluster().newClusteredObjectInstance("lock2", ClusteredLock.class);
             th[i] = new Thread(new LockRunnerWithLock(this, i, ClusteredLockTest.LOOP_COUNT,
-                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_100), c[i].getOwner().getId());
-            Thread.sleep(1000);
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_100), cr[i].getCluster().getOwner().getId());
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
+            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(cr[i].getCluster().getPeers()),
+                    cr[i].getCluster().getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
@@ -107,27 +95,31 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
         }
         Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
         LOGGER.debug("Counter > " + getCounter());
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            cr[i].getCluster().stop();
+        }
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY + 5000)
     @RepeatTest(times = 1)
     public void testWithoutLock() throws Exception {
-        index++;
+        ClusterRunner[] cr = new ClusterRunner[ClusteredLockTest.THREAD_COUNT];
+        Thread[] th = new Thread[ClusteredLockTest.THREAD_COUNT];
+        counter = 0;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30003);
+            cr[i] = new ClusterRunner(Integer.toString(i));
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            c[i].start();
+            cr[i].start();
         }
+        Thread.sleep(GoldenNodeCluster.SERVER_ANNOUNCING_DELAY + 1000);
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            lock[i] = c[i].newClusteredObjectInstance("lock3", ClusteredLock.class);
             th[i] = new Thread(new LockRunnerWithoutLock(this, ClusteredLockTest.LOOP_COUNT,
-                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), c[i].getOwner().getId());
-            Thread.sleep(5000);
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), cr[i].getCluster().getOwner().getId());
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
-            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
+            Assert.assertTrue("Leader info: " + CollectionUtils.getContents(cr[i].getCluster().getPeers()),
+                    cr[i].getCluster().getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
@@ -135,5 +127,8 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
         }
         Assert.assertTrue(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT >= getCounter());
         LOGGER.debug("Counter > " + getCounter());
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            cr[i].getCluster().stop();
+        }
     }
 }

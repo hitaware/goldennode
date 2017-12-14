@@ -19,6 +19,10 @@ public class ClusterRunner extends Thread {
         }
     }
 
+    public Cluster getCluster() {
+        return c;
+    }
+
     public String getServerId() throws ClusterException {
         return serverId;
     }

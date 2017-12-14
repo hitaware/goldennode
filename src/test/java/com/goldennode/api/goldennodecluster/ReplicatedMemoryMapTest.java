@@ -31,7 +31,7 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
     public void teardown() throws ClusterException {
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 2 + 15000)
     @RepeatTest(times = 1)
     public void testReplication1() throws ClusterException, InterruptedException {
         final Cluster c1 = ClusterFactory.getCluster();
@@ -44,7 +44,7 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
                 for (int i = 0; i < 20; i++) {
                     map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
                 }
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 counter1 = map.size();
             } catch (ClusterException e1) {
                 throw new RuntimeException(e1);
@@ -58,7 +58,7 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
                 for (int i = 0; i < 20; i++) {
                     map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
                 }
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 counter2 = map.size();
             } catch (ClusterException e1) {
                 throw new RuntimeException(e1);
@@ -76,7 +76,7 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
         Assert.assertEquals(40, counter2);
     }
 
-    @Test
+    @Test(timeout = GoldenNodeCluster.DEFAULT_SERVER_ANNOUNCING_DELAY * 2 + 5000)
     @RepeatTest(times = 1)
     public void testOperations() throws ClusterException, InterruptedException {
         final Cluster c1 = ClusterFactory.getCluster();

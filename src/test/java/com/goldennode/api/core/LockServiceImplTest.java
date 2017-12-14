@@ -12,6 +12,8 @@ import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
 
 public class LockServiceImplTest extends GoldenNodeJunitRunner {
+    static final int DELAY = 100;
+
     @Test
     @RepeatTest(times = 1)
     public void testLockUsageEndToEnd1() {
@@ -66,7 +68,7 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
         service.deleteLock("lock1");
     }
 
-    @Test
+    @Test(timeout = DELAY+100)
     @RepeatTest(times = 1)
     public void testLockUsageEndToEnd8() throws InterruptedException {
         final Lock lock = new ReentrantLock();
@@ -79,7 +81,7 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
                 lock.unlock();
             }
         };
-        new Timer().schedule(task, 3000);
+        new Timer().schedule(task, DELAY);
         lock.lock();
         c.await();
         lock.unlock();
