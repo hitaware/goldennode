@@ -4,8 +4,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import junit.framework.Test;
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ java.lang.annotation.ElementType.METHOD })
 public @interface RepeatTest {

@@ -1,13 +1,11 @@
 package com.goldennode.api.goldennodecluster;
 
 public class LockRunnerWithoutLock implements Runnable {
-	private int threadNo;
 	private ClusteredLockTest tl;
 	private int loopCount;
 	private int taskDuration;
 
-	public LockRunnerWithoutLock(ClusteredLockTest tl, int threadNo, int loopCount, int taskDuration) {
-		this.threadNo = threadNo;
+	public LockRunnerWithoutLock(ClusteredLockTest tl, int loopCount, int taskDuration) {
 		this.tl = tl;
 		this.loopCount = loopCount;
 		this.taskDuration = taskDuration;

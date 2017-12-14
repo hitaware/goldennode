@@ -5,14 +5,12 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
-import com.goldennode.testutils.RepeatedTestRule;
 import com.goldennode.testutils.ThreadUtils;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

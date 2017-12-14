@@ -5,14 +5,12 @@ import java.util.concurrent.locks.Lock;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.LockHelper;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
-import com.goldennode.testutils.RepeatedTestRule;
 import com.goldennode.testutils.ThreadUtils;
 
 public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
