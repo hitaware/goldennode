@@ -14,9 +14,7 @@ import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.ThreadUtils;
 
 public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
-  
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLock.class);
-
     private Lock lock;
     private long lockTimeOut;
     private String lockName;
@@ -43,13 +41,11 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     public void lock1_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
         LockContext.threadProcessId.set(null);
         lock.lock();
-
     }
 
     @Test
     @RepeatTest(times = 10)
     public void lock2_lockReleaser_should_be_null_after_unlocking_the_lock() {
-
         LockContext.threadProcessId.set("1");
         lock.lock();
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
@@ -72,13 +68,12 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     @Test()
     @RepeatTest(times = 10)
     public void lock4_autorelease_should_happen() {
-       
         LockContext.threadProcessId.set("5");
         lock.lock();
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
-        LockHelper.sleep(lockTimeOut/2);
+        LockHelper.sleep(lockTimeOut / 2);
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser != null);
-        LockHelper.sleep((int)(lockTimeOut * 1.1));
+        LockHelper.sleep((int) (lockTimeOut * 1.1));
         Assert.assertTrue(((DistributedReentrantLock) lock).lockReleaser == null);
     }
 
@@ -114,10 +109,9 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     public void tryLockTimeOut() throws InterruptedException {
         LockContext.threadProcessId.set("10");
         lock.lock();
-        ThreadUtils.threadInterrupter(Thread.currentThread(), lockTimeOut/2);
+        ThreadUtils.threadInterrupter(Thread.currentThread(), lockTimeOut / 2);
         LockContext.threadProcessId.set("11");
         lock.tryLock(lockTimeOut, TimeUnit.MILLISECONDS);
         Assert.fail();
     }
-
 }

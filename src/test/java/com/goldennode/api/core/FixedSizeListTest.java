@@ -9,8 +9,7 @@ import org.junit.Test;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class FixedSizeListTest  extends GoldenNodeJunitRunner{
-
+public class FixedSizeListTest extends GoldenNodeJunitRunner {
     private static ArrayList<Integer> anotherList;
 
     @BeforeClass
@@ -23,7 +22,6 @@ public class FixedSizeListTest  extends GoldenNodeJunitRunner{
 
     @Test
     public void add() {
-
         FixedSizeList<Integer> list = new FixedSizeList<>(2);
         Assert.assertEquals(true, list.add(1));
         Assert.assertEquals(true, list.add(2));
@@ -34,7 +32,6 @@ public class FixedSizeListTest  extends GoldenNodeJunitRunner{
         list.clear();
         Assert.assertEquals(true, list.add(7));
         Assert.assertEquals(1, list.size());
-
     }
 
     @Test
@@ -57,7 +54,6 @@ public class FixedSizeListTest  extends GoldenNodeJunitRunner{
 
     @Test
     public void addAllWithIndex() {
-
         FixedSizeList<Integer> list4 = new FixedSizeList<>(7);
         list4.add(1);
         list4.add(2);
@@ -66,6 +62,5 @@ public class FixedSizeListTest  extends GoldenNodeJunitRunner{
         Assert.assertEquals(true, list4.addAll(2, anotherList));
         Assert.assertEquals(7, list4.size());
         Assert.assertEquals(true, CollectionUtils.verifyListContents(list4, 1, 2, 10, 11, 12, 3, 4));
-
     }
 }

@@ -5,43 +5,38 @@ import java.util.Stack;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public class Transaction {
+    protected Stack<Operation> history = new Stack<Operation>();
 
-	protected Stack<Operation> history = new Stack<Operation>();
+    public void createUndoRecord(Operation operation) {
+        history.push(operation);
+    }
 
-	public void createUndoRecord(Operation operation) {
+    public Stack<Operation> getHistory() {
+        return history;
+    }
 
-		history.push(operation);
-	}
+    public void undo() {
+        Operation operation = history.pop();
+        if (operation != null) {
+            try {
+                ReflectionUtils.callMethod(this, operation.getObjectMethod(), operation.getParams());
+            } catch (Exception e) {
+                throw new OperationException(e);
+            }
+        }
+    }
 
-	public Stack<Operation> getHistory() {
-		return history;
-	}
+    public void beginTransaction() {
+        history.clear();
+    }
 
-	public void undo() {
-		Operation operation = history.pop();
-		if (operation != null) {
-			try {
-				ReflectionUtils.callMethod(this, operation.getObjectMethod(),
-						operation.getParams());
-			} catch (Exception e) {
-				throw new OperationException(e);
-			}
-		}
+    public void commitTransaction() {
+        history.clear();
+    }
 
-	}
-
-	public void beginTransaction() {
-		history.clear();
-	}
-
-	public void commitTransaction() {
-		history.clear();
-	}
-
-	public void rollbackTransaction() {
-		while (!history.isEmpty()) {
-			undo();
-		}
-	}
-
+    public void rollbackTransaction() {
+        while (!history.isEmpty()) {
+            undo();
+        }
+    }
 }

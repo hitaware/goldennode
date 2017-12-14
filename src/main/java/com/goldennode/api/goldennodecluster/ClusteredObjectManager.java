@@ -49,6 +49,5 @@ public class ClusteredObjectManager {
                 clusteredObjects.remove(co.getPublicName());
             }
         }
-
     }
 }

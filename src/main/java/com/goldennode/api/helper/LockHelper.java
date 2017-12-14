@@ -1,7 +1,6 @@
 package com.goldennode.api.helper;
 
 public class LockHelper {
-
     public static void sleep(long timeout) {
         try {
             Thread.sleep(timeout);

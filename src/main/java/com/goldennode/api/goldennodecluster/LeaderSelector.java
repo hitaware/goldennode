@@ -22,7 +22,6 @@ public class LeaderSelector {
     }
 
     public void candidateDecisionLogic() {
-
         if (leaderId == null) {
             if (cluster.getCandidateServer().equals(cluster.getOwner())) {
                 LOGGER.debug("I am candidate for leadership");
@@ -30,11 +29,9 @@ public class LeaderSelector {
             } else {
                 LOGGER.debug("I am not candidate for leadership. Waiting for master to contact me.");
             }
-
         } else {
             waitForMaster();
         }
-
     }
 
     private void waitForMaster() {
@@ -58,12 +55,10 @@ public class LeaderSelector {
         try {
             LOGGER.trace("begin getLeadership.");
             LOGGER.debug("trying to get leadership");
-
             if (acquireLeadershipPrepare(cluster.getOwner().getId(), true)) {
                 MultiResponse responses = cluster.tcpMulticast(cluster.getPeers(),
                         new Operation(null, "acquireLeadershipPrepare", cluster.getOwner().getId()),
                         new RequestOptions(REQUESTS_TIMEOUT));
-
                 if (responses.isSuccessfulCall(true)) {
                     setCandidateLeaderId(cluster.getOwner().getId());
                     if (acquireLeadershipCommit(cluster.getOwner().getId(), true)) {
@@ -90,10 +85,8 @@ public class LeaderSelector {
 
     public boolean acquireLeadershipCommit(String id, boolean local) {
         try {
-
             LOGGER.trace("begin _acquireLeadershipCommit");
             LOGGER.debug("trying to acquire lead with id > " + id + " Thread Name:" + Thread.currentThread().getName());
-
             if (leaderId != null) {
                 LOGGER.error("lead has already been acquired by > " + leaderId);
                 return false;
@@ -103,7 +96,6 @@ public class LeaderSelector {
                 return false;
             }
             synchronized (lock) {
-
                 if (leaderId != null) {
                     LOGGER.error("lead has already been acquired by > " + leaderId);
                     return false;
@@ -125,11 +117,9 @@ public class LeaderSelector {
 
     public boolean acquireLeadershipPrepare(String id, boolean local) {
         try {
-
             LOGGER.trace("begin acquireLeadershipPrepare");
             LOGGER.debug("trying to acquire candidate lead with id > " + id + " Thread Name:"
                     + Thread.currentThread().getName());
-
             if (leaderId != null) {
                 LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
                 return false;
@@ -139,7 +129,6 @@ public class LeaderSelector {
                 return false;
             }
             synchronized (lock) {
-
                 if (leaderId != null) {
                     LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
                     return false;
@@ -161,7 +150,6 @@ public class LeaderSelector {
 
     private void setCandidateLeaderId(String candidateLeaderId) {
         synchronized (lock) {
-
             if (candidateLeaderId == null) {
                 LOGGER.debug("setting candidate leader to > " + candidateLeaderId);
                 this.candidateLeaderId = candidateLeaderId;
@@ -191,5 +179,4 @@ public class LeaderSelector {
             }
         }
     }
-
 }

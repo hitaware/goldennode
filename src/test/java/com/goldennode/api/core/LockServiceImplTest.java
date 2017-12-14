@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class LockServiceImplTest  extends GoldenNodeJunitRunner{
+public class LockServiceImplTest extends GoldenNodeJunitRunner {
     @Test
     public void testLockUsageEndToEnd1() {
         LockService service = new LockServiceImpl();

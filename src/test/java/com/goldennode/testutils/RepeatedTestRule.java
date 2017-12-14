@@ -5,7 +5,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 public class RepeatedTestRule implements TestRule {
-
     @Override
     public Statement apply(Statement statement, Description description) {
         Statement result = statement;

@@ -14,16 +14,14 @@ import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.ThreadUtils;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
+public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
 
-  
     @Test()
     @RepeatTest(times = 10)
     public void testBlockingMulticast() throws ServerException, InterruptedException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         System.setProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast", "true");
-
         try {
             GoldenNodeServer[] server = new GoldenNodeServer[5];
             for (int i = 0; i < 4; i++) {
@@ -33,7 +31,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
                 server[i].setOperationBase(op);
                 server[i].start();
             }
-
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
             Request r = server[0].prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
             r.setTimeout(1000);
@@ -89,17 +86,14 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             server.multicast(r);
             r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
             server.multicast(r);
-
             server.stop(1000);
             server2.stop(1000);
-
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getGetSumCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getEchoCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy2).getGetSumCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy2).getEchoCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy2).getGetSumExceptionCalled());
-
             Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         } finally {
             System.clearProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast");
@@ -134,7 +128,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
             server.multicast(r);
             server.multicast(r);
-
             server.stop(1000);
             server2.stop(1000);
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumCalled());
@@ -145,7 +138,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getGetSumExceptionCalled());
             Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         } finally {
-
         }
     }
 
@@ -158,7 +150,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
         OperationBase proxy1 = new OperationBaseImpl();
         OperationBase proxy2 = new OperationBaseImpl();
         try {
-
             server = new GoldenNodeServer("srv1");
             server.addServerStateListener((ServerStateListener) proxy1);
             server.setOperationBase(proxy1);
@@ -169,7 +160,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             server2.start();
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv2"));
-
             Request r = server.prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
             Response resp = null;
             resp = server.unicastTCP(server2, r);
@@ -213,7 +203,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
         OperationBase proxy1 = new OperationBaseImpl();
         OperationBase proxy2 = new OperationBaseImpl();
         try {
-
             server = new GoldenNodeServer("srv1");
             server.addServerStateListener((ServerStateListener) proxy1);
             server.setOperationBase(proxy1);
@@ -224,7 +213,6 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             server2.start();
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
             Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv2"));
-
             Request r = server.prepareRequest("_getSum", new RequestOptions(), new Integer(3), new Integer(4));
             Response resp = null;
             resp = server.unicastUDP(server2, r);
@@ -258,5 +246,4 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         }
     }
-
 }

@@ -69,13 +69,10 @@ public class MockGoldenNodeServer extends Server {
     @Override
     public void start() throws ServerException {
         start(0);
-
     }
 
     @Override
     public void stop() throws ServerException {
         stop(0);
-        
     }
-
 }

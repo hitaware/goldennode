@@ -5,8 +5,7 @@ import org.junit.Test;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.ThreadUtils;
 
-public class LockHelperTest  extends GoldenNodeJunitRunner{
-
+public class LockHelperTest extends GoldenNodeJunitRunner {
     @Test
     public void sleep() {
         final long waitInMs = 1000;
@@ -14,7 +13,6 @@ public class LockHelperTest  extends GoldenNodeJunitRunner{
         LockHelper.sleep(waitInMs * 2);
         try {
             synchronized (this) {
-
                 wait(waitInMs);
             }
         } catch (InterruptedException e) {
@@ -28,5 +26,4 @@ public class LockHelperTest  extends GoldenNodeJunitRunner{
         ThreadUtils.threadInterrupter(Thread.currentThread(), waitInMs);
         Thread.sleep(waitInMs * 2);
     }
-
 }

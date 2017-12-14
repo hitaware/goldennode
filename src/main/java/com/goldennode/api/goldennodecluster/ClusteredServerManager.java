@@ -27,10 +27,8 @@ public class ClusteredServerManager {
     }
 
     public void addPeer(Server server) {
-
         clusteredServers.add(server);
         allServers.add(server);
-
     }
 
     public void clear() {
@@ -52,7 +50,6 @@ public class ClusteredServerManager {
                 return server;
             }
         }
-
         return null;
     }
 
@@ -63,10 +60,8 @@ public class ClusteredServerManager {
         }
         LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > "
                 + sb.toString());
-
         return allServers.last();
     }
-
 
     public Collection<Server> getAllServers() {
         List<Server> allServers = new ArrayList<Server>();

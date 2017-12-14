@@ -12,7 +12,6 @@ public class ThreadUtils {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ThreadUtils.class);
 
     public static boolean hasThreadNamedLike(String text) {
-
         for (Thread t : Thread.getAllStackTraces().keySet()) {
             t.isAlive();
             if (t.getName().contains(text)) {
@@ -29,11 +28,8 @@ public class ThreadUtils {
                     LOGGER.debug("Thread is dead");
                     return false;
                 }
-
             }
-
         }
-
         return false;
     }
 

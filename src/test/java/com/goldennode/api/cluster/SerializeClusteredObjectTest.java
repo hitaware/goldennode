@@ -10,8 +10,7 @@ import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.SerializationUtils;
 import com.goldennode.testutils.ThreadUtils;
 
-public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner  {
-
+public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     @Test
     @RepeatTest(times = 10)
     public void testGetOwnerId1() {

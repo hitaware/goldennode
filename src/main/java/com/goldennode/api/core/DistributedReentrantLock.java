@@ -98,7 +98,6 @@ public class DistributedReentrantLock implements Lock {
             // we don't need to do so to check if current thread is owner
             return getOwnerThread().equals(LockContext.threadProcessId.get());
         }
-
     }
 
     public DistributedReentrantLock(String lockName, long lockTimeoutInMs) {
@@ -122,21 +121,17 @@ public class DistributedReentrantLock implements Lock {
                 LockContext.threadProcessId.set(lockingProcessId);
                 LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
                 unlock();
-
             }
         }, lockTimeoutInMs);
-
     }
 
     @Override
     public void unlock() {
-
         if (lockReleaser != null) {
             lockReleaser.cancel();
             lockReleaser = null;
         }
         sync.release(1);
-
     }
 
     @Override

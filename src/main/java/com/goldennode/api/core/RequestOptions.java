@@ -3,22 +3,22 @@ package com.goldennode.api.core;
 import com.goldennode.api.helper.SystemUtils;
 
 public class RequestOptions {
-	private static final int REQUEST_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
-			"com.goldennode.api.core.RequestOptions.requestTimeout"));
-	private int timeout = REQUEST_TIMEOUT;
+    private static final int REQUEST_TIMEOUT = Integer
+            .parseInt(SystemUtils.getSystemProperty("60000", "com.goldennode.api.core.RequestOptions.requestTimeout"));
+    private int timeout = REQUEST_TIMEOUT;
 
-	public RequestOptions() {
-	}
+    public RequestOptions() {
+    }
 
-	public RequestOptions(int timeout) {
-		this.timeout = timeout;
-	}
+    public RequestOptions(int timeout) {
+        this.timeout = timeout;
+    }
 
-	public int getTimeout() {
-		return timeout;
-	}
+    public int getTimeout() {
+        return timeout;
+    }
 
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
 }

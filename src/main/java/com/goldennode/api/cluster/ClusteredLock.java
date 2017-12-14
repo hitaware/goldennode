@@ -68,5 +68,4 @@ public class ClusteredLock extends ClusteredObject implements Lock {
     public Condition newCondition() {
         throw new UnsupportedOperationException();
     }
-
 }

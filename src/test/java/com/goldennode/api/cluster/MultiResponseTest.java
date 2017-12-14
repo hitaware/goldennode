@@ -11,7 +11,7 @@ import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class MultiResponseTest extends GoldenNodeJunitRunner{
+public class MultiResponseTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MultiResponseTest.class);
     private MultiResponse mrSuccessful;
     private MultiResponse mrErrorneous;

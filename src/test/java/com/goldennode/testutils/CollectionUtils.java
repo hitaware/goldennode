@@ -62,6 +62,5 @@ public class CollectionUtils {
 
     public static String getContents(Collection<?> set) {
         return set.stream().map(Object::toString).collect(Collectors.joining(","));
-
     }
 }

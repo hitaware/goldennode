@@ -17,9 +17,8 @@ import com.goldennode.api.cluster.ReplicatedMemoryList;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ReplicatedMemoryListTest  extends GoldenNodeJunitRunner{
+public class ReplicatedMemoryListTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryListTest.class);
-
     private int counter1;
     private int counter2;
 

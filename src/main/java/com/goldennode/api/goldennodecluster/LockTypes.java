@@ -1,16 +1,16 @@
 package com.goldennode.api.goldennodecluster;
 
 public enum LockTypes {
-	APPLICATION("$application"), CLUSTERED_OBJECT_MANAGER("$clusteredObjectManager"), CLUSTERED_SERVER_MANAGER(
-			"$clusteredServerManager");
-	private String name;
+    APPLICATION("$application"), CLUSTERED_OBJECT_MANAGER("$clusteredObjectManager"), CLUSTERED_SERVER_MANAGER(
+            "$clusteredServerManager");
+    private String name;
 
-	private LockTypes(String name) {
-		this.name = name;
-	}
+    private LockTypes(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public String toString() {
-		return name;
-	}
+    @Override
+    public String toString() {
+        return name;
+    }
 }

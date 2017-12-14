@@ -5,12 +5,9 @@ import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
 public class PortUtils {
-
     public static boolean portClosed(int port) {
-
         ServerSocket ss = null;
         DatagramSocket ds = null;
-
         try {
             ss = new ServerSocket(port);
             ss.setReuseAddress(true);
@@ -30,14 +27,11 @@ public class PortUtils {
                 ds.close();
             }
         }
-
     }
 
     public static boolean portOpen(int port) {
-
         ServerSocket ss = null;
         DatagramSocket ds = null;
-
         try {
             ss = new ServerSocket(port);
             ss.setReuseAddress(true);
@@ -57,6 +51,5 @@ public class PortUtils {
                 ds.close();
             }
         }
-
     }
 }

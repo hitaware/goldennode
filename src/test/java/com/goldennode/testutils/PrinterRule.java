@@ -10,10 +10,8 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 public class PrinterRule implements TestRule {
-
     private OutputStream out = null;
     private final TestCasePrinter printer = new TestCasePrinter();
-
     private String beforeContent = null;
     private String afterContent = null;
     private long timeStart;

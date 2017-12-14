@@ -15,7 +15,6 @@ public class OperationTest extends GoldenNodeJunitRunner {
 
     @Before
     public void init() {
-
         oper1 = new Operation("publicName1", "doJob");
         oper2 = new Operation("publicName1", "doJob", 1);
         oper3 = new Operation("publicName1", "doJob", "String");
@@ -66,5 +65,4 @@ public class OperationTest extends GoldenNodeJunitRunner {
         Assert.assertEquals(1, oper5.getParams().length);
         Assert.assertEquals(null, oper5.get(0));
     }
-
 }

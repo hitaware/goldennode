@@ -12,7 +12,6 @@ public class LockServiceImpl implements LockService {
     private Map<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
 
     public LockServiceImpl() {
-
     }
 
     @Override
@@ -103,8 +102,7 @@ public class LockServiceImpl implements LockService {
     }
 
     @Override
-    public boolean tryLock(String lockName, String processId, long timeout, TimeUnit unit)
-            throws InterruptedException {
+    public boolean tryLock(String lockName, String processId, long timeout, TimeUnit unit) throws InterruptedException {
         LockContext.threadProcessId.set(processId);
         Lock lb = locks.get(lockName);
         if (lb != null) {

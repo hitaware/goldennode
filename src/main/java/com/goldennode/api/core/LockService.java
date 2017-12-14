@@ -7,7 +7,7 @@ public interface LockService {
 
     void unlock(String lockName, String processId);
 
-    void createLock(String lockName,long lockTimeoutInMs);
+    void createLock(String lockName, long lockTimeoutInMs);
 
     void deleteLock(String lockName);
 

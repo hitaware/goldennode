@@ -6,56 +6,55 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class Response implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private Object returnValue;
+    private Exception exception;
+    private Server serverFrom;
+    private Request request;
 
-	private static final long serialVersionUID = 1L;
-	private Object returnValue;
-	private Exception exception;
-	private Server serverFrom;
-	private Request request;
+    public Response() {//
+    }
 
-	public Response() {//
-	}
+    public Request getRequest() {
+        return request;
+    }
 
-	public Request getRequest() {
-		return request;
-	}
+    public void setRequest(Request request) {
+        this.request = request;
+    }
 
-	public void setRequest(Request request) {
-		this.request = request;
-	}
+    public Server getServerFrom() {
+        return serverFrom;
+    }
 
-	public Server getServerFrom() {
-		return serverFrom;
-	}
+    public void setServerFrom(Server serverFrom) {
+        this.serverFrom = serverFrom;
+    }
 
-	public void setServerFrom(Server serverFrom) {
-		this.serverFrom = serverFrom;
-	}
+    public Object getReturnValue() {
+        return returnValue;
+    }
 
-	public Object getReturnValue() {
-		return returnValue;
-	}
+    public void setReturnValue(Object returnValue) {
+        this.returnValue = returnValue;
+    }
 
-	public void setReturnValue(Object returnValue) {
-		this.returnValue = returnValue;
-	}
+    @Override
+    public String toString() {
+        return " > Response [returnValue=" + returnValue + ", exception=" + exception + ", serverFrom=" + serverFrom
+                + "] ";
+    }
 
-	@Override
-	public String toString() {
-		return " > Response [returnValue=" + returnValue + ", exception="
-				+ exception + ", serverFrom=" + serverFrom + "] ";
-	}
-
-	public byte[] getBytes() {
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutputStream gos;
-			gos = new ObjectOutputStream(bos);
-			gos.writeObject(this);
-			gos.close();
-			return bos.toByteArray();
-		} catch (IOException e) {
-			return null;
-		}
-	}
+    public byte[] getBytes() {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream gos;
+            gos = new ObjectOutputStream(bos);
+            gos.writeObject(this);
+            gos.close();
+            return bos.toByteArray();
+        } catch (IOException e) {
+            return null;
+        }
+    }
 }

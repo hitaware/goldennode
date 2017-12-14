@@ -47,7 +47,6 @@ public class GoldenNodeCluster extends Cluster {
         this.lockService = lockService;
         server.setOperationBase(new GoldenNodeClusterOperationBaseImpl(this));
         server.addServerStateListener(new GoldenNodeClusterServerStateListenerImpl(this));
-
         lockService.createLock(LockTypes.APPLICATION.toString(), LOCK_TIMEOUT);
         lockService.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString(), LOCK_TIMEOUT);
         lockService.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(), LOCK_TIMEOUT);
@@ -196,7 +195,7 @@ public class GoldenNodeCluster extends Cluster {
     // 1)no need to sync because we don't add to a list more than once, we only
     // set a leader if coming server is master.
     // clusteredServerManager has a set.
-    // only we may have more than one heartbeatstatuslistener 
+    // only we may have more than one heartbeatstatuslistener
     void incomingServer(final Server server) throws ClusterException {
         if (clusteredServerManager.getServer(server.getId()) == null) {
             clusteredServerManager.addPeer(server);
@@ -388,7 +387,6 @@ public class GoldenNodeCluster extends Cluster {
 
     @Override
     public void start() throws ClusterException {
-
         try {
             getOwner().start();
         } catch (ServerAlreadyStartedException e) {
@@ -396,7 +394,6 @@ public class GoldenNodeCluster extends Cluster {
         } catch (ServerException e) {
             throw new ClusterException(e);
         }
-
     }
 
     @Override
@@ -419,5 +416,4 @@ public class GoldenNodeCluster extends Cluster {
     public Server getCandidateServer() {
         return clusteredServerManager.getCandidateServer();
     }
-
 }

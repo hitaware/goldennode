@@ -141,7 +141,6 @@ public class GoldenNodeServer extends Server {
     }
 
     public void processUDPRequests(DatagramSocket socket) {
-
         try {
             while (isStarted()) {
                 byte[] buf = new byte[MAX_UDPPACKET_SIZE];
@@ -172,7 +171,6 @@ public class GoldenNodeServer extends Server {
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.error("Error occured", e);
         }
-
     }
 
     public class TCPProcessor implements Runnable, Comparable<TCPProcessor> {
@@ -197,13 +195,11 @@ public class GoldenNodeServer extends Server {
             } catch (Exception e) {//NOPMD
                 LOGGER.trace("socket couldn't be closed");
             }
-
             try {
                 th.join();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-
         }
 
         @Override
@@ -254,11 +250,9 @@ public class GoldenNodeServer extends Server {
         public int compareTo(TCPProcessor o) {
             return shortServerId.compareTo(o.shortServerId);
         }
-
     }
 
     class UDPProcessor implements Runnable, Comparable<UDPProcessor> {
-
         private Object receivedObject;
         private Thread th;
         private String shortServerId;
@@ -270,7 +264,6 @@ public class GoldenNodeServer extends Server {
             this.shortServerId = shortServerId;
             th = new Thread(this, shortServerId + " UDPProcessor " + UUID.randomUUID().toString());
             udpProcessors.add(this);
-
         }
 
         public void start() {
@@ -279,7 +272,6 @@ public class GoldenNodeServer extends Server {
 
         public void stop() {
             th.interrupt();
-
             try {
                 LOGGER.debug("Will join. Server" + getShortId() + " Thread:" + Thread.currentThread().getName());
                 th.join();
@@ -287,15 +279,12 @@ public class GoldenNodeServer extends Server {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-
         }
 
         @Override
         public void run() {
-
             try {
-                Thread.currentThread()
-                        .setName(getShortId() + " UDPProcessor " + UUID.randomUUID().toString());
+                Thread.currentThread().setName(getShortId() + " UDPProcessor " + UUID.randomUUID().toString());
                 if (receivedObject instanceof Request) {
                     LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
@@ -349,7 +338,6 @@ public class GoldenNodeServer extends Server {
                             LOGGER.error("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
                                     + receivedObject);
                         }
-
                     }
                 }
             } catch (ServerException e) {
@@ -357,7 +345,6 @@ public class GoldenNodeServer extends Server {
             } finally {
                 udpProcessors.remove(this);
             }
-
         }
 
         @Override
@@ -442,40 +429,33 @@ public class GoldenNodeServer extends Server {
                 listener.serverStopping(GoldenNodeServer.this);
             }
             setStarted(false);
-
             multicastSocket.close();
             while (!multicastSocket.isClosed()) {
                 LockHelper.sleep(1000);
             }
-
             unicastSocket.close();
             while (!unicastSocket.isClosed()) {
                 LockHelper.sleep(1000);
             }
             tcpServerSocket.close();
-
             try {
                 thMulticastProcessor.join();
             } catch (InterruptedException e) {
                 LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
-
             try {
                 thUnicastUDPProcessor.join();
             } catch (InterruptedException e) {
                 LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
-
             try {
                 thTCPServerSocket.join();
-
             } catch (InterruptedException e) {
                 LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
-
             Iterator<TCPProcessor> iter = tcpProcessors.iterator();
             while (iter.hasNext()) {
                 TCPProcessor processor = iter.next();
@@ -629,7 +609,6 @@ public class GoldenNodeServer extends Server {
                 blockingMulticastLocks.put(request.getId(), lock);
                 htBlockingMulticastResponse.put(request.getId(),
                         Collections.synchronizedList(new FixedSizeList<Response>(maxResponses)));
-
                 multicastSocket.send(packet);
                 LOGGER.debug("Will wait. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
                 synchronized (lock) {
@@ -737,13 +716,10 @@ public class GoldenNodeServer extends Server {
     @Override
     public void start() throws ServerException {
         start(0);
-
     }
 
     @Override
     public void stop() throws ServerException {
         stop(0);
-
     }
-
 }

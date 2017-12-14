@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
-public class ClusterJoinTest  extends GoldenNodeJunitRunner{
+public class ClusterJoinTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterJoinTest.class);
     private static int THREAD_COUNT;
     private ClusterRunner[] th;
@@ -35,7 +35,6 @@ public class ClusterJoinTest  extends GoldenNodeJunitRunner{
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set), set.size() == 1);
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set),
                 set.contains(new Integer(THREAD_COUNT - 1).toString()));
-
         for (int i = 0; i < THREAD_COUNT; i++) {
             LOGGER.debug("Stopping serverId= " + th[i].getServerId());
             th[i].stopCluster();
@@ -47,7 +46,6 @@ public class ClusterJoinTest  extends GoldenNodeJunitRunner{
     }
 
     @Test
-
     public void testJoining2() throws Exception {
         LOGGER.debug("testJoining2 start");
         THREAD_COUNT = 10;
@@ -90,7 +88,6 @@ public class ClusterJoinTest  extends GoldenNodeJunitRunner{
         for (int i = 0; i < THREAD_COUNT; i++) {
             th[i].join();
         }
-
         LOGGER.debug("testJoining2 end.");
     }
 
@@ -149,5 +146,4 @@ public class ClusterJoinTest  extends GoldenNodeJunitRunner{
         }
         LOGGER.debug("testJoining3 end");
     }
-
 }
