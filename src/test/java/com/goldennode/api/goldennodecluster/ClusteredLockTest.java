@@ -28,12 +28,12 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     private int index = 0;
 
     public synchronized int getCounter() {
-        ClusteredLockTest.LOGGER.debug("returning counter" + counter);
+        LOGGER.debug("returning counter" + counter);
         return counter;
     }
 
     public synchronized void setCounter(int counter) {
-        ClusteredLockTest.LOGGER.debug("counter is being set to " + counter);
+        LOGGER.debug("counter is being set to " + counter);
         this.counter = counter;
     }
 
@@ -76,7 +76,7 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
             th[i].join();
         }
         Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
-        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
+        LOGGER.debug("Counter > " + getCounter());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
             th[i].join();
         }
         Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
-        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
+        LOGGER.debug("Counter > " + getCounter());
     }
 
     @Test
@@ -130,6 +130,6 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
             th[i].join();
         }
         Assert.assertTrue(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT >= getCounter());
-        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
+        LOGGER.debug("Counter > " + getCounter());
     }
 }

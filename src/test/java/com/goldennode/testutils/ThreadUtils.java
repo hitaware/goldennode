@@ -22,10 +22,10 @@ public class ThreadUtils {
                     }
                 }
                 if (t.isAlive()) {
-                    ThreadUtils.LOGGER.debug("Thread is alive");
+                    LOGGER.debug("Thread is alive");
                     return true;
                 } else {
-                    ThreadUtils.LOGGER.debug("Thread is dead");
+                    LOGGER.debug("Thread is dead");
                     return false;
                 }
             }

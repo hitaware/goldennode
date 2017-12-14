@@ -18,13 +18,13 @@ public class NotifyNotifyAll {
             try {
                 test.waitMeth();
             } catch (InterruptedException ex) {
-                NotifyNotifyAll.LOGGER.error("Error occured", ex);
+                LOGGER.error("Error occured", ex);
             }
-            NotifyNotifyAll.LOGGER.debug(Thread.currentThread() + " finished Execution(wait test)");
+            LOGGER.debug(Thread.currentThread() + " finished Execution(wait test)");
         };
         Runnable notifyTask = () -> {
             test.notifyMeth();
-            NotifyNotifyAll.LOGGER.debug(Thread.currentThread() + " finished Execution(notify test)");
+            LOGGER.debug(Thread.currentThread() + " finished Execution(notify test)");
         };
         Thread t1 = new Thread(waitTask, "WT1"); // will wait
         Thread t2 = new Thread(waitTask, "WT2"); // will wait
@@ -45,9 +45,9 @@ public class NotifyNotifyAll {
      */
     private synchronized void waitMeth() throws InterruptedException {
         // while (go != true) {
-        NotifyNotifyAll.LOGGER.debug(Thread.currentThread() + " is going to wait on this object");
+        LOGGER.debug(Thread.currentThread() + " is going to wait on this object");
         wait(); // release lock and reacquires on wakeup
-        NotifyNotifyAll.LOGGER.debug(Thread.currentThread() + " is woken up");
+        LOGGER.debug(Thread.currentThread() + " is woken up");
         // }
         go = false; // resetting condition
     }
@@ -58,8 +58,7 @@ public class NotifyNotifyAll {
      */
     private synchronized void notifyMeth() {
         // while (go == false) {
-        NotifyNotifyAll.LOGGER
-                .debug(Thread.currentThread() + " is going to notify all or one thread waiting on this object");
+        LOGGER.debug(Thread.currentThread() + " is going to notify all or one thread waiting on this object");
         go = true; // making condition true for waiting thread
         // notify(); // only one out of three waiting thread WT1, WT2,WT3
         // will woke up

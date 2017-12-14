@@ -24,10 +24,10 @@ public class LeaderSelector {
     public void candidateDecisionLogic() {
         if (leaderId == null) {
             if (cluster.getCandidateServer().equals(cluster.getOwner())) {
-                LeaderSelector.LOGGER.debug("I am candidate for leadership");
+                LOGGER.debug("I am candidate for leadership");
                 getLeadership();
             } else {
-                LeaderSelector.LOGGER.debug("I am not candidate for leadership. Waiting for master to contact me.");
+                LOGGER.debug("I am not candidate for leadership. Waiting for master to contact me.");
             }
         } else {
             waitForMaster();
@@ -46,15 +46,15 @@ public class LeaderSelector {
             //
         }
         if (getLeaderId() == null) {
-            LeaderSelector.LOGGER.debug("***REBOOTING*** Couldn't get master");
+            LOGGER.debug("***REBOOTING*** Couldn't get master");
             cluster.reboot();
         }
     }
 
     private void getLeadership() {
         try {
-            LeaderSelector.LOGGER.trace("begin getLeadership.");
-            LeaderSelector.LOGGER.debug("trying to get leadership");
+            LOGGER.trace("begin getLeadership.");
+            LOGGER.debug("trying to get leadership");
             if (acquireLeadershipPrepare(cluster.getOwner().getId(), true)) {
                 MultiResponse responses = cluster.tcpMulticast(cluster.getPeers(),
                         new Operation(null, "acquireLeadershipPrepare", cluster.getOwner().getId()),
@@ -69,90 +69,89 @@ public class LeaderSelector {
                             if (responses.isSuccessfulCall(true)) {
                                 setLeaderId(cluster.getOwner().getId());
                                 listener.iAmSelectedAsLead();
-                                LeaderSelector.LOGGER.debug("Got leadership.");
+                                LOGGER.debug("Got leadership.");
                                 return;
                             }
                         }
                     }
                 }
             }
-            LeaderSelector.LOGGER.debug("***REBOOTING***");
+            LOGGER.debug("***REBOOTING***");
             cluster.reboot();
         } finally {
-            LeaderSelector.LOGGER.trace("end getLeadership.");
+            LOGGER.trace("end getLeadership.");
         }
     }
 
     public boolean acquireLeadershipCommit(String id, boolean local) {
         try {
-            LeaderSelector.LOGGER.trace("begin _acquireLeadershipCommit");
-            LeaderSelector.LOGGER.debug(
-                    "trying to acquire lead with id > " + id + " Thread Name:" + Thread.currentThread().getName());
+            LOGGER.trace("begin _acquireLeadershipCommit");
+            LOGGER.debug("trying to acquire lead with id > " + id + " Thread Name:" + Thread.currentThread().getName());
             if (leaderId != null) {
-                LeaderSelector.LOGGER.error("lead has already been acquired by > " + leaderId);
+                LOGGER.error("lead has already been acquired by > " + leaderId);
                 return false;
             }
             if (candidateLeaderId != null && !candidateLeaderId.equals(id)) {
-                LeaderSelector.LOGGER.error("candidate lead mismatch > " + candidateLeaderId);
+                LOGGER.error("candidate lead mismatch > " + candidateLeaderId);
                 return false;
             }
             synchronized (lock) {
                 if (leaderId != null) {
-                    LeaderSelector.LOGGER.error("lead has already been acquired by > " + leaderId);
+                    LOGGER.error("lead has already been acquired by > " + leaderId);
                     return false;
                 }
                 if (candidateLeaderId != null && !candidateLeaderId.equals(id)) {
-                    LeaderSelector.LOGGER.error("candidate lead mismatch > " + candidateLeaderId);
+                    LOGGER.error("candidate lead mismatch > " + candidateLeaderId);
                     return false;
                 }
-                LeaderSelector.LOGGER.debug("acquired lead with id > " + id);
+                LOGGER.debug("acquired lead with id > " + id);
                 if (!local) {
                     setLeaderId(id);
                 }
                 return true;
             }
         } finally {
-            LeaderSelector.LOGGER.trace("end _acquireLeadershipCommit");
+            LOGGER.trace("end _acquireLeadershipCommit");
         }
     }
 
     public boolean acquireLeadershipPrepare(String id, boolean local) {
         try {
-            LeaderSelector.LOGGER.trace("begin acquireLeadershipPrepare");
-            LeaderSelector.LOGGER.debug("trying to acquire candidate lead with id > " + id + " Thread Name:"
+            LOGGER.trace("begin acquireLeadershipPrepare");
+            LOGGER.debug("trying to acquire candidate lead with id > " + id + " Thread Name:"
                     + Thread.currentThread().getName());
             if (leaderId != null) {
-                LeaderSelector.LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
+                LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
                 return false;
             }
             if (candidateLeaderId != null) {
-                LeaderSelector.LOGGER.error("candidate lead has already been acquired by > " + candidateLeaderId);
+                LOGGER.error("candidate lead has already been acquired by > " + candidateLeaderId);
                 return false;
             }
             synchronized (lock) {
                 if (leaderId != null) {
-                    LeaderSelector.LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
+                    LOGGER.error("lead has already been acquired by > " + candidateLeaderId);
                     return false;
                 }
                 if (candidateLeaderId != null) {
-                    LeaderSelector.LOGGER.error("candidate lead has already been acquired by > " + candidateLeaderId);
+                    LOGGER.error("candidate lead has already been acquired by > " + candidateLeaderId);
                     return false;
                 }
-                LeaderSelector.LOGGER.debug("acquired candidate lead with id > " + id);
+                LOGGER.debug("acquired candidate lead with id > " + id);
                 if (!local) {
                     setCandidateLeaderId(id);
                 }
                 return true;
             }
         } finally {
-            LeaderSelector.LOGGER.trace("end acquireLeadershipPrepare");
+            LOGGER.trace("end acquireLeadershipPrepare");
         }
     }
 
     private void setCandidateLeaderId(String candidateLeaderId) {
         synchronized (lock) {
             if (candidateLeaderId == null) {
-                LeaderSelector.LOGGER.debug("setting candidate leader to > " + candidateLeaderId);
+                LOGGER.debug("setting candidate leader to > " + candidateLeaderId);
                 this.candidateLeaderId = candidateLeaderId;
             }
         }
@@ -175,7 +174,7 @@ public class LeaderSelector {
     public void setLeaderId(String leaderId) {
         synchronized (lock) {
             if (this.leaderId == null) {
-                LeaderSelector.LOGGER.debug("setting leader to > " + leaderId);
+                LOGGER.debug("setting leader to > " + leaderId);
                 this.leaderId = leaderId;
             }
         }

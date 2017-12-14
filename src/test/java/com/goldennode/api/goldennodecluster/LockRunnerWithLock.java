@@ -19,14 +19,14 @@ public class LockRunnerWithLock implements Runnable {
     private void doJob() {
         try {
             for (int i = 0; i < loopCount; i++) {
-                LockRunnerWithLock.LOGGER.debug("will acquire lock " + tl.lock[threadNo]);
+                LOGGER.debug("will acquire lock " + tl.lock[threadNo]);
                 tl.lock[threadNo].lock();
-                LockRunnerWithLock.LOGGER.debug("acquired lock " + tl.lock[threadNo]);
+                LOGGER.debug("acquired lock " + tl.lock[threadNo]);
                 int tmp = tl.getCounter();
                 Thread.sleep(taskDuration);
                 tl.setCounter(tmp + 1);
                 tl.lock[threadNo].unlock();
-                LockRunnerWithLock.LOGGER.debug("released lock " + tl.lock[threadNo]);
+                LOGGER.debug("released lock " + tl.lock[threadNo]);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

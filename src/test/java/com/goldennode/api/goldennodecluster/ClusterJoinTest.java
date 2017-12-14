@@ -17,14 +17,14 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
 
     @Test
     public void testJoining1() throws Exception {
-        ClusterJoinTest.LOGGER.debug("testJoining1 start");
+        LOGGER.debug("testJoining1 start");
         ClusterJoinTest.THREAD_COUNT = 5;
         th = new ClusterRunner[ClusterJoinTest.THREAD_COUNT];
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
             th[i] = new ClusterRunner(new Integer(i).toString());
         }
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
-            ClusterJoinTest.LOGGER.debug("Starting serverId= " + th[i].getServerId());
+            LOGGER.debug("Starting serverId= " + th[i].getServerId());
             th[i].start();
         }
         Thread.sleep(10000);
@@ -36,18 +36,18 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set),
                 set.contains(new Integer(ClusterJoinTest.THREAD_COUNT - 1).toString()));
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
-            ClusterJoinTest.LOGGER.debug("Stopping serverId= " + th[i].getServerId());
+            LOGGER.debug("Stopping serverId= " + th[i].getServerId());
             th[i].stopCluster();
         }
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        ClusterJoinTest.LOGGER.debug("testJoining1 end");
+        LOGGER.debug("testJoining1 end");
     }
 
     @Test
     public void testJoining2() throws Exception {
-        ClusterJoinTest.LOGGER.debug("testJoining2 start");
+        LOGGER.debug("testJoining2 start");
         ClusterJoinTest.THREAD_COUNT = 10;
         th = new ClusterRunner[ClusterJoinTest.THREAD_COUNT];
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
@@ -66,7 +66,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
             if (i == 8) {
                 Thread.sleep(1000);
             }
-            ClusterJoinTest.LOGGER.debug("Starting serverId= " + th[i].getServerId());
+            LOGGER.debug("Starting serverId= " + th[i].getServerId());
             th[i].start();
         }
         Thread.sleep(10000);
@@ -76,24 +76,24 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
         }
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set), set.size() == 1);
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set), set.contains("2"));
-        ClusterJoinTest.LOGGER.debug("testJoining2 end");
+        LOGGER.debug("testJoining2 end");
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
             if (i == 2) {
                 continue;
             }
-            ClusterJoinTest.LOGGER.debug("Stopping serverId= " + th[i].getServerId());
+            LOGGER.debug("Stopping serverId= " + th[i].getServerId());
             th[i].stopCluster();
         }
         th[2].stopCluster();
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        ClusterJoinTest.LOGGER.debug("testJoining2 end.");
+        LOGGER.debug("testJoining2 end.");
     }
 
     @Test
     public void testJoining3() throws Exception {
-        ClusterJoinTest.LOGGER.debug("testJoining3 start");
+        LOGGER.debug("testJoining3 start");
         ClusterJoinTest.THREAD_COUNT = 10;
         th = new ClusterRunner[ClusterJoinTest.THREAD_COUNT];
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
@@ -112,7 +112,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
             if (i == 8) {
                 Thread.sleep(1000);
             }
-            ClusterJoinTest.LOGGER.debug("Starting serverId= " + th[i].getServerId());
+            LOGGER.debug("Starting serverId= " + th[i].getServerId());
             th[i].start();
         }
         Thread.sleep(10000);
@@ -122,7 +122,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
         }
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set), set.size() == 1);
         Assert.assertTrue("Leader info: " + CollectionUtils.getContents(set), set.contains("2"));
-        ClusterJoinTest.LOGGER.debug("Stopping serverId= " + th[2].getServerId());
+        LOGGER.debug("Stopping serverId= " + th[2].getServerId());
         th[2].stopCluster();
         Thread.sleep(20000);
         set = new HashSet<>();
@@ -138,12 +138,12 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
             if (i == 2) {
                 continue;
             }
-            ClusterJoinTest.LOGGER.debug("Stopping serverId= " + th[i].getServerId());
+            LOGGER.debug("Stopping serverId= " + th[i].getServerId());
             th[i].stopCluster();
         }
         for (int i = 0; i < ClusterJoinTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        ClusterJoinTest.LOGGER.debug("testJoining3 end");
+        LOGGER.debug("testJoining3 end");
     }
 }

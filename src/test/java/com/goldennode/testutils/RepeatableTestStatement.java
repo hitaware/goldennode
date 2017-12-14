@@ -16,7 +16,7 @@ public class RepeatableTestStatement extends Statement {
     @Override
     public void evaluate() throws Throwable {
         for (int i = 0; i < times; i++) {
-            RepeatableTestStatement.LOGGER.debug("Running Test " + (i + 1) + ". time");
+            LOGGER.debug("Running Test " + (i + 1) + ". time");
             statement.evaluate();
         }
     }

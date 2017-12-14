@@ -48,7 +48,7 @@ public class HeartbeatTimer {
             task.cancel();
             tasks.remove(server.getId());
         } else {
-            HeartbeatTimer.LOGGER.warn("Task already cancelled for server " + server);
+            LOGGER.warn("Task already cancelled for server " + server);
         }
     }
 
@@ -68,8 +68,7 @@ public class HeartbeatTimer {
                         tasks.remove(server.getId());
                         listener.serverUnreachable(server);
                     } else {
-                        HeartbeatTimer.LOGGER
-                                .error("Can't ping peer. Will retry. Server: " + server + " " + e.toString());
+                        LOGGER.error("Can't ping peer. Will retry. Server: " + server + " " + e.toString());
                         errorCountByServer.put(server.getId(), ++count);
                     }
                 }
