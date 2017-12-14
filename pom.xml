@@ -201,12 +201,12 @@
 		<repository>
 			<id>releases-repo</id>
 			<name>Internal Releases</name>
-			<url>http://52.56.45.186:8081/nexus/content/repositories/releases/</url>
+			<url>http://nexus.thingabled.com:8080/nexus/content/repositories/releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshot-repo</id>
 			<name>Internal Releases</name>
-			<url>http://52.56.45.186:8081/nexus/content/repositories/snapshots/</url>
+			<url>http://nexus.thingabled.com:8080/nexus/content/repositories/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -233,12 +233,12 @@
 
 	<issueManagement>
 		<system>Jira</system>
-		<url>http://52.56.45.186:8080</url>
+		<url>http://jira.thingabled.com:8080</url>
 	</issueManagement>
 
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://35.177.29.255:8080</url>
+		<url>http://jenkins.thingabled.com:8080</url>
 		<notifiers>
 			<notifier>
 				<sendOnError>true</sendOnError>
