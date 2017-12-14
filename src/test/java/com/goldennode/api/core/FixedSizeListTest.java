@@ -14,10 +14,10 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
 
     @BeforeClass
     public static void init() {
-        anotherList = new ArrayList<Integer>();
-        anotherList.add(10);
-        anotherList.add(11);
-        anotherList.add(12);
+        FixedSizeListTest.anotherList = new ArrayList<Integer>();
+        FixedSizeListTest.anotherList.add(10);
+        FixedSizeListTest.anotherList.add(11);
+        FixedSizeListTest.anotherList.add(12);
     }
 
     @Test
@@ -37,7 +37,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
     @Test
     public void addAll() {
         FixedSizeList<Integer> list2 = new FixedSizeList<>(5);
-        Assert.assertEquals(true, list2.addAll(anotherList));
+        Assert.assertEquals(true, list2.addAll(FixedSizeListTest.anotherList));
         Assert.assertEquals(3, list2.size());
     }
 
@@ -48,7 +48,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
         list3.add(2);
         list3.add(3);
         list3.add(4);
-        Assert.assertEquals(false, list3.addAll(anotherList));
+        Assert.assertEquals(false, list3.addAll(FixedSizeListTest.anotherList));
         Assert.assertEquals(4, list3.size());
     }
 
@@ -59,7 +59,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
         list4.add(2);
         list4.add(3);
         list4.add(4);
-        Assert.assertEquals(true, list4.addAll(2, anotherList));
+        Assert.assertEquals(true, list4.addAll(2, FixedSizeListTest.anotherList));
         Assert.assertEquals(7, list4.size());
         Assert.assertEquals(true, CollectionUtils.verifyListContents(list4, 1, 2, 10, 11, 12, 3, 4));
     }

@@ -30,7 +30,7 @@ public class Clone extends GoldenNodeJunitRunner {
     @SuppressWarnings("unchecked")
     @Test
     public void test() throws Exception {
-        LOGGER.debug("Cloning lists");
+        Clone.LOGGER.debug("Cloning lists");
         List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
         List<InnerObject> cloneList2 = (List<InnerObject>) ((ArrayList<InnerObject>) list2).clone();
         Assert.assertEquals(cloneList, list);

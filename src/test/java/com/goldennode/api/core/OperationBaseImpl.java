@@ -23,7 +23,7 @@ public class OperationBaseImpl implements OperationBase, ServerStateListener {
 
     public Integer _getSum(Integer param1, Integer param2) {
         getSumCalled++;
-        LOGGER.debug("getSum(" + param1 + "," + param2 + ")");
+        OperationBaseImpl.LOGGER.debug("getSum(" + param1 + "," + param2 + ")");
         return new Integer(param1.intValue() + param2.intValue());
     }
 
@@ -34,23 +34,23 @@ public class OperationBaseImpl implements OperationBase, ServerStateListener {
 
     public void _echo(String param) {
         echoCalled++;
-        LOGGER.debug("echo " + param);
+        OperationBaseImpl.LOGGER.debug("echo " + param);
     }
 
     public String _nullParamTest(String param) {
         Assert.assertNull(param);
-        LOGGER.debug("Param is null? param = " + null);
+        OperationBaseImpl.LOGGER.debug("Param is null? param = " + null);
         return "x";
     }
 
     @Override
     public void serverStarted(Server server) {
-        LOGGER.debug("Server started." + server.toString());
+        OperationBaseImpl.LOGGER.debug("Server started." + server.toString());
     }
 
     @Override
     public void serverStopping(Server server) {
-        LOGGER.debug("Server stopped." + server.toString());
+        OperationBaseImpl.LOGGER.debug("Server stopped." + server.toString());
     }
 
     @Override

@@ -60,22 +60,23 @@ public class MultiResponse {
         try {
             Response r = getResponseAssertAllResponsesSameAndSuccessful();
             if (r.getReturnValue() == null && expectedResult == null) {
-                LOGGER.debug("Successful response > " + null);
+                MultiResponse.LOGGER.debug("Successful response > " + null);
                 return true;
             } else if (r.getReturnValue() == null && expectedResult != null) {
-                LOGGER.debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
+                MultiResponse.LOGGER
+                        .debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
                 return false;
             } else if (r.getReturnValue().equals(expectedResult)) {
-                LOGGER.debug("Successful response > " + r.getReturnValue());
+                MultiResponse.LOGGER.debug("Successful response > " + r.getReturnValue());
                 return true;
             }
-            LOGGER.debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
+            MultiResponse.LOGGER.debug("Unsuccessful expected > " + expectedResult + " actual > " + r.getReturnValue());
             return false;
         } catch (NoResponseException e) {
-            LOGGER.debug("No responses");
+            MultiResponse.LOGGER.debug("No responses");
             return true;
         } catch (ClusterException e) {
-            LOGGER.error("Unsuccessful response > " + e);
+            MultiResponse.LOGGER.error("Unsuccessful response > " + e);
             return false;
         }
     }
@@ -90,7 +91,7 @@ public class MultiResponse {
         for (Entry<Server, Object> entry : responses.entrySet()) {
             i++;
             if (entry.getValue() instanceof ClusterException) {
-                LOGGER.debug("Response error > " + entry.getValue());
+                MultiResponse.LOGGER.debug("Response error > " + entry.getValue());
                 throw (ClusterException) entry.getValue();
             }
             if (i > 1) {

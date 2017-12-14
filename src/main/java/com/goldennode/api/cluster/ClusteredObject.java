@@ -35,7 +35,7 @@ public abstract class ClusteredObject extends UndoableObject {
                     this.ownerId = ownerId;
                     lockClusteredObject.notifyAll();
                 } else {
-                    LOGGER.error("ownerid is not null");
+                    ClusteredObject.LOGGER.error("ownerid is not null");
                     throw new RuntimeException("Illegal operation");
                 }
             }

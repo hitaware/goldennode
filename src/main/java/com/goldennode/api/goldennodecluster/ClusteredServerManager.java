@@ -21,7 +21,7 @@ public class ClusteredServerManager {
     }
 
     public void removePeer(Server server) {
-        LOGGER.debug("Peer removed from the cluster: " + server);
+        ClusteredServerManager.LOGGER.debug("Peer removed from the cluster: " + server);
         clusteredServers.remove(server);
         allServers.remove(server);
     }
@@ -58,8 +58,8 @@ public class ClusteredServerManager {
         for (Server s : allServers.clone()) {
             sb.append(s.getId() + ", ");
         }
-        LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > "
-                + sb.toString());
+        ClusteredServerManager.LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size()
+                + " servers > " + sb.toString());
         return allServers.last();
     }
 

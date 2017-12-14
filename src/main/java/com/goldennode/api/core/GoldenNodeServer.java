@@ -157,7 +157,7 @@ public class GoldenNodeServer extends Server {
                     }
                 }
                 if (receivedObject instanceof Request) {
-                    processId.set(((Request) receivedObject).getProcessId());
+                    Server.processId.set(((Request) receivedObject).getProcessId());
                 }
                 UDPProcessor udpProcessor = new UDPProcessor(socket, receivedObject, getShortId());
                 udpProcessor.start();
@@ -166,10 +166,10 @@ public class GoldenNodeServer extends Server {
             if (e.toString().contains("Socket closed")) {//NOPMD
                 //LOGGER.trace("socket closed");
             } else {
-                LOGGER.error("Error occured", e);
+                GoldenNodeServer.LOGGER.error("Error occured", e);
             }
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error("Error occured", e);
+            GoldenNodeServer.LOGGER.error("Error occured", e);
         }
     }
 
@@ -193,7 +193,7 @@ public class GoldenNodeServer extends Server {
             try {
                 socket.close();
             } catch (Exception e) {//NOPMD
-                LOGGER.trace("socket couldn't be closed");
+                GoldenNodeServer.LOGGER.trace("socket couldn't be closed");
             }
             try {
                 th.join();
@@ -212,7 +212,7 @@ public class GoldenNodeServer extends Server {
                     final Object receivedObject = inFromClient.readObject();
                     //LOGGER.trace("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     r = (Request) receivedObject;
-                    processId.set(r.getProcessId());
+                    Server.processId.set(r.getProcessId());
                     Response rs = new Response();
                     rs.setRequest(r);
                     rs.setServerFrom(GoldenNodeServer.this);
@@ -236,11 +236,13 @@ public class GoldenNodeServer extends Server {
                     // Don't do anything
                 } else {
                     // stop();
-                    LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
+                    GoldenNodeServer.LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ",
+                            e.toString());
                 }
             } catch (IOException | ClassNotFoundException e) {
                 // stop();
-                LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ", e.toString());
+                GoldenNodeServer.LOGGER.error("Error occured" + (r == null ? "" : " while processing " + r) + " ",
+                        e.toString());
             } finally {
                 tcpProcessors.remove(this);
             }
@@ -273,9 +275,11 @@ public class GoldenNodeServer extends Server {
         public void stop() {
             th.interrupt();
             try {
-                LOGGER.debug("Will join. Server" + getShortId() + " Thread:" + Thread.currentThread().getName());
+                GoldenNodeServer.LOGGER
+                        .debug("Will join. Server" + getShortId() + " Thread:" + Thread.currentThread().getName());
                 th.join();
-                LOGGER.debug("Joined. Server:" + getShortId() + " Thread:" + Thread.currentThread().getName());
+                GoldenNodeServer.LOGGER
+                        .debug("Joined. Server:" + getShortId() + " Thread:" + Thread.currentThread().getName());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -286,7 +290,8 @@ public class GoldenNodeServer extends Server {
             try {
                 Thread.currentThread().setName(getShortId() + " UDPProcessor " + UUID.randomUUID().toString());
                 if (receivedObject instanceof Request) {
-                    LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
+                    GoldenNodeServer.LOGGER
+                            .debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
                             || ((Request) receivedObject).getRequestType() == RequestType.UNICAST_UDP) {
                         processBlockingRequest((Request) receivedObject,
@@ -298,23 +303,23 @@ public class GoldenNodeServer extends Server {
                     }
                 }
                 if (receivedObject instanceof Response) {
-                    LOGGER.debug("Receiving " + ((Response) receivedObject).getRequest().getRequestType() + " "
-                            + receivedObject);
+                    GoldenNodeServer.LOGGER.debug("Receiving "
+                            + ((Response) receivedObject).getRequest().getRequestType() + " " + receivedObject);
                     if (((Response) receivedObject).getRequest().getRequestType() == RequestType.UNICAST_UDP) {
                         Object lock = unicastLocks.get(((Response) receivedObject).getRequest().getId());
                         if (lock != null) {
                             htUnicastResponse.put(((Response) receivedObject).getRequest().getId(),
                                     (Response) receivedObject);
-                            LOGGER.debug("will notify. Server:" + getShortId() + " Thread:"
+                            GoldenNodeServer.LOGGER.debug("will notify. Server:" + getShortId() + " Thread:"
                                     + Thread.currentThread().getName());
                             synchronized (lock) {
                                 lock.notifyAll();
-                                LOGGER.debug("notified. Server" + getShortId() + " Thread:"
+                                GoldenNodeServer.LOGGER.debug("notified. Server" + getShortId() + " Thread:"
                                         + Thread.currentThread().getName());
                             }
                         } else {
-                            LOGGER.error("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
-                                    + receivedObject);
+                            GoldenNodeServer.LOGGER.error("Ignoring "
+                                    + ((Response) receivedObject).getRequest().getRequestType() + " " + receivedObject);
                         }
                     }
                     if (((Response) receivedObject).getRequest().getRequestType() == RequestType.BLOCKING_MULTICAST) {
@@ -325,23 +330,23 @@ public class GoldenNodeServer extends Server {
                             if (l != null) {
                                 boolean b = l.add((Response) receivedObject);
                                 if (!b) {// list is full notify
-                                    LOGGER.debug("will notify. Server:" + getShortId() + " Thread:"
+                                    GoldenNodeServer.LOGGER.debug("will notify. Server:" + getShortId() + " Thread:"
                                             + Thread.currentThread().getName());
                                     synchronized (lock) {
                                         lock.notifyAll();
-                                        LOGGER.debug("notified. Server" + getShortId() + " Thread:"
+                                        GoldenNodeServer.LOGGER.debug("notified. Server" + getShortId() + " Thread:"
                                                 + Thread.currentThread().getName());
                                     }
                                 }
                             }
                         } else {
-                            LOGGER.error("Ignoring " + ((Response) receivedObject).getRequest().getRequestType() + " "
-                                    + receivedObject);
+                            GoldenNodeServer.LOGGER.error("Ignoring "
+                                    + ((Response) receivedObject).getRequest().getRequestType() + " " + receivedObject);
                         }
                     }
                 }
             } catch (ServerException e) {
-                LOGGER.error("Error occured", e);
+                GoldenNodeServer.LOGGER.error("Error occured", e);
             } finally {
                 udpProcessors.remove(this);
             }
@@ -387,18 +392,18 @@ public class GoldenNodeServer extends Server {
                     if (e1.toString().contains("Socket closed")) {//NOPMD
                         //LOGGER.trace("socket closed");
                     } else {
-                        LOGGER.error("Error occured", e1);
+                        GoldenNodeServer.LOGGER.error("Error occured", e1);
                     }
                 } catch (IOException e2) {
-                    LOGGER.error("Error occured", e2);
+                    GoldenNodeServer.LOGGER.error("Error occured", e2);
                 }
             }, getShortId() + " TCPServerSocket " + UUID.randomUUID().toString());
             setStarted(true);
             thMulticastProcessor.start();
             thUnicastUDPProcessor.start();
             thTCPServerSocket.start();
-            LOGGER.debug("Server listening to unicastudpport:" + UNICAST_UDP_PORT + " multicastport:" + MULTICAST_PORT
-                    + " unicasttcpport:" + UNICAST_TCP_PORT);
+            GoldenNodeServer.LOGGER.debug("Server listening to unicastudpport:" + UNICAST_UDP_PORT + " multicastport:"
+                    + MULTICAST_PORT + " unicasttcpport:" + UNICAST_TCP_PORT);
             for (ServerStateListener listener : getServerStateListeners()) {
                 listener.serverStarted(GoldenNodeServer.this);
             }
@@ -430,19 +435,19 @@ public class GoldenNodeServer extends Server {
             try {
                 thMulticastProcessor.join();
             } catch (InterruptedException e) {
-                LOGGER.error("join interrupted");
+                GoldenNodeServer.LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
             try {
                 thUnicastUDPProcessor.join();
             } catch (InterruptedException e) {
-                LOGGER.error("join interrupted");
+                GoldenNodeServer.LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
             try {
                 thTCPServerSocket.join();
             } catch (InterruptedException e) {
-                LOGGER.error("join interrupted");
+                GoldenNodeServer.LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
             Iterator<TCPProcessor> iter = tcpProcessors.iterator();
@@ -538,7 +543,7 @@ public class GoldenNodeServer extends Server {
         try {
             if (isStarted()) {
                 request.setRequestType(RequestType.UNICAST_UDP);
-                LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+                GoldenNodeServer.LOGGER.debug("Sending " + request.getRequestType() + " " + request);
                 byte[] bytes = request.getBytes();
                 if (bytes.length > MAX_UDPPACKET_SIZE) {
                     throw new PacketSizeExceededException();
@@ -548,11 +553,12 @@ public class GoldenNodeServer extends Server {
                 Object lock = new Object();
                 unicastLocks.put(request.getId(), lock);
                 unicastSocket.send(packet);
-                LOGGER.debug("Will wait. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
+                GoldenNodeServer.LOGGER
+                        .debug("Will wait. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
                 synchronized (lock) {
                     try {
                         lock.wait(request.getTimeout());
-                        LOGGER.debug(
+                        GoldenNodeServer.LOGGER.debug(
                                 "Wait finished. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -587,7 +593,7 @@ public class GoldenNodeServer extends Server {
         try {
             if (isStarted()) {
                 request.setRequestType(RequestType.BLOCKING_MULTICAST);
-                LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+                GoldenNodeServer.LOGGER.debug("Sending " + request.getRequestType() + " " + request);
                 byte[] bytes = request.getBytes();
                 if (bytes.length > MAX_UDPPACKET_SIZE) {
                     throw new PacketSizeExceededException();
@@ -599,11 +605,12 @@ public class GoldenNodeServer extends Server {
                 htBlockingMulticastResponse.put(request.getId(),
                         Collections.synchronizedList(new FixedSizeList<Response>(maxResponses)));
                 multicastSocket.send(packet);
-                LOGGER.debug("Will wait. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
+                GoldenNodeServer.LOGGER
+                        .debug("Will wait. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
                 synchronized (lock) {
                     try {
                         lock.wait(request.getTimeout());
-                        LOGGER.debug(
+                        GoldenNodeServer.LOGGER.debug(
                                 "Wait finished. Server:" + getShortId() + "Thread:" + Thread.currentThread().getName());
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -637,7 +644,7 @@ public class GoldenNodeServer extends Server {
         try {
             if (isStarted()) {
                 request.setRequestType(RequestType.MULTICAST);
-                LOGGER.debug("Sending " + request.getRequestType() + " " + request);
+                GoldenNodeServer.LOGGER.debug("Sending " + request.getRequestType() + " " + request);
                 byte[] bytes = request.getBytes();
                 if (bytes.length > MAX_UDPPACKET_SIZE) {
                     throw new PacketSizeExceededException();

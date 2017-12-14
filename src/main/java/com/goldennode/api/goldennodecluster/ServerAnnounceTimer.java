@@ -35,10 +35,10 @@ public class ServerAnnounceTimer {
                     cluster.multicast(new Operation(null, "announceServerJoining", cluster.getOwner()),
                             new RequestOptions());
                 } catch (ClusterException e) {
-                    LOGGER.error("Can't announce server joining: " + cluster.getOwner());
+                    ServerAnnounceTimer.LOGGER.error("Can't announce server joining: " + cluster.getOwner());
                     // This shouldn't never happen.
                 }
             }
-        }, 0, TASK_PERIOD);
+        }, 0, ServerAnnounceTimer.TASK_PERIOD);
     }
 }

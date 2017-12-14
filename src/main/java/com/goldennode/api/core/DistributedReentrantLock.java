@@ -119,7 +119,8 @@ public class DistributedReentrantLock implements Lock {
             public void run() {
                 String lockingProcessId = sync.getOwnerThread();
                 LockContext.threadProcessId.set(lockingProcessId);
-                LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
+                DistributedReentrantLock.LOGGER
+                        .debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
                 unlock();
             }
         }, lockTimeoutInMs);

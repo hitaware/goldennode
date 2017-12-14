@@ -19,11 +19,11 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lockBag = locks.get(lockName);
         if (lockBag != null) {
-            LOGGER.debug("will lock > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("will lock > " + lockName + " processId > " + processId);
             lockBag.lock();
-            LOGGER.debug("locked > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("locked > " + lockName + " processId > " + processId);
         } else {
-            LOGGER.warn("lock not found > " + lockName);
+            LockServiceImpl.LOGGER.warn("lock not found > " + lockName);
             throw new LockNotFoundException(lockName);
         }
     }
@@ -34,7 +34,7 @@ public class LockServiceImpl implements LockService {
         Lock lb = locks.get(lockName);
         if (lb != null) {
             lb.unlock();
-            LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
         } else {
             throw new LockNotFoundException(lockName);
         }
@@ -54,15 +54,15 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set("self");
         Lock lb = locks.get(lockName);
         if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + "self");
+            LockServiceImpl.LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + "self");
             boolean result = lb.tryLock();
             if (result) {
                 locks.remove(lockName);
                 lb.unlock();
-                LOGGER.debug("unlocked > " + lockName + " processId > " + "self");
-                LOGGER.debug("removed lock > " + lockName);
+                LockServiceImpl.LOGGER.debug("unlocked > " + lockName + " processId > " + "self");
+                LockServiceImpl.LOGGER.debug("removed lock > " + lockName);
             } else {
-                LOGGER.warn("can't delete Lock as it can't be acquired > " + lockName);
+                LockServiceImpl.LOGGER.warn("can't delete Lock as it can't be acquired > " + lockName);
                 throw new LockException("can't delete Lock as it can't be acquired > " + lockName);
             }
         } else {
@@ -75,9 +75,9 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lb = locks.get(lockName);
         if (lb != null) {
-            LOGGER.debug("will lock(lockInterruptibly) > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("will lock(lockInterruptibly) > " + lockName + " processId > " + processId);
             lb.lockInterruptibly();
-            LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
         } else {
             throw new LockNotFoundException(lockName);
         }
@@ -88,12 +88,12 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lb = locks.get(lockName);
         if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
             boolean result = lb.tryLock();
             if (result) {
-                LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
+                LockServiceImpl.LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
             } else {
-                LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
+                LockServiceImpl.LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
             }
             return result;
         } else {
@@ -106,12 +106,12 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lb = locks.get(lockName);
         if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
+            LockServiceImpl.LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
             boolean result = lb.tryLock(timeout, unit);
             if (result) {
-                LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
+                LockServiceImpl.LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
             } else {
-                LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
+                LockServiceImpl.LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
             }
             return result;
         } else {

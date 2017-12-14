@@ -28,26 +28,26 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     private int index = 0;
 
     public synchronized int getCounter() {
-        LOGGER.debug("returning counter" + counter);
+        ClusteredLockTest.LOGGER.debug("returning counter" + counter);
         return counter;
     }
 
     public synchronized void setCounter(int counter) {
-        LOGGER.debug("counter is being set to " + counter);
+        ClusteredLockTest.LOGGER.debug("counter is being set to " + counter);
         this.counter = counter;
     }
 
     @Before
     public void init() throws ClusterException {
-        c = new Cluster[THREAD_COUNT];
-        lock = new Lock[THREAD_COUNT];
-        th = new Thread[THREAD_COUNT];
+        c = new Cluster[ClusteredLockTest.THREAD_COUNT];
+        lock = new Lock[ClusteredLockTest.THREAD_COUNT];
+        th = new Thread[ClusteredLockTest.THREAD_COUNT];
         counter = 0;
     }
 
     @After
     public void teardown() throws ClusterException {
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             c[i].stop();
         }
     }
@@ -55,81 +55,81 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     @Test
     public void testWithLock_No_Wait() throws Exception {
         index++;
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(THREAD_COUNT * (index - 1) + i), 30001);
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30001);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             c[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock1", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
-                    c[i].getOwner().getId());
+            th[i] = new Thread(new LockRunnerWithLock(this, i, ClusteredLockTest.LOOP_COUNT,
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), c[i].getOwner().getId());
             Thread.sleep(1000);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == THREAD_COUNT - 1);
+                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        Assert.assertEquals(LOOP_COUNT * THREAD_COUNT, getCounter());
-        LOGGER.debug("Counter > " + getCounter());
+        Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
+        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
     }
 
     @Test
     public void testWithLock_100ms_wait() throws Exception {
         index++;
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(THREAD_COUNT * (index - 1) + i), 30002);
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30002);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             c[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock2", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithLock(this, i, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_100),
-                    c[i].getOwner().getId());
+            th[i] = new Thread(new LockRunnerWithLock(this, i, ClusteredLockTest.LOOP_COUNT,
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_100), c[i].getOwner().getId());
             Thread.sleep(1000);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == THREAD_COUNT - 1);
+                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        Assert.assertEquals(LOOP_COUNT * THREAD_COUNT, getCounter());
-        LOGGER.debug("Counter > " + getCounter());
+        Assert.assertEquals(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT, getCounter());
+        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
     }
 
     @Test
     public void testWithoutLock() throws Exception {
         index++;
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            c[i] = ClusterFactory.getCluster(Integer.toString(THREAD_COUNT * (index - 1) + i), 30003);
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
+            c[i] = ClusterFactory.getCluster(Integer.toString(ClusteredLockTest.THREAD_COUNT * (index - 1) + i), 30003);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             c[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             lock[i] = c[i].newClusteredObjectInstance("lock3", ClusteredLock.class);
-            th[i] = new Thread(new LockRunnerWithoutLock(this, LOOP_COUNT, PROTECTED_BLOK_TASK_DURATION_0),
-                    c[i].getOwner().getId());
+            th[i] = new Thread(new LockRunnerWithoutLock(this, ClusteredLockTest.LOOP_COUNT,
+                    ClusteredLockTest.PROTECTED_BLOK_TASK_DURATION_0), c[i].getOwner().getId());
             Thread.sleep(5000);
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             Assert.assertTrue("Leader info: " + CollectionUtils.getContents(c[i].getPeers()),
-                    c[i].getPeers().size() == THREAD_COUNT - 1);
+                    c[i].getPeers().size() == ClusteredLockTest.THREAD_COUNT - 1);
             th[i].start();
         }
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
             th[i].join();
         }
-        Assert.assertTrue(LOOP_COUNT * THREAD_COUNT >= getCounter());
-        LOGGER.debug("Counter > " + getCounter());
+        Assert.assertTrue(ClusteredLockTest.LOOP_COUNT * ClusteredLockTest.THREAD_COUNT >= getCounter());
+        ClusteredLockTest.LOGGER.debug("Counter > " + getCounter());
     }
 }

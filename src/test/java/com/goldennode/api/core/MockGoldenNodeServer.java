@@ -29,40 +29,40 @@ public class MockGoldenNodeServer extends Server {
 
     @Override
     public void start(int delay) throws ServerException {
-        LOGGER.debug("server started");
+        MockGoldenNodeServer.LOGGER.debug("server started");
     }
 
     @Override
     public void stop(int delay) throws ServerException {
-        LOGGER.debug("server stopped");
+        MockGoldenNodeServer.LOGGER.debug("server stopped");
     }
 
     @Override
     public Response unicastTCP(Server remoteServer, Request request) throws ServerException {
-        LOGGER.debug("unicastTCP sent");
+        MockGoldenNodeServer.LOGGER.debug("unicastTCP sent");
         return null;
     }
 
     @Override
     public Response unicastUDP(Server remoteServer, Request request) throws ServerException {
-        LOGGER.debug("unicastUDP sent");
+        MockGoldenNodeServer.LOGGER.debug("unicastUDP sent");
         return null;
     }
 
     @Override
     public void multicast(Request request) throws ServerException {
-        LOGGER.debug("multicast sent");
+        MockGoldenNodeServer.LOGGER.debug("multicast sent");
     }
 
     @Override
     public List<Response> blockingMulticast(Request request) throws ServerException {
-        LOGGER.debug("blockingMulticast sent");
+        MockGoldenNodeServer.LOGGER.debug("blockingMulticast sent");
         return null;
     }
 
     @Override
     public Request prepareRequest(String method, RequestOptions options, Object... params) {
-        LOGGER.debug("request prepared");
+        MockGoldenNodeServer.LOGGER.debug("request prepared");
         return null;
     }
 

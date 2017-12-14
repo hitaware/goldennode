@@ -26,7 +26,7 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
      */
     @Override
     public void serverStarted(Server server) {
-        LOGGER.debug("***server started... id : " + server.getShortId());
+        GoldenNodeClusterServerStateListenerImpl.LOGGER.debug("***server started... id : " + server.getShortId());
         cluster.serverAnnounceTimer.schedule();
         LockHelper.sleep(GoldenNodeCluster.SERVER_ANNOUNCING_DELAY);
         cluster.serverAnnounceTimer.stop();
@@ -35,18 +35,19 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 
     @Override
     public void serverStopping(Server server) {
-        LOGGER.debug("***server stopping... id : " + server.getShortId());
+        GoldenNodeClusterServerStateListenerImpl.LOGGER.debug("***server stopping... id : " + server.getShortId());
         try {
             cluster.multicast(new Operation(null, "announceServerLeaving", cluster.getOwner()), new RequestOptions());
         } catch (ClusterException e) {
-            LOGGER.error("Can't announce server leaving: " + cluster.getOwner());
+            GoldenNodeClusterServerStateListenerImpl.LOGGER
+                    .error("Can't announce server leaving: " + cluster.getOwner());
             // This shouldn't never happen.
         }
     }
 
     @Override
     public void serverStopped(Server server) {
-        LOGGER.debug("***server serverStopped... id : " + server.getShortId());
+        GoldenNodeClusterServerStateListenerImpl.LOGGER.debug("***server serverStopped... id : " + server.getShortId());
         cluster.heartBeatTimer.stop();
         cluster.clusteredServerManager.clear();
         cluster.clusteredObjectManager.clearAll();
@@ -55,7 +56,7 @@ public class GoldenNodeClusterServerStateListenerImpl implements ServerStateList
 
     @Override
     public void serverStarting(Server server) {
-        LOGGER.debug("***server starting... id : " + server.getShortId());
+        GoldenNodeClusterServerStateListenerImpl.LOGGER.debug("***server starting... id : " + server.getShortId());
         cluster.heartBeatTimer.start();
     }
 }

@@ -47,9 +47,9 @@ public class GoldenNodeCluster extends Cluster {
         this.lockService = lockService;
         server.setOperationBase(new GoldenNodeClusterOperationBaseImpl(this));
         server.addServerStateListener(new GoldenNodeClusterServerStateListenerImpl(this));
-        lockService.createLock(LockTypes.APPLICATION.toString(), LOCK_TIMEOUT);
-        lockService.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString(), LOCK_TIMEOUT);
-        lockService.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(), LOCK_TIMEOUT);
+        lockService.createLock(LockTypes.APPLICATION.toString(), GoldenNodeCluster.LOCK_TIMEOUT);
+        lockService.createLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString(), GoldenNodeCluster.LOCK_TIMEOUT);
+        lockService.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(), GoldenNodeCluster.LOCK_TIMEOUT);
         clusteredObjectManager = new ClusteredObjectManager(this);
         clusteredServerManager = new ClusteredServerManager(server);
         leaderSelector = new LeaderSelector(this, () -> getOwner().setMaster(true));
@@ -92,7 +92,7 @@ public class GoldenNodeCluster extends Cluster {
             }
             t.setOwnerId(getOwner().getId());
             t.setCluster(this);
-            LOGGER.debug("will create object" + t);
+            GoldenNodeCluster.LOGGER.debug("will create object" + t);
             safeMulticast(new Operation(null, "addClusteredObject", t));
             return (T) clusteredObjectManager.getClusteredObject(t.getPublicName());
         } finally {
@@ -119,9 +119,9 @@ public class GoldenNodeCluster extends Cluster {
     private ClusteredObject initClusteredObject(ClusteredObject co) throws ClusterException {
         try {
             lock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
-            LOGGER.debug("Get List");
+            GoldenNodeCluster.LOGGER.debug("Get List");
             if (clusteredObjectManager.contains(co.getPublicName())) {
-                LOGGER.debug("Contains list > " + co.getPublicName());
+                GoldenNodeCluster.LOGGER.debug("Contains list > " + co.getPublicName());
                 return clusteredObjectManager.getClusteredObject(co.getPublicName());
             } else {
                 Server server = getOwnerOf(co.getPublicName());
@@ -133,7 +133,7 @@ public class GoldenNodeCluster extends Cluster {
                     unlock(server, co.getPublicName());
                     return clusteredObjectManager.getClusteredObject(co.getPublicName());
                 } else {
-                    LOGGER.debug("Will create list. Doesn't Contain list > " + co.getPublicName());
+                    GoldenNodeCluster.LOGGER.debug("Will create list. Doesn't Contain list > " + co.getPublicName());
                     safeMulticast(new Operation(null, "addClusteredObject", co));
                     return clusteredObjectManager.getClusteredObject(co.getPublicName());
                 }
@@ -157,20 +157,20 @@ public class GoldenNodeCluster extends Cluster {
         if (clusteredObjectManager.contains(co)) {
             throw new ClusterException("clusteredObject already exits" + co);
         }
-        LOGGER.debug("created ClusteredObject" + co);
+        GoldenNodeCluster.LOGGER.debug("created ClusteredObject" + co);
         co.setCluster(this);
         clusteredObjectManager.addClusteredObject(co);
         if (co.getOwnerId().equals(getOwner().getId())) {
-            createLock(co.getPublicName(), LOCK_TIMEOUT);
+            createLock(co.getPublicName(), GoldenNodeCluster.LOCK_TIMEOUT);
         }
     }
 
     void serverIsDeadOperation(Server server) {
         clusteredServerManager.removePeer(server);
         // TODO nullifyOwnerIdClusteredObjects(server);
-        LOGGER.debug("is dead server master?");
+        GoldenNodeCluster.LOGGER.debug("is dead server master?");
         if (server.isMaster()) {
-            LOGGER.debug("yes, it is");
+            GoldenNodeCluster.LOGGER.debug("yes, it is");
             leaderSelector.rejoinElection();
             /* NO NEED TO RESET FOR NOW
             heartBeatTimer.stop();
@@ -183,7 +183,7 @@ public class GoldenNodeCluster extends Cluster {
             leaderSelector.rejoinElection();
             */
         } else {
-            LOGGER.debug("no, it is not");
+            GoldenNodeCluster.LOGGER.debug("no, it is not");
         }
     }
 
@@ -195,17 +195,17 @@ public class GoldenNodeCluster extends Cluster {
         if (clusteredServerManager.getServer(server.getId()) == null) {
             clusteredServerManager.addPeer(server);
             if (server.isMaster()) {
-                LOGGER.debug("joining server is master" + server);
+                GoldenNodeCluster.LOGGER.debug("joining server is master" + server);
                 if (leaderSelector.getLeaderId() != null) {
-                    LOGGER.warn("There is already a master server: " + leaderSelector.getLeaderId());
+                    GoldenNodeCluster.LOGGER.warn("There is already a master server: " + leaderSelector.getLeaderId());
                     throw new ClusterException("Master already set");
                 }
                 leaderSelector.setLeaderId(server.getId());
             } else {
-                LOGGER.debug("joining server is non-master" + server);
+                GoldenNodeCluster.LOGGER.debug("joining server is non-master" + server);
             }
             heartBeatTimer.schedule(server, server1 -> {
-                LOGGER.warn("server is dead" + server1);
+                GoldenNodeCluster.LOGGER.warn("server is dead" + server1);
                 serverIsDeadOperation(server1);
             });
         }
@@ -282,11 +282,11 @@ public class GoldenNodeCluster extends Cluster {
     @Override
     public MultiResponse tcpMulticast(Collection<Server> servers, Operation operation, RequestOptions options) {
         try {
-            LOGGER.trace("begin processOperationOnServers");
+            GoldenNodeCluster.LOGGER.trace("begin processOperationOnServers");
             MultiResponse mr = new MultiResponse();
             for (Server remoteServer : servers) {
                 try {
-                    LOGGER.debug("Operation is in progress" + operation + "on server" + remoteServer);
+                    GoldenNodeCluster.LOGGER.debug("Operation is in progress" + operation + "on server" + remoteServer);
                     mr.addSuccessfulResponse(remoteServer, unicastTCP(remoteServer, operation, options));// TODO
                                                                                                          // run
                                                                                                          // tcp
@@ -301,17 +301,18 @@ public class GoldenNodeCluster extends Cluster {
                                                                                                  // clusteredobject
                                                                                                  // related
                                                                                                  // things are here?
-                        LOGGER.debug("ClusteredObjectNotAvailable " + operation + "server" + remoteServer);
+                        GoldenNodeCluster.LOGGER
+                                .debug("ClusteredObjectNotAvailable " + operation + "server" + remoteServer);
                     } else {
                         mr.addErroneusResponse(remoteServer, e);
-                        LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
-                                + e.toString());
+                        GoldenNodeCluster.LOGGER.error("Error occured while processing operation" + operation
+                                + "on server" + remoteServer + e.toString());
                     }
                 }
             }
             return mr;
         } finally {
-            LOGGER.trace("end processOperationOnServers");
+            GoldenNodeCluster.LOGGER.trace("end processOperationOnServers");
         }
     }
 
@@ -382,7 +383,7 @@ public class GoldenNodeCluster extends Cluster {
         try {
             getOwner().start();
         } catch (ServerAlreadyStartedException e) {
-            LOGGER.debug("Server already started. Server " + getOwner());
+            GoldenNodeCluster.LOGGER.debug("Server already started. Server " + getOwner());
         } catch (ServerException e) {
             throw new ClusterException(e);
         }
@@ -393,7 +394,7 @@ public class GoldenNodeCluster extends Cluster {
         try {
             getOwner().stop();
         } catch (ServerAlreadyStoppedException e) {
-            LOGGER.debug("Server already stopped. Server " + getOwner());
+            GoldenNodeCluster.LOGGER.debug("Server already stopped. Server " + getOwner());
         } catch (ServerException e) {
             throw new ClusterException(e);
         }

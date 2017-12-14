@@ -11,7 +11,7 @@ public class MethodUtils {
     public static Method getMatchingAccessibleMethod(Class<?> cls, String methodName, Class<?>... parameterTypes) {
         try {
             Method method = cls.getMethod(methodName, parameterTypes);
-            setAccessibleWorkaround(method);
+            MethodUtils.setAccessibleWorkaround(method);
             return method;
         } catch (NoSuchMethodException e) { // NOPMD - Swallow the exception
         }
@@ -20,32 +20,33 @@ public class MethodUtils {
         Method[] methods = cls.getMethods();
         for (Method method : methods) {
             // compare name and parameters
-            if (method.getName().equals(methodName) && isAssignable(parameterTypes, method.getParameterTypes(), true)) {
+            if (method.getName().equals(methodName)
+                    && MethodUtils.isAssignable(parameterTypes, method.getParameterTypes(), true)) {
                 // get accessible version of method
-                Method accessibleMethod = getAccessibleMethod(method);
+                Method accessibleMethod = MethodUtils.getAccessibleMethod(method);
                 if (accessibleMethod != null
-                        && (bestMatch == null || compareParameterTypes(accessibleMethod.getParameterTypes(),
+                        && (bestMatch == null || MethodUtils.compareParameterTypes(accessibleMethod.getParameterTypes(),
                                 bestMatch.getParameterTypes(), parameterTypes) < 0)) {
                     bestMatch = accessibleMethod;
                 }
             }
         }
         if (bestMatch != null) {
-            setAccessibleWorkaround(bestMatch);
+            MethodUtils.setAccessibleWorkaround(bestMatch);
         }
         return bestMatch;
     }
 
     public static Method getAccessibleMethod(Class<?> cls, String methodName, Class<?>... parameterTypes) {
         try {
-            return getAccessibleMethod(cls.getMethod(methodName, parameterTypes));
+            return MethodUtils.getAccessibleMethod(cls.getMethod(methodName, parameterTypes));
         } catch (NoSuchMethodException e) {
             return null;
         }
     }
 
     public static Method getAccessibleMethod(Method method) {
-        if (!isAccessible(method)) {
+        if (!MethodUtils.isAccessible(method)) {
             return null;
         }
         // If the declaring class is public, we are done
@@ -56,10 +57,10 @@ public class MethodUtils {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         // Check the implemented interfaces and subinterfaces
-        method = getAccessibleMethodFromInterfaceNest(cls, methodName, parameterTypes);
+        method = MethodUtils.getAccessibleMethodFromInterfaceNest(cls, methodName, parameterTypes);
         // Check the superclass chain
         if (method == null) {
-            method = getAccessibleMethodFromSuperclass(cls, methodName, parameterTypes);
+            method = MethodUtils.getAccessibleMethodFromSuperclass(cls, methodName, parameterTypes);
         }
         return method;
     }
@@ -89,7 +90,7 @@ public class MethodUtils {
             return;
         }
         Member m = (Member) o;
-        if (Modifier.isPublic(m.getModifiers()) && isPackageAccess(m.getDeclaringClass().getModifiers())) {
+        if (Modifier.isPublic(m.getModifiers()) && MethodUtils.isPackageAccess(m.getDeclaringClass().getModifiers())) {
             try {
                 o.setAccessible(true);
             } catch (SecurityException e) { // NOPMD
@@ -99,14 +100,14 @@ public class MethodUtils {
     }
 
     static boolean isPackageAccess(int modifiers) {
-        return (modifiers & ACCESS_TEST) == 0;
+        return (modifiers & MethodUtils.ACCESS_TEST) == 0;
     }
 
     private static final int ACCESS_TEST = Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
 
     static int compareParameterTypes(Class<?>[] left, Class<?>[] right, Class<?>[] actual) {
-        float leftCost = getTotalTransformationCost(actual, left);
-        float rightCost = getTotalTransformationCost(actual, right);
+        float leftCost = MethodUtils.getTotalTransformationCost(actual, left);
+        float rightCost = MethodUtils.getTotalTransformationCost(actual, right);
         return leftCost < rightCost ? -1 : rightCost < leftCost ? 1 : 0;
     }
 
@@ -116,18 +117,18 @@ public class MethodUtils {
             Class<?> srcClass, destClass;
             srcClass = srcArgs[i];
             destClass = destArgs[i];
-            totalCost += getObjectTransformationCost(srcClass, destClass);
+            totalCost += MethodUtils.getObjectTransformationCost(srcClass, destClass);
         }
         return totalCost;
     }
 
     private static float getObjectTransformationCost(Class<?> srcClass, Class<?> destClass) {
         if (destClass.isPrimitive()) {
-            return getPrimitivePromotionCost(srcClass, destClass);
+            return MethodUtils.getPrimitivePromotionCost(srcClass, destClass);
         }
         float cost = 0.0f;
         while (srcClass != null && !destClass.equals(srcClass)) {
-            if (destClass.isInterface() && isAssignable(srcClass, destClass)) {
+            if (destClass.isInterface() && MethodUtils.isAssignable(srcClass, destClass)) {
                 // slight penalty for interface match.
                 // we still want an exact match to override an interface match,
                 // but
@@ -155,13 +156,13 @@ public class MethodUtils {
         if (!cls.isPrimitive()) {
             // slight unwrapping penalty
             cost += 0.1f;
-            cls = wrapperToPrimitive(cls);
+            cls = MethodUtils.wrapperToPrimitive(cls);
         }
-        for (int i = 0; cls != destClass && i < ORDERED_PRIMITIVE_TYPES.length; i++) {
-            if (cls == ORDERED_PRIMITIVE_TYPES[i]) {
+        for (int i = 0; cls != destClass && i < MethodUtils.ORDERED_PRIMITIVE_TYPES.length; i++) {
+            if (cls == MethodUtils.ORDERED_PRIMITIVE_TYPES[i]) {
                 cost += 0.1f;
-                if (i < ORDERED_PRIMITIVE_TYPES.length - 1) {
-                    cls = ORDERED_PRIMITIVE_TYPES[i + 1];
+                if (i < MethodUtils.ORDERED_PRIMITIVE_TYPES.length - 1) {
+                    cls = MethodUtils.ORDERED_PRIMITIVE_TYPES[i + 1];
                 }
             }
         }
@@ -196,7 +197,7 @@ public class MethodUtils {
                     break;
                 }
                 // Recursively check our parent interfaces
-                method = getAccessibleMethodFromInterfaceNest(interfaces[i], methodName, parameterTypes);
+                method = MethodUtils.getAccessibleMethodFromInterfaceNest(interfaces[i], methodName, parameterTypes);
                 if (method != null) {
                     break;
                 }
@@ -206,37 +207,38 @@ public class MethodUtils {
     }
 
     public static Class<?> wrapperToPrimitive(Class<?> cls) {
-        return wrapperPrimitiveMap.get(cls);
+        return MethodUtils.wrapperPrimitiveMap.get(cls);
     }
 
     private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<Class<?>, Class<?>>();
     static {
-        primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
-        primitiveWrapperMap.put(Byte.TYPE, Byte.class);
-        primitiveWrapperMap.put(Character.TYPE, Character.class);
-        primitiveWrapperMap.put(Short.TYPE, Short.class);
-        primitiveWrapperMap.put(Integer.TYPE, Integer.class);
-        primitiveWrapperMap.put(Long.TYPE, Long.class);
-        primitiveWrapperMap.put(Double.TYPE, Double.class);
-        primitiveWrapperMap.put(Float.TYPE, Float.class);
-        primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
+        MethodUtils.primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
+        MethodUtils.primitiveWrapperMap.put(Byte.TYPE, Byte.class);
+        MethodUtils.primitiveWrapperMap.put(Character.TYPE, Character.class);
+        MethodUtils.primitiveWrapperMap.put(Short.TYPE, Short.class);
+        MethodUtils.primitiveWrapperMap.put(Integer.TYPE, Integer.class);
+        MethodUtils.primitiveWrapperMap.put(Long.TYPE, Long.class);
+        MethodUtils.primitiveWrapperMap.put(Double.TYPE, Double.class);
+        MethodUtils.primitiveWrapperMap.put(Float.TYPE, Float.class);
+        MethodUtils.primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
     }
     private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap = new HashMap<Class<?>, Class<?>>();
     static {
-        for (Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
-            Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
+        for (Class<?> primitiveClass : MethodUtils.primitiveWrapperMap.keySet()) {
+            Class<?> wrapperClass = MethodUtils.primitiveWrapperMap.get(primitiveClass);
             if (!primitiveClass.equals(wrapperClass)) {
-                wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
+                MethodUtils.wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
             }
         }
     }
 
     public static boolean isAssignable(Class<?>[] classArray, Class<?>... toClassArray) {
-        return isAssignable(classArray, toClassArray, isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
+        return MethodUtils.isAssignable(classArray, toClassArray,
+                MethodUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
     }
 
     public static boolean isJavaVersionAtLeast(JavaVersion requiredVersion) {
-        return JAVA_SPECIFICATION_VERSION_AS_ENUM.atLeast(requiredVersion);
+        return MethodUtils.JAVA_SPECIFICATION_VERSION_AS_ENUM.atLeast(requiredVersion);
     }
 
     public enum JavaVersion {
@@ -332,7 +334,7 @@ public class MethodUtils {
          */
         // helper for static importing
         static JavaVersion getJavaVersion(final String nom) {
-            return get(nom);
+            return JavaVersion.get(nom);
         }
 
         /**
@@ -388,17 +390,17 @@ public class MethodUtils {
     }
 
     public static boolean isAssignable(Class<?>[] classArray, Class<?>[] toClassArray, boolean autoboxing) {
-        if (isSameLength(classArray, toClassArray) == false) {
+        if (MethodUtils.isSameLength(classArray, toClassArray) == false) {
             return false;
         }
         if (classArray == null) {
-            classArray = EMPTY_CLASS_ARRAY;
+            classArray = MethodUtils.EMPTY_CLASS_ARRAY;
         }
         if (toClassArray == null) {
-            toClassArray = EMPTY_CLASS_ARRAY;
+            toClassArray = MethodUtils.EMPTY_CLASS_ARRAY;
         }
         for (int i = 0; i < classArray.length; i++) {
-            if (isAssignable(classArray[i], toClassArray[i], autoboxing) == false) {
+            if (MethodUtils.isAssignable(classArray[i], toClassArray[i], autoboxing) == false) {
                 return false;
             }
         }
@@ -406,7 +408,7 @@ public class MethodUtils {
     }
 
     public static boolean isAssignable(Class<?> cls, Class<?> toClass) {
-        return isAssignable(cls, toClass, isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
+        return MethodUtils.isAssignable(cls, toClass, MethodUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_5));
     }
 
     public static boolean isAssignable(Class<?> cls, Class<?> toClass, boolean autoboxing) {
@@ -420,13 +422,13 @@ public class MethodUtils {
         // autoboxing:
         if (autoboxing) {
             if (cls.isPrimitive() && !toClass.isPrimitive()) {
-                cls = primitiveToWrapper(cls);
+                cls = MethodUtils.primitiveToWrapper(cls);
                 if (cls == null) {
                     return false;
                 }
             }
             if (toClass.isPrimitive() && !cls.isPrimitive()) {
-                cls = wrapperToPrimitive(cls);
+                cls = MethodUtils.wrapperToPrimitive(cls);
                 if (cls == null) {
                     return false;
                 }
@@ -472,7 +474,7 @@ public class MethodUtils {
         return toClass.isAssignableFrom(cls);
     }
 
-    public static final String JAVA_SPECIFICATION_VERSION = getSystemProperty("java.specification.version");
+    public static final String JAVA_SPECIFICATION_VERSION = MethodUtils.getSystemProperty("java.specification.version");
 
     private static String getSystemProperty(String property) {
         try {
@@ -485,12 +487,13 @@ public class MethodUtils {
         }
     }
 
-    private static final JavaVersion JAVA_SPECIFICATION_VERSION_AS_ENUM = JavaVersion.get(JAVA_SPECIFICATION_VERSION);
+    private static final JavaVersion JAVA_SPECIFICATION_VERSION_AS_ENUM = JavaVersion
+            .get(MethodUtils.JAVA_SPECIFICATION_VERSION);
 
     public static Class<?> primitiveToWrapper(Class<?> cls) {
         Class<?> convertedClass = cls;
         if (cls != null && cls.isPrimitive()) {
-            convertedClass = primitiveWrapperMap.get(cls);
+            convertedClass = MethodUtils.primitiveWrapperMap.get(cls);
         }
         return convertedClass;
     }

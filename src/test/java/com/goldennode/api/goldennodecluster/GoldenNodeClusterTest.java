@@ -85,7 +85,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     private void validateAllPortsClosed() {
-        LOGGER.trace("validateAllPortsClosed");
+        GoldenNodeClusterTest.LOGGER.trace("validateAllPortsClosed");
         for (int i = 25002; i < 25010; i++) {
             Assert.assertTrue(i + " is open", PortUtils.portClosed(i));
         }
@@ -95,7 +95,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     private void validatePortsOpen() {
-        LOGGER.trace("validatePortsOpen");
+        GoldenNodeClusterTest.LOGGER.trace("validatePortsOpen");
         Assert.assertTrue("25002 is closed", !PortUtils.portClosed(25002));
         for (int i = 25003; i < 25010; i++) {
             Assert.assertTrue(i + " is open", PortUtils.portClosed(i));

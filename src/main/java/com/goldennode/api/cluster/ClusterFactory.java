@@ -68,18 +68,18 @@ public class ClusterFactory {
     }
 
     public static Cluster getCluster(String serverId, int multicastPort) throws ClusterException {
-        return getCluster(serverId, multicastPort, ClusterType.GOLDENNODECLUSTER);
+        return ClusterFactory.getCluster(serverId, multicastPort, ClusterType.GOLDENNODECLUSTER);
     }
 
     public static Cluster getCluster() throws ClusterException {
-        return getCluster(ClusterType.GOLDENNODECLUSTER);
+        return ClusterFactory.getCluster(ClusterType.GOLDENNODECLUSTER);
     }
 
     public static Cluster getCluster(String serverId) throws ClusterException {
-        return getCluster(serverId, ClusterType.GOLDENNODECLUSTER);
+        return ClusterFactory.getCluster(serverId, ClusterType.GOLDENNODECLUSTER);
     }
 
     public static Cluster getCluster(int multicastPort) throws ClusterException {
-        return getCluster(multicastPort, ClusterType.GOLDENNODECLUSTER);
+        return ClusterFactory.getCluster(multicastPort, ClusterType.GOLDENNODECLUSTER);
     }
 }

@@ -5,7 +5,7 @@ import com.goldennode.api.helper.SystemUtils;
 public class RequestOptions {
     private static final int REQUEST_TIMEOUT = Integer
             .parseInt(SystemUtils.getSystemProperty("60000", "com.goldennode.api.core.RequestOptions.requestTimeout"));
-    private int timeout = REQUEST_TIMEOUT;
+    private int timeout = RequestOptions.REQUEST_TIMEOUT;
 
     public RequestOptions() {
     }

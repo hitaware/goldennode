@@ -23,7 +23,7 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
 
     public void _announceServerJoining(Server s) throws ClusterException {
         if (cluster.clusteredServerManager.getServer(s.getId()) == null) {
-            LOGGER.debug("Server announced that it is joining. Server: " + s);
+            GoldenNodeClusterOperationBaseImpl.LOGGER.debug("Server announced that it is joining. Server: " + s);
             cluster.incomingServer(s);
             cluster.sendOwnServerIdentiy(s);
         }
@@ -34,14 +34,14 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
     }
 
     public void _announceServerLeaving(Server s) throws ClusterException {
-        LOGGER.debug("Server announced that it is leaving. Server: " + s);
+        GoldenNodeClusterOperationBaseImpl.LOGGER.debug("Server announced that it is leaving. Server: " + s);
         cluster.heartBeatTimer.cancelTaskForServer(s);
         cluster.serverIsDeadOperation(s);
     }
 
     public void _sendOwnServerIdentity(Server s) throws ClusterException {
         if (cluster.clusteredServerManager.getServer(s.getId()) == null) {
-            LOGGER.debug("Server sent its identity: " + s);
+            GoldenNodeClusterOperationBaseImpl.LOGGER.debug("Server sent its identity: " + s);
             cluster.incomingServer(s);
         }
     }
@@ -65,7 +65,8 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
                     throw new OperationException(e);
                 }
             } else {
-                LOGGER.debug("peer not ready, clusteredObject not found:" + operation.getObjectPublicName());
+                GoldenNodeClusterOperationBaseImpl.LOGGER
+                        .debug("peer not ready, clusteredObject not found:" + operation.getObjectPublicName());
                 throw new ClusteredObjectNotAvailableException();
             }
         } else {

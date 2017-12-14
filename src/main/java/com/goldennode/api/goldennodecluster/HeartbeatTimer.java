@@ -48,7 +48,7 @@ public class HeartbeatTimer {
             task.cancel();
             tasks.remove(server.getId());
         } else {
-            LOGGER.warn("Task already cancelled for server " + server);
+            HeartbeatTimer.LOGGER.warn("Task already cancelled for server " + server);
         }
     }
 
@@ -63,18 +63,19 @@ public class HeartbeatTimer {
                 } catch (ClusterException e) {
                     Integer count = null;
                     count = errorCountByServer.get(server.getId());
-                    if (count == null || count > TASK_RETRY) {
+                    if (count == null || count > HeartbeatTimer.TASK_RETRY) {
                         cancel();
                         tasks.remove(server.getId());
                         listener.serverUnreachable(server);
                     } else {
-                        LOGGER.error("Can't ping peer. Will retry. Server: " + server + " " + e.toString());
+                        HeartbeatTimer.LOGGER
+                                .error("Can't ping peer. Will retry. Server: " + server + " " + e.toString());
                         errorCountByServer.put(server.getId(), ++count);
                     }
                 }
             }
         };
         tasks.put(server.getId(), task);
-        timer.schedule(task, TASK_DELAY, TASK_PERIOD);
+        timer.schedule(task, HeartbeatTimer.TASK_DELAY, HeartbeatTimer.TASK_PERIOD);
     }
 }

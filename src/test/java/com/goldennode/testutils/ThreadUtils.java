@@ -15,17 +15,17 @@ public class ThreadUtils {
         for (Thread t : Thread.getAllStackTraces().keySet()) {
             t.isAlive();
             if (t.getName().contains(text)) {
-                for (int i = 0; i < THREAD_CHECK_RETRY; i++) {
+                for (int i = 0; i < ThreadUtils.THREAD_CHECK_RETRY; i++) {
                     if (t.isAlive()) {// TODO find another way of refreshing the
                                       // thread getAllStackTraces set
-                        LockHelper.sleep(THREAD_CHECK_RETRY_INTERVAL);
+                        LockHelper.sleep(ThreadUtils.THREAD_CHECK_RETRY_INTERVAL);
                     }
                 }
                 if (t.isAlive()) {
-                    LOGGER.debug("Thread is alive");
+                    ThreadUtils.LOGGER.debug("Thread is alive");
                     return true;
                 } else {
-                    LOGGER.debug("Thread is dead");
+                    ThreadUtils.LOGGER.debug("Thread is dead");
                     return false;
                 }
             }
