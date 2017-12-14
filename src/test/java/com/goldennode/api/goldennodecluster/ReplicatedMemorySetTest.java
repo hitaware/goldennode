@@ -39,38 +39,32 @@ public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
             c2.start();
             final Cluster c1t = c1;
             final Cluster c2t = c2;
-            Thread th1 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final Set<String> Set = c1t.newReplicatedMemorySetInstance("Set1");
-                        for (int i = 0; i < 20; i++) {
-                            Set.add(UUID.randomUUID().toString());
-                        }
-                        Thread.sleep(5000);
-                        counter1 = Set.size();
-                    } catch (ClusterException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+            Thread th1 = new Thread(() -> {
+                try {
+                    final Set<String> Set = c1t.newReplicatedMemorySetInstance("Set1");
+                    for (int i = 0; i < 20; i++) {
+                        Set.add(UUID.randomUUID().toString());
                     }
+                    Thread.sleep(5000);
+                    counter1 = Set.size();
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                } catch (InterruptedException e2) {
+                    throw new RuntimeException(e2);
                 }
             });
-            Thread th2 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final Set<String> Set = c2t.newReplicatedMemorySetInstance("Set1");
-                        for (int i = 0; i < 20; i++) {
-                            Set.add(UUID.randomUUID().toString());
-                        }
-                        Thread.sleep(5000);
-                        counter2 = Set.size();
-                    } catch (ClusterException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+            Thread th2 = new Thread(() -> {
+                try {
+                    final Set<String> Set = c2t.newReplicatedMemorySetInstance("Set1");
+                    for (int i = 0; i < 20; i++) {
+                        Set.add(UUID.randomUUID().toString());
                     }
+                    Thread.sleep(5000);
+                    counter2 = Set.size();
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                } catch (InterruptedException e2) {
+                    throw new RuntimeException(e2);
                 }
             });
             th1.start();

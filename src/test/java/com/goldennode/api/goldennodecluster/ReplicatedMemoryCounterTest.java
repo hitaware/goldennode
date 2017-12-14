@@ -31,40 +31,34 @@ public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
         c1.start();
         final Cluster c2 = ClusterFactory.getCluster();
         c2.start();
-        Thread th1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final ReplicatedMemoryCounter counter = c1.newClusteredObjectInstance("counter",
-                            ReplicatedMemoryCounter.class);
-                    for (int i = 0; i < 20; i++) {
-                        counter.inccounter();
-                    }
-                    Thread.sleep(5000);
-                    counter1 = counter.getcounter();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th1 = new Thread(() -> {
+            try {
+                final ReplicatedMemoryCounter counter = c1.newClusteredObjectInstance("counter",
+                        ReplicatedMemoryCounter.class);
+                for (int i = 0; i < 20; i++) {
+                    counter.inccounter();
                 }
+                Thread.sleep(5000);
+                counter1 = counter.getcounter();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
-        Thread th2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final ReplicatedMemoryCounter counter = c2.newClusteredObjectInstance("counter",
-                            ReplicatedMemoryCounter.class);
-                    for (int i = 0; i < 20; i++) {
-                        counter.inccounter();
-                    }
-                    Thread.sleep(5000);
-                    counter2 = counter.getcounter();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th2 = new Thread(() -> {
+            try {
+                final ReplicatedMemoryCounter counter = c2.newClusteredObjectInstance("counter",
+                        ReplicatedMemoryCounter.class);
+                for (int i = 0; i < 20; i++) {
+                    counter.inccounter();
                 }
+                Thread.sleep(5000);
+                counter2 = counter.getcounter();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
         th1.start();

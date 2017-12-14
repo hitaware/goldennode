@@ -50,9 +50,9 @@ public abstract class UndoableObject implements Serializable {
     }
     /*
      * public void beginTransaction() { history.clear(); }
-     * 
+     *
      * public void commitTransaction() { history.clear(); }
-     * 
+     *
      * public void rollbackTransaction() throws ObjectOperationException { while (!history.isEmpty()) { undo(); } }
      */
 }

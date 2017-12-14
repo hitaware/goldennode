@@ -288,7 +288,7 @@ public class MethodUtils {
 
         /**
          * Constructor.
-         * 
+         *
          * @param value
          *            the float value
          * @param name
@@ -305,12 +305,12 @@ public class MethodUtils {
          * Whether this version of Java is at least the version of Java passed
          * in.
          * </p>
-         * 
+         *
          * <p>
          * For example:<br>
          * {@code myVersion.atLeast(JavaVersion.JAVA_1_4)}
          * <p>
-         * 
+         *
          * @param requiredVersion
          *            the version to check against, not null
          * @return true if this version is equal to or greater than the
@@ -324,7 +324,7 @@ public class MethodUtils {
          * Transforms the given string with a Java version number to the
          * corresponding constant of this enumeration class. This method is used
          * internally.
-         * 
+         *
          * @param nom
          *            the Java version as string
          * @return the corresponding enumeration constant or <b>null</b> if the
@@ -339,7 +339,7 @@ public class MethodUtils {
          * Transforms the given string with a Java version number to the
          * corresponding constant of this enumeration class. This method is used
          * internally.
-         * 
+         *
          * @param nom
          *            the Java version as string
          * @return the corresponding enumeration constant or <b>null</b> if the
@@ -374,11 +374,11 @@ public class MethodUtils {
          * <p>
          * The string value is overridden to return the standard name.
          * </p>
-         * 
+         *
          * <p>
          * For example, <code>"1.5"</code>.
          * </p>
-         * 
+         *
          * @return the name, not null
          */
         @Override

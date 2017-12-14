@@ -36,38 +36,32 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
         c1.start();
         final Cluster c2 = ClusterFactory.getCluster();
         c2.start();
-        Thread th1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final Map<String, String> map = c2.newReplicatedMemoryMapInstance("map1");
-                    for (int i = 0; i < 20; i++) {
-                        map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-                    }
-                    Thread.sleep(5000);
-                    counter1 = map.size();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th1 = new Thread(() -> {
+            try {
+                final Map<String, String> map = c2.newReplicatedMemoryMapInstance("map1");
+                for (int i = 0; i < 20; i++) {
+                    map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
                 }
+                Thread.sleep(5000);
+                counter1 = map.size();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
-        Thread th2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final Map<String, String> map = c2.newReplicatedMemoryMapInstance("map1");
-                    for (int i = 0; i < 20; i++) {
-                        map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-                    }
-                    Thread.sleep(5000);
-                    counter2 = map.size();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th2 = new Thread(() -> {
+            try {
+                final Map<String, String> map = c2.newReplicatedMemoryMapInstance("map1");
+                for (int i = 0; i < 20; i++) {
+                    map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
                 }
+                Thread.sleep(5000);
+                counter2 = map.size();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
         th1.start();

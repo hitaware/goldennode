@@ -14,23 +14,17 @@ public class NotifyNotifyAll {
 
     public static void main(String args[]) throws InterruptedException {
         final NotifyNotifyAll test = new NotifyNotifyAll();
-        Runnable waitTask = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    test.waitMeth();
-                } catch (InterruptedException ex) {
-                    LOGGER.error("Error occured", ex);
-                }
-                LOGGER.debug(Thread.currentThread() + " finished Execution(wait test)");
+        Runnable waitTask = () -> {
+            try {
+                test.waitMeth();
+            } catch (InterruptedException ex) {
+                LOGGER.error("Error occured", ex);
             }
+            LOGGER.debug(Thread.currentThread() + " finished Execution(wait test)");
         };
-        Runnable notifyTask = new Runnable() {
-            @Override
-            public void run() {
-                test.notifyMeth();
-                LOGGER.debug(Thread.currentThread() + " finished Execution(notify test)");
-            }
+        Runnable notifyTask = () -> {
+            test.notifyMeth();
+            LOGGER.debug(Thread.currentThread() + " finished Execution(notify test)");
         };
         Thread t1 = new Thread(waitTask, "WT1"); // will wait
         Thread t2 = new Thread(waitTask, "WT2"); // will wait

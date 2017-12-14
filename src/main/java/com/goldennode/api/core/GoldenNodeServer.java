@@ -372,36 +372,25 @@ public class GoldenNodeServer extends Server {
             createMulticastSocket();
             createUnicastSocket();
             getTcpServerSocket();
-            thMulticastProcessor = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    processUDPRequests(multicastSocket);
-                }
-            }, getShortId() + " multicastProcessor " + UUID.randomUUID().toString());
-            thUnicastUDPProcessor = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    processUDPRequests(unicastSocket);
-                }
-            }, getShortId() + " UnicastUDPProcessor " + UUID.randomUUID().toString());
-            thTCPServerSocket = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (isStarted()) {
-                            Socket s = tcpServerSocket.accept();
-                            TCPProcessor tc = new TCPProcessor(s, GoldenNodeServer.this.getShortId());
-                            tc.start();
-                        }
-                    } catch (SocketException e) {
-                        if (e.toString().contains("Socket closed")) {//NOPMD
-                            //LOGGER.trace("socket closed");
-                        } else {
-                            LOGGER.error("Error occured", e);
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error("Error occured", e);
+            thMulticastProcessor = new Thread((Runnable) () -> processUDPRequests(multicastSocket),
+                    getShortId() + " multicastProcessor " + UUID.randomUUID().toString());
+            thUnicastUDPProcessor = new Thread((Runnable) () -> processUDPRequests(unicastSocket),
+                    getShortId() + " UnicastUDPProcessor " + UUID.randomUUID().toString());
+            thTCPServerSocket = new Thread((Runnable) () -> {
+                try {
+                    while (isStarted()) {
+                        Socket s = tcpServerSocket.accept();
+                        TCPProcessor tc = new TCPProcessor(s, GoldenNodeServer.this.getShortId());
+                        tc.start();
                     }
+                } catch (SocketException e1) {
+                    if (e1.toString().contains("Socket closed")) {//NOPMD
+                        //LOGGER.trace("socket closed");
+                    } else {
+                        LOGGER.error("Error occured", e1);
+                    }
+                } catch (IOException e2) {
+                    LOGGER.error("Error occured", e2);
                 }
             }, getShortId() + " TCPServerSocket " + UUID.randomUUID().toString());
             setStarted(true);

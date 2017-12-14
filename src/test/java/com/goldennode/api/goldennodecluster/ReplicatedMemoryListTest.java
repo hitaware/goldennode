@@ -36,38 +36,32 @@ public class ReplicatedMemoryListTest extends GoldenNodeJunitRunner {
         c1.start();
         final Cluster c2 = ClusterFactory.getCluster();
         c2.start();
-        Thread th1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<String> list = c2.newReplicatedMemoryListInstance("list1");
-                    for (int i = 0; i < 20; i++) {
-                        list.add(UUID.randomUUID().toString());
-                    }
-                    Thread.sleep(5000);
-                    counter1 = list.size();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th1 = new Thread(() -> {
+            try {
+                final List<String> list = c2.newReplicatedMemoryListInstance("list1");
+                for (int i = 0; i < 20; i++) {
+                    list.add(UUID.randomUUID().toString());
                 }
+                Thread.sleep(5000);
+                counter1 = list.size();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
-        Thread th2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<String> list = c2.newReplicatedMemoryListInstance("list1");
-                    for (int i = 0; i < 20; i++) {
-                        list.add(UUID.randomUUID().toString());
-                    }
-                    Thread.sleep(5000);
-                    counter2 = list.size();
-                } catch (ClusterException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        Thread th2 = new Thread(() -> {
+            try {
+                final List<String> list = c2.newReplicatedMemoryListInstance("list1");
+                for (int i = 0; i < 20; i++) {
+                    list.add(UUID.randomUUID().toString());
                 }
+                Thread.sleep(5000);
+                counter2 = list.size();
+            } catch (ClusterException e1) {
+                throw new RuntimeException(e1);
+            } catch (InterruptedException e2) {
+                throw new RuntimeException(e2);
             }
         });
         th1.start();
