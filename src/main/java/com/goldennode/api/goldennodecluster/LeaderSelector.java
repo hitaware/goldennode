@@ -113,8 +113,9 @@ public class LeaderSelector {
                     return false;
                 }
                 LOGGER.debug("acquired lead with id > " + id);
-                if (!local)
+                if (!local) {
                     setLeaderId(id);
+                }
                 return true;
             }
         } finally {
@@ -148,8 +149,9 @@ public class LeaderSelector {
                     return false;
                 }
                 LOGGER.debug("acquired candidate lead with id > " + id);
-                if (!local)
+                if (!local) {
                     setCandidateLeaderId(id);
+                }
                 return true;
             }
         } finally {

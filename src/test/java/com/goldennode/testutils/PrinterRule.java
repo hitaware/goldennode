@@ -42,6 +42,7 @@ public class PrinterRule implements TestRule {
         };
     }
 
+    @Override
     public final Statement apply(Statement statement, Description description) {
         beforeContent = "\n[TEST START] " + description.getMethodName() + "\n"; // description.getClassName() to get class name
         afterContent = "[TEST ENDED] ";

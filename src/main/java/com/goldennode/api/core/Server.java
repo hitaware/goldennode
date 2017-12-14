@@ -121,8 +121,9 @@ public abstract class Server implements Serializable, Comparable<Server> {
 
 	@Override
 	public int compareTo(Server o) {
-		if (o == null)
-			return 1;
+		if (o == null) {
+            return 1;
+        }
 		return getId().compareTo(o.getId());
 	}
 

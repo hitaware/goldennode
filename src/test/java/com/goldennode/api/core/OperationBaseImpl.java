@@ -3,10 +3,6 @@ package com.goldennode.api.core;
 import org.junit.Assert;
 import org.slf4j.LoggerFactory;
 
-import com.goldennode.api.core.OperationBase;
-import com.goldennode.api.core.Server;
-import com.goldennode.api.core.ServerStateListener;
-
 public class OperationBaseImpl implements OperationBase, ServerStateListener {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OperationBaseImpl.class);
 

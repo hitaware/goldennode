@@ -160,7 +160,7 @@ public class GoldenNodeServer extends Server {
                 if (receivedObject instanceof Request) {
                     processId.set(((Request) receivedObject).getProcessId());
                 }
-                UDPProcessor udpProcessor = new UDPProcessor(socket, receivedObject, this.getShortId());
+                UDPProcessor udpProcessor = new UDPProcessor(socket, receivedObject, getShortId());
                 udpProcessor.start();
             }
         } catch (SocketException e) {
@@ -295,7 +295,7 @@ public class GoldenNodeServer extends Server {
 
             try {
                 Thread.currentThread()
-                        .setName(GoldenNodeServer.this.getShortId() + " UDPProcessor " + UUID.randomUUID().toString());
+                        .setName(getShortId() + " UDPProcessor " + UUID.randomUUID().toString());
                 if (receivedObject instanceof Request) {
                     LOGGER.debug("Receiving " + ((Request) receivedObject).getRequestType() + " " + receivedObject);
                     if (((Request) receivedObject).getRequestType() == RequestType.BLOCKING_MULTICAST
@@ -444,12 +444,14 @@ public class GoldenNodeServer extends Server {
             setStarted(false);
 
             multicastSocket.close();
-            while (!multicastSocket.isClosed())
+            while (!multicastSocket.isClosed()) {
                 LockHelper.sleep(1000);
+            }
 
             unicastSocket.close();
-            while (!unicastSocket.isClosed())
+            while (!unicastSocket.isClosed()) {
                 LockHelper.sleep(1000);
+            }
             tcpServerSocket.close();
 
             try {

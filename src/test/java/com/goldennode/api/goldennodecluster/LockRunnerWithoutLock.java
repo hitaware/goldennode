@@ -15,8 +15,9 @@ public class LockRunnerWithoutLock implements Runnable {
 		try {
 			for (int i = 0; i < loopCount; i++) {
 				int tmp = tl.getCounter();
-				if (taskDuration>0)
-				    Thread.sleep(taskDuration);
+				if (taskDuration>0) {
+                    Thread.sleep(taskDuration);
+                }
 				tl.setCounter(tmp + 1);
 			}
 		} catch (Exception e) {

@@ -8,9 +8,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Test;
 
-import com.goldennode.api.core.LockException;
-import com.goldennode.api.core.LockService;
-import com.goldennode.api.core.LockServiceImpl;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 
 public class LockServiceImplTest  extends GoldenNodeJunitRunner{

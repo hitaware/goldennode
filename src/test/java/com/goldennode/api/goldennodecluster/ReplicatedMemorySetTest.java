@@ -80,10 +80,12 @@ public class ReplicatedMemorySetTest  extends GoldenNodeJunitRunner{
 			th1.join();
 			th2.join();
 		} finally {
-			if (c1 != null)
-				c1.stop();
-			if (c2 != null)
-				c2.stop();
+			if (c1 != null) {
+                c1.stop();
+            }
+			if (c2 != null) {
+                c2.stop();
+            }
 			Assert.assertEquals(40, counter1);
 			Assert.assertEquals(40, counter2);
 		}
@@ -137,10 +139,12 @@ public class ReplicatedMemorySetTest  extends GoldenNodeJunitRunner{
 			Assert.assertTrue(CollectionUtils.verifySetContents(set, 2, 3, 10, 11, 12));
 			Assert.assertTrue(set.equals(set2));
 		} finally {
-			if (c1 != null)
-				c1.stop();
-			if (c2 != null)
-				c2.stop();
+			if (c1 != null) {
+                c1.stop();
+            }
+			if (c2 != null) {
+                c2.stop();
+            }
 		}
 
 	}

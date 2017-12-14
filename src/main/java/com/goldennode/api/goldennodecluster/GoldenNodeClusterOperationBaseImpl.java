@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterOperationBase;
 import com.goldennode.api.cluster.ClusteredObject;
+import com.goldennode.api.cluster.ClusteredObjectNotAvailableException;
 import com.goldennode.api.cluster.Operation;
 import com.goldennode.api.cluster.OperationException;
-import com.goldennode.api.cluster.ClusteredObjectNotAvailableException;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.helper.ReflectionUtils;
 

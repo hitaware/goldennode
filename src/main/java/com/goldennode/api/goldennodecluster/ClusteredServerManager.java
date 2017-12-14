@@ -48,8 +48,9 @@ public class ClusteredServerManager {
 
     public Server getPeer(String key) {
         for (Server server : clusteredServers) {
-            if (key.equals(server.getId()))
+            if (key.equals(server.getId())) {
                 return server;
+            }
         }
 
         return null;
@@ -57,7 +58,7 @@ public class ClusteredServerManager {
 
     public Server getCandidateServer() {
         StringBuffer sb = new StringBuffer();
-        for (Server s : (ConcurrentSkipListSet<Server>) allServers.clone()) {
+        for (Server s : allServers.clone()) {
             sb.append(s.getId() + ", ");
         }
         LOGGER.debug("candidate is " + allServers.last().getId() + " out of " + allServers.size() + " servers > "

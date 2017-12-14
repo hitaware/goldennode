@@ -29,7 +29,7 @@ public class GoldenNodeServerTest  extends GoldenNodeJunitRunner{
             for (int i = 0; i < 4; i++) {
                 server[i] = new GoldenNodeServer("srv1");
                 OperationBaseImpl op = new OperationBaseImpl();
-                server[i].addServerStateListener((ServerStateListener) op);
+                server[i].addServerStateListener(op);
                 server[i].setOperationBase(op);
                 server[i].start();
             }
