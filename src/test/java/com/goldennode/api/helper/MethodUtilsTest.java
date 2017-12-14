@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class MethodUtilsTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MethodUtilsTest.class);
@@ -50,6 +51,7 @@ public class MethodUtilsTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void test() throws Exception {
         MethodUtilsTest rt = new MethodUtilsTest();
         Assert.assertEquals("2", ReflectionUtils.callMethod(rt, "method1", new Object[] { new Integer(1) }));
@@ -61,6 +63,7 @@ public class MethodUtilsTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = NoSuchMethodException.class)
+    @RepeatTest(times = 1)
     public void test2() throws Exception {
         MethodUtilsTest rt = new MethodUtilsTest();
         ReflectionUtils.callMethod(rt, "method6", new Object[] { null, null });

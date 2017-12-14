@@ -11,6 +11,7 @@ import com.goldennode.api.cluster.ClusterException;
 import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ReplicatedMemoryCounter;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounterTest.class);
@@ -26,6 +27,7 @@ public class ReplicatedMemoryCounterTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void test1() throws ClusterException, InterruptedException {
         final Cluster c1 = ClusterFactory.getCluster();
         c1.start();

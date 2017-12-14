@@ -3,10 +3,12 @@ package com.goldennode.api.helper;
 import org.junit.Test;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.ThreadUtils;
 
 public class LockHelperTest extends GoldenNodeJunitRunner {
     @Test
+    @RepeatTest(times = 1)
     public void sleep() {
         final long waitInMs = 1000;
         ThreadUtils.threadInterrupter(Thread.currentThread(), waitInMs);
@@ -21,6 +23,7 @@ public class LockHelperTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = InterruptedException.class)
+    @RepeatTest(times = 1)
     public void threadSleep() throws InterruptedException {
         final long waitInMs = 1000;
         ThreadUtils.threadInterrupter(Thread.currentThread(), waitInMs);

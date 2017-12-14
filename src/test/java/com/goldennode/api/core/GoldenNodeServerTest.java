@@ -18,7 +18,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeServerTest.class);
 
     @Test()
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testBlockingMulticast() throws ServerException, InterruptedException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         System.setProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast", "true");
@@ -61,7 +61,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     }
 
     @Test()
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testMulticastSelfReceiveActive() throws ServerException {
         System.setProperty("com.goldennode.api.core.GoldenNodeServer.receiveSelfMulticast", "true");
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -101,7 +101,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     }
 
     @Test()
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testMulticastNoSelfReceive() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         GoldenNodeServer server = null;
@@ -142,7 +142,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = ServerException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testUnicastTCP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         GoldenNodeServer server = null;
@@ -195,7 +195,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = ServerException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testUnicastUDP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         GoldenNodeServer server = null;

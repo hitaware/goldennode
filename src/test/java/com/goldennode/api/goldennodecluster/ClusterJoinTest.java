@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class ClusterJoinTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusterJoinTest.class);
@@ -16,6 +17,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
     private ClusterRunner[] th;
 
     @Test
+    @RepeatTest(times = 1)
     public void testJoining1() throws Exception {
         LOGGER.debug("testJoining1 start");
         ClusterJoinTest.THREAD_COUNT = 5;
@@ -46,6 +48,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testJoining2() throws Exception {
         LOGGER.debug("testJoining2 start");
         ClusterJoinTest.THREAD_COUNT = 10;
@@ -92,6 +95,7 @@ public class ClusterJoinTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testJoining3() throws Exception {
         LOGGER.debug("testJoining3 start");
         ClusterJoinTest.THREAD_COUNT = 10;

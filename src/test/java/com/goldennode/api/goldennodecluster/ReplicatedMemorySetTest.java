@@ -16,6 +16,7 @@ import com.goldennode.api.cluster.ClusteredObject;
 import com.goldennode.api.cluster.ReplicatedMemorySet;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemorySetTest.class);
@@ -31,6 +32,7 @@ public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testReplication1() throws ClusterException, InterruptedException {
         Cluster c1 = ClusterFactory.getCluster();
         Cluster c2 = ClusterFactory.getCluster();
@@ -84,6 +86,7 @@ public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testOperations() throws ClusterException, InterruptedException {
         Cluster c1 = null;
         Cluster c2 = null;
@@ -139,6 +142,7 @@ public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testUndo() throws ClusterException, InterruptedException {
         Set<String> s = new ReplicatedMemorySet<String>();
         Assert.assertEquals(1, ((ClusteredObject) s).getVersion());

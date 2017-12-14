@@ -11,11 +11,13 @@ import com.goldennode.api.core.ServerAlreadyStartedException;
 import com.goldennode.api.helper.ExceptionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.PortUtils;
+import com.goldennode.testutils.RepeatTest;
 
 public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterTest.class);
 
     @Test
+    @RepeatTest(times = 1)
     public void TestIllegalStartWithoutStopping() throws Throwable {
         Cluster c = null;
         try {
@@ -33,6 +35,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void TestStopWithoutStarting() throws Exception {
         Cluster c = null;
         try {
@@ -44,6 +47,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void TestStop() throws Throwable {
         Cluster c = null;
         try {
@@ -57,6 +61,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void TestStart() throws Throwable {
         Cluster c = null;
         try {
@@ -69,6 +74,7 @@ public class GoldenNodeClusterTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void TestStopStart() throws Throwable {
         Cluster c = null;
         try {

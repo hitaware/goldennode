@@ -27,24 +27,26 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void getLockTimeoutInMs() {
         Assert.assertEquals(lockTimeOut, ((DistributedReentrantLock) lock).getLockTimeoutInMs());
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void getLockName() {
         Assert.assertEquals(lockName, ((DistributedReentrantLock) lock).getLockName());
     }
 
     @Test(expected = RuntimeException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void lock1_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
         LockContext.threadProcessId.set(null);
         lock.lock();
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void lock2_lockReleaser_should_be_null_after_unlocking_the_lock() {
         LockContext.threadProcessId.set("1");
         lock.lock();
@@ -55,7 +57,7 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = IllegalMonitorStateException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void lock3_unlocking_the_lock_with_another_thread_should_throw_exception() {
         LockContext.threadProcessId.set("3");
         lock.lock();
@@ -66,7 +68,7 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test()
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void lock4_autorelease_should_happen() {
         LockContext.threadProcessId.set("5");
         lock.lock();
@@ -78,12 +80,13 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    @RepeatTest(times = 1)
     public void newCondition() {
         throw new UnsupportedOperationException();
     }
 
     @Test(expected = InterruptedException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void lockInterruptibly() throws InterruptedException {
         LockContext.threadProcessId.set("6");
         lock.lock();
@@ -94,7 +97,7 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void tryLock() {
         LockContext.threadProcessId.set("8");
         Assert.assertTrue(lock.tryLock());
@@ -105,7 +108,7 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = InterruptedException.class)
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void tryLockTimeOut() throws InterruptedException {
         LockContext.threadProcessId.set("10");
         lock.lock();

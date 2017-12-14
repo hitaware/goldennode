@@ -12,7 +12,7 @@ import com.goldennode.testutils.ThreadUtils;
 
 public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testGetOwnerId1() {
         ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
         ThreadUtils.threadInterrupter(Thread.currentThread(), 500);
@@ -21,7 +21,7 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testGetOwnerId2() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
         ThreadUtils.run(() -> cl.setOwnerId("1"), 500);
@@ -29,14 +29,14 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testPublicName1() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
         Assert.assertTrue(cl.getPublicName().contains(".ReplicatedMemoryList_"));
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testPublicName2() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
         cl.setPublicName("1");
@@ -44,14 +44,14 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testPublicName3() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>("1");
         Assert.assertEquals("1", cl.getPublicName());
     }
 
     @Test
-    @RepeatTest(times = 10)
+    @RepeatTest(times = 1)
     public void testPublicNameAfterSerialize1() throws IOException, ClassNotFoundException {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>("1");
         cl.innerList.add("1");
@@ -65,6 +65,7 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testPublicNameAfterSerialize2() throws IOException, ClassNotFoundException {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
         cl.innerList.add("1");

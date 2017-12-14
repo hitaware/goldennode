@@ -10,6 +10,7 @@ import com.goldennode.api.core.Response;
 import com.goldennode.api.core.Server;
 import com.goldennode.api.core.ServerException;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class MultiResponseTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MultiResponseTest.class);
@@ -75,16 +76,19 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test(expected = RuntimeException.class)
+    @RepeatTest(times = 1)
     public void testAddSuccessfulResponse() throws ServerException {
         mrUnsuccessful.addSuccessfulResponse(getGoldenNodeServer("1"), null);
     }
 
     @Test(expected = RuntimeException.class)
+    @RepeatTest(times = 1)
     public void testAddErroneusResponse() throws ServerException {
         mrUnsuccessful.addErroneusResponse(getGoldenNodeServer("1"), null);
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testIsSuccessfulCall() {
         Assert.assertEquals(true, mrSuccessful.isSuccessfulCall("control_text"));
         Assert.assertEquals(false, mrUnsuccessful.isSuccessfulCall("control_text"));
@@ -93,6 +97,7 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetUnErrorneousServers() {
         Assert.assertEquals(4, mrSuccessful.getServersWithNoError().size());
         Assert.assertEquals(4, mrUnsuccessful.getServersWithNoError().size());
@@ -101,6 +106,7 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetSuccessfulServers() {
         Assert.assertEquals(4, mrSuccessful.getServersWithNoErrorAndExpectedResult("control_text").size());
         Assert.assertEquals(1, mrUnsuccessful.getServersWithNoErrorAndExpectedResult("control_text").size());
@@ -109,6 +115,7 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetResponsesNoCheck() {
         Assert.assertEquals(4, mrSuccessful.getAllResponses().size());
         Assert.assertEquals(4, mrUnsuccessful.getAllResponses().size());
@@ -117,6 +124,7 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetResponseFromSingleServer() throws ClusterException, ServerException {
         Assert.assertEquals("control_text",
                 mrSuccessful.getResponseFromSingleServer(getGoldenNodeServer("1")).getReturnValue());
@@ -125,47 +133,56 @@ public class MultiResponseTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetResponseFromSingleServer2() throws ClusterException, ServerException {
         Assert.assertNull(mrErrorneous.getResponseFromSingleServer(getGoldenNodeServer("4")));
     }
 
     @Test(expected = NoResponseException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseFromSingleServer3() throws ClusterException, ServerException {
         mrErrorneous.getResponseFromSingleServer(getGoldenNodeServer("not_available_server")).getReturnValue();
     }
 
     @Test(expected = NoResponseException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseFromSingleServer4() throws ClusterException, ServerException {
         mrNoResponse.getResponseFromSingleServer(getGoldenNodeServer("not_available_server")).getReturnValue();
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful() throws ClusterException {
         Assert.assertEquals("control_text",
                 mrSuccessful.getResponseAssertAllResponsesSameAndSuccessful().getReturnValue());
     }
 
     @Test(expected = NonUniqueResultException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful2() throws ClusterException {
         mrUnsuccessful.getResponseAssertAllResponsesSameAndSuccessful();
     }
 
     @Test(expected = ClusterException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful3() throws ClusterException {
         mrErrorneous.getResponseAssertAllResponsesSameAndSuccessful().getReturnValue();
     }
 
     @Test(expected = NonUniqueResultException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful4() throws ClusterException {
         mrErrorneous2.getResponseAssertAllResponsesSameAndSuccessful().getReturnValue();
     }
 
     @Test(expected = ClusterException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful5() throws ClusterException {
         mrErrorneous3.getResponseAssertAllResponsesSameAndSuccessful().getReturnValue();
     }
 
     @Test(expected = NoResponseException.class)
+    @RepeatTest(times = 1)
     public void testGetResponseAssertAllResponsesSameAndSuccessful6() throws ClusterException {
         mrNoResponse.getResponseAssertAllResponsesSameAndSuccessful().getReturnValue();
     }

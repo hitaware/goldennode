@@ -14,6 +14,7 @@ import com.goldennode.api.cluster.ClusterFactory;
 import com.goldennode.api.cluster.ClusteredLock;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class ClusteredLockTest extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLockTest.class);
@@ -53,6 +54,7 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testWithLock_No_Wait() throws Exception {
         index++;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
@@ -80,6 +82,7 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testWithLock_100ms_wait() throws Exception {
         index++;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {
@@ -107,6 +110,7 @@ public class ClusteredLockTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testWithoutLock() throws Exception {
         index++;
         for (int i = 0; i < ClusteredLockTest.THREAD_COUNT; i++) {

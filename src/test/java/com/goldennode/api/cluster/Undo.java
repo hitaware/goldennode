@@ -9,7 +9,7 @@ public class Undo {
     //
     // }
     //
-    // @Test
+    // @Test@RepeatTest(times = 1)
     // public void undoOperations() {
     // Assert.assertEquals(((ClusteredList) list).getVersion(), 1);
     //

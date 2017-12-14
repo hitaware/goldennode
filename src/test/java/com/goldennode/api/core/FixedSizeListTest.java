@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class FixedSizeListTest extends GoldenNodeJunitRunner {
     private static ArrayList<Integer> anotherList;
@@ -21,6 +22,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void add() {
         FixedSizeList<Integer> list = new FixedSizeList<>(2);
         Assert.assertEquals(true, list.add(1));
@@ -35,6 +37,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void addAll() {
         FixedSizeList<Integer> list2 = new FixedSizeList<>(5);
         Assert.assertEquals(true, list2.addAll(FixedSizeListTest.anotherList));
@@ -42,6 +45,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void addAll2() {
         FixedSizeList<Integer> list3 = new FixedSizeList<>(5);
         list3.add(1);
@@ -53,6 +57,7 @@ public class FixedSizeListTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void addAllWithIndex() {
         FixedSizeList<Integer> list4 = new FixedSizeList<>(7);
         list4.add(1);

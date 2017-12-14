@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class OperationTest extends GoldenNodeJunitRunner {
     private Operation oper1;
@@ -23,6 +24,7 @@ public class OperationTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testNoParamOnClusteredObject() {
         Assert.assertEquals("_op_", oper1.getMethod());
         Assert.assertEquals("_doJob", oper1.getObjectMethod());
@@ -31,6 +33,7 @@ public class OperationTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testPrimitiveParamOnClusteredObject() {
         Assert.assertEquals("_op_", oper2.getMethod());
         Assert.assertEquals("_doJob", oper2.getObjectMethod());
@@ -40,6 +43,7 @@ public class OperationTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testObjectParamOnClusteredObject() {
         Assert.assertEquals("_op_", oper3.getMethod());
         Assert.assertEquals("_doJob", oper3.getObjectMethod());
@@ -49,6 +53,7 @@ public class OperationTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testNullParamOnOperationBase() {
         Assert.assertEquals("_op_", oper4.getMethod());
         Assert.assertEquals("_doJob", oper4.getObjectMethod());
@@ -58,6 +63,7 @@ public class OperationTest extends GoldenNodeJunitRunner {
     }
 
     @Test
+    @RepeatTest(times = 1)
     public void testNullParamOnClusteredObject() {
         Assert.assertEquals("_op_", oper5.getMethod());
         Assert.assertEquals("_doJob", oper5.getObjectMethod());

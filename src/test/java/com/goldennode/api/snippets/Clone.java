@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.testutils.GoldenNodeJunitRunner;
+import com.goldennode.testutils.RepeatTest;
 
 public class Clone extends GoldenNodeJunitRunner {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Clone.class);
@@ -29,6 +30,7 @@ public class Clone extends GoldenNodeJunitRunner {
 
     @SuppressWarnings("unchecked")
     @Test
+    @RepeatTest(times = 1)
     public void test() throws Exception {
         LOGGER.debug("Cloning lists");
         List<InnerObject> cloneList = Collections.synchronizedList(new ArrayList<InnerObject>(list));
