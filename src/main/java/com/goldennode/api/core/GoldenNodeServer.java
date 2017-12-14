@@ -361,7 +361,7 @@ public class GoldenNodeServer extends Server {
                 throw new ServerAlreadyStartedException();
             }
             for (ServerStateListener listener : getServerStateListeners()) {
-                listener.serverStarting(GoldenNodeServer.this);
+                listener.serverStarting(this);
             }
             htUnicastResponse = new ConcurrentHashMap<String, Response>();
             htBlockingMulticastResponse = new ConcurrentHashMap<String, List<Response>>();
@@ -372,25 +372,36 @@ public class GoldenNodeServer extends Server {
             createMulticastSocket();
             createUnicastSocket();
             getTcpServerSocket();
-            thMulticastProcessor = new Thread((Runnable) () -> processUDPRequests(multicastSocket),
-                    getShortId() + " multicastProcessor " + UUID.randomUUID().toString());
-            thUnicastUDPProcessor = new Thread((Runnable) () -> processUDPRequests(unicastSocket),
-                    getShortId() + " UnicastUDPProcessor " + UUID.randomUUID().toString());
-            thTCPServerSocket = new Thread((Runnable) () -> {
-                try {
-                    while (isStarted()) {
-                        Socket s = tcpServerSocket.accept();
-                        TCPProcessor tc = new TCPProcessor(s, GoldenNodeServer.this.getShortId());
-                        tc.start();
+            thMulticastProcessor = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    processUDPRequests(multicastSocket);
+                }
+            }, getShortId() + " multicastProcessor " + UUID.randomUUID().toString());
+            thUnicastUDPProcessor = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    processUDPRequests(unicastSocket);
+                }
+            }, getShortId() + " UnicastUDPProcessor " + UUID.randomUUID().toString());
+            thTCPServerSocket = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (isStarted()) {
+                            Socket s = tcpServerSocket.accept();
+                            TCPProcessor tc = new TCPProcessor(s, GoldenNodeServer.this.getShortId());
+                            tc.start();
+                        }
+                    } catch (SocketException e1) {
+                        if (e1.toString().contains("Socket closed")) {//NOPMD
+                            //LOGGER.trace("socket closed");
+                        } else {
+                            LOGGER.error("Error occured", e1);
+                        }
+                    } catch (IOException e2) {
+                        LOGGER.error("Error occured", e2);
                     }
-                } catch (SocketException e1) {
-                    if (e1.toString().contains("Socket closed")) {//NOPMD
-                        //LOGGER.trace("socket closed");
-                    } else {
-                        LOGGER.error("Error occured", e1);
-                    }
-                } catch (IOException e2) {
-                    LOGGER.error("Error occured", e2);
                 }
             }, getShortId() + " TCPServerSocket " + UUID.randomUUID().toString());
             setStarted(true);
@@ -400,7 +411,7 @@ public class GoldenNodeServer extends Server {
             LOGGER.debug("Server listening to unicastudpport:" + UNICAST_UDP_PORT + " multicastport:" + MULTICAST_PORT
                     + " unicasttcpport:" + UNICAST_TCP_PORT);
             for (ServerStateListener listener : getServerStateListeners()) {
-                listener.serverStarted(GoldenNodeServer.this);
+                listener.serverStarted(this);
             }
         } catch (IOException e) {
             throw new ServerException(e);
@@ -415,7 +426,7 @@ public class GoldenNodeServer extends Server {
                 throw new ServerAlreadyStoppedException();
             }
             for (ServerStateListener listener : getServerStateListeners()) {
-                listener.serverStopping(GoldenNodeServer.this);
+                listener.serverStopping(this);
             }
             setStarted(false);
             multicastSocket.close();
@@ -456,7 +467,7 @@ public class GoldenNodeServer extends Server {
                 processor.stop();
             }
             for (ServerStateListener listener : getServerStateListeners()) {
-                listener.serverStopped(GoldenNodeServer.this);
+                listener.serverStopped(this);
             }
         } catch (IOException e) {
             throw new ServerException(e);

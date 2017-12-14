@@ -26,7 +26,12 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
     @RepeatTest(times = 1)
     public void testGetOwnerId2() {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
-        ThreadUtils.run(() -> cl.setOwnerId("1"), DELAY);
+        ThreadUtils.run(new Runnable() {
+            @Override
+            public void run() {
+                cl.setOwnerId("1");
+            }
+        }, DELAY);
         Assert.assertEquals("1", cl.getOwnerId());
     }
 

@@ -54,7 +54,12 @@ public class GoldenNodeCluster extends Cluster {
         lockService.createLock(LockTypes.CLUSTERED_SERVER_MANAGER.toString(), GoldenNodeCluster.LOCK_TIMEOUT);
         clusteredObjectManager = new ClusteredObjectManager(this);
         clusteredServerManager = new ClusteredServerManager(server);
-        leaderSelector = new LeaderSelector(this, () -> getOwner().setMaster(true));
+        leaderSelector = new LeaderSelector(this, new LeaderSelectionListener() {
+            @Override
+            public void iAmSelectedAsLead() {
+                getOwner().setMaster(true);
+            }
+        });
         heartBeatTimer = new HeartbeatTimer(this);
         serverAnnounceTimer = new ServerAnnounceTimer(this);
     }
@@ -206,9 +211,12 @@ public class GoldenNodeCluster extends Cluster {
             } else {
                 LOGGER.debug("joining server is non-master" + server);
             }
-            heartBeatTimer.schedule(server, server1 -> {
-                LOGGER.warn("server is dead" + server1);
-                serverIsDeadOperation(server1);
+            heartBeatTimer.schedule(server, new HearbeatStatusListener() {
+                @Override
+                public void serverUnreachable(Server server) {
+                    LOGGER.warn("server is dead" + server);
+                    serverIsDeadOperation(server);
+                }
             });
         }
     }
