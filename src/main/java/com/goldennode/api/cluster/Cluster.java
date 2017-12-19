@@ -17,7 +17,7 @@ public abstract class Cluster {
 
     public abstract Server getCandidateServer();
 
-    public abstract <T extends ClusteredObject> T attach(T t) throws ClusterException;
+    //public abstract <T extends ClusteredObject> T attach(T t) throws ClusterException;
 
     public abstract <T extends ClusteredObject> T newClusteredObjectInstance(String publicName, Class<T> claz)
             throws ClusterException;

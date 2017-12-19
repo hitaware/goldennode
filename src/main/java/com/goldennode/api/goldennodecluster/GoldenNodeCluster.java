@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class GoldenNodeCluster extends Cluster {
         return newClusteredObjectInstance(publicName, ReplicatedMemoryMap.class);
     }
 
-    @SuppressWarnings("unchecked")
+    /*@SuppressWarnings("unchecked")
     @Override
     public <T extends ClusteredObject> T attach(T t) throws ClusterException {
         try {// TODO test
@@ -105,8 +106,7 @@ public class GoldenNodeCluster extends Cluster {
         } finally {
             unlock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
         }
-    }
-
+    }*/
     @SuppressWarnings("unchecked")
     @Override
     public <T extends ClusteredObject> T newClusteredObjectInstance(String publicName, Class<T> claz)
@@ -280,9 +280,6 @@ public class GoldenNodeCluster extends Cluster {
         try {
             Response response = responses.getResponseAssertAllResponsesSameAndSuccessful();
             return response.getReturnValue();
-        } catch (NoResponseException e) {
-            // TODO do something
-            throw e;
         } catch (ClusterException e) {
             // TODO Rollback successful servers
             throw e;
