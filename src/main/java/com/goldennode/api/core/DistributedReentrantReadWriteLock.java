@@ -5,10 +5,15 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.Collection;
 
-public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io.Serializable {
-    private static final long serialVersionUID = -6992448646407690164L;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class DistributedReentrantReadWriteLock implements ReadWriteLock {
+    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantReadWriteLock.class);
     /** Inner class providing readlock */
     private final DistributedReentrantReadWriteLock.ReadLock readerLock;
     /** Inner class providing writelock */
@@ -20,10 +25,10 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
      * Creates a new {@code ReentrantReadWriteLock} with default (nonfair)
      * ordering properties.
      */
-    public DistributedReentrantReadWriteLock() {
+    public DistributedReentrantReadWriteLock(String lockName, long lockTimeoutInMs) {
         sync = new FairSync();
-        readerLock = new ReadLock(this);
-        writerLock = new WriteLock(this);
+        readerLock = new ReadLock(this, lockName, lockTimeoutInMs);
+        writerLock = new WriteLock(this, lockName, lockTimeoutInMs);
     }
 
     public DistributedReentrantReadWriteLock.WriteLock writeLock() {
@@ -61,6 +66,16 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
             return c & EXCLUSIVE_MASK;
         }
 
+        private String processId;
+
+        void setOwnerThread(String processId) {
+            this.processId = processId;
+        }
+
+        String getOwnerThread() {
+            return processId;
+        }
+
         /**
          * A counter for per-thread read hold counts. Maintained as a
          * ThreadLocal; cached in cachedHoldCounter
@@ -68,7 +83,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         static final class HoldCounter {
             int count = 0;
             // Use id, not reference, to avoid garbage retention
-            final long tid = getThreadId(Thread.currentThread());
+            final String tid = LockContext.threadProcessId.get();
         }
 
         /**
@@ -83,7 +98,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
 
         private transient ThreadLocalHoldCounter readHolds;
         private transient HoldCounter cachedHoldCounter;
-        private transient Thread firstReader = null;
+        private transient String firstReader = null;
         private transient int firstReaderHoldCount;
 
         Sync() {
@@ -101,18 +116,21 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
             int nextc = getState() - releases;
             boolean free = exclusiveCount(nextc) == 0;
             if (free)
-                setExclusiveOwnerThread(null);
+                setOwnerThread(null);
             setState(nextc);
             return free;
         }
 
         protected final boolean tryAcquire(int acquires) {
-            Thread current = Thread.currentThread();
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
             int c = getState();
             int w = exclusiveCount(c);
             if (c != 0) {
                 // (Note: if c != 0 and w == 0 then shared count != 0)
-                if (w == 0 || current != getExclusiveOwnerThread())
+                if (w == 0 || !current.equals(getOwnerThread()))
                     return false;
                 if (w + exclusiveCount(acquires) > MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
@@ -122,13 +140,16 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
             }
             if (writerShouldBlock() || !compareAndSetState(c, c + acquires))
                 return false;
-            setExclusiveOwnerThread(current);
+            setOwnerThread(current);
             return true;
         }
 
         protected final boolean tryReleaseShared(int unused) {
-            Thread current = Thread.currentThread();
-            if (firstReader == current) {
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
+            if (firstReader.equals(current)) {
                 // assert firstReaderHoldCount > 0;
                 if (firstReaderHoldCount == 1)
                     firstReader = null;
@@ -136,7 +157,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
                     firstReaderHoldCount--;
             } else {
                 HoldCounter rh = cachedHoldCounter;
-                if (rh == null || rh.tid != getThreadId(current))
+                if (rh == null || !rh.tid.equals(current))
                     rh = readHolds.get();
                 int count = rh.count;
                 if (count <= 1) {
@@ -162,20 +183,23 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         }
 
         protected final int tryAcquireShared(int unused) {
-            Thread current = Thread.currentThread();
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
             int c = getState();
-            if (exclusiveCount(c) != 0 && getExclusiveOwnerThread() != current)
+            if (exclusiveCount(c) != 0 && !getOwnerThread().equals(current))
                 return -1;
             int r = sharedCount(c);
             if (!readerShouldBlock() && r < MAX_COUNT && compareAndSetState(c, c + SHARED_UNIT)) {
                 if (r == 0) {
                     firstReader = current;
                     firstReaderHoldCount = 1;
-                } else if (firstReader == current) {
+                } else if (firstReader.equals(current)) {
                     firstReaderHoldCount++;
                 } else {
                     HoldCounter rh = cachedHoldCounter;
-                    if (rh == null || rh.tid != getThreadId(current))
+                    if (rh == null || !rh.tid.equals(current))
                         cachedHoldCounter = rh = readHolds.get();
                     else if (rh.count == 0)
                         readHolds.set(rh);
@@ -186,23 +210,23 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
             return fullTryAcquireShared(current);
         }
 
-        final int fullTryAcquireShared(Thread current) {
+        final int fullTryAcquireShared(String current) {
             HoldCounter rh = null;
             for (;;) {
                 int c = getState();
                 if (exclusiveCount(c) != 0) {
-                    if (getExclusiveOwnerThread() != current)
+                    if (!getOwnerThread().equals(current))
                         return -1;
                     // else we hold the exclusive lock; blocking here
                     // would cause deadlock.
                 } else if (readerShouldBlock()) {
                     // Make sure we're not acquiring read lock reentrantly
-                    if (firstReader == current) {
+                    if (firstReader.equals(current)) {
                         // assert firstReaderHoldCount > 0;
                     } else {
                         if (rh == null) {
                             rh = cachedHoldCounter;
-                            if (rh == null || rh.tid != getThreadId(current)) {
+                            if (rh == null || !rh.tid.equals(current)) {
                                 rh = readHolds.get();
                                 if (rh.count == 0)
                                     readHolds.remove();
@@ -218,12 +242,12 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
                     if (sharedCount(c) == 0) {
                         firstReader = current;
                         firstReaderHoldCount = 1;
-                    } else if (firstReader == current) {
+                    } else if (firstReader.equals(current)) {
                         firstReaderHoldCount++;
                     } else {
                         if (rh == null)
                             rh = cachedHoldCounter;
-                        if (rh == null || rh.tid != getThreadId(current))
+                        if (rh == null || !rh.tid.equals(current))
                             rh = readHolds.get();
                         else if (rh.count == 0)
                             readHolds.set(rh);
@@ -236,26 +260,32 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         }
 
         final boolean tryWriteLock() {
-            Thread current = Thread.currentThread();
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
             int c = getState();
             if (c != 0) {
                 int w = exclusiveCount(c);
-                if (w == 0 || current != getExclusiveOwnerThread())
+                if (w == 0 || !current.equals(getOwnerThread()))
                     return false;
                 if (w == MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
             }
             if (!compareAndSetState(c, c + 1))
                 return false;
-            setExclusiveOwnerThread(current);
+            setOwnerThread(current);
             return true;
         }
 
         final boolean tryReadLock() {
-            Thread current = Thread.currentThread();
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
             for (;;) {
                 int c = getState();
-                if (exclusiveCount(c) != 0 && getExclusiveOwnerThread() != current)
+                if (exclusiveCount(c) != 0 && !getOwnerThread().equals(current))
                     return false;
                 int r = sharedCount(c);
                 if (r == MAX_COUNT)
@@ -264,11 +294,11 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
                     if (r == 0) {
                         firstReader = current;
                         firstReaderHoldCount = 1;
-                    } else if (firstReader == current) {
+                    } else if (firstReader.equals(current)) {
                         firstReaderHoldCount++;
                     } else {
                         HoldCounter rh = cachedHoldCounter;
-                        if (rh == null || rh.tid != getThreadId(current))
+                        if (rh == null || !rh.tid.equals(current))
                             cachedHoldCounter = rh = readHolds.get();
                         else if (rh.count == 0)
                             readHolds.set(rh);
@@ -282,7 +312,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         protected final boolean isHeldExclusively() {
             // While we must in general read state before owner,
             // we don't need to do so to check if current thread is owner
-            return getExclusiveOwnerThread() == Thread.currentThread();
+            return getOwnerThread().equals(LockContext.threadProcessId.get());
         }
 
         // Methods relayed to outer class
@@ -290,9 +320,9 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
             return new ConditionObject();
         }
 
-        final Thread getOwner() {
+        final String getOwner() {
             // Must read state before owner to ensure memory consistency
-            return ((exclusiveCount(getState()) == 0) ? null : getExclusiveOwnerThread());
+            return ((exclusiveCount(getState()) == 0) ? null : getOwnerThread());
         }
 
         final int getReadLockCount() {
@@ -310,11 +340,14 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         final int getReadHoldCount() {
             if (getReadLockCount() == 0)
                 return 0;
-            Thread current = Thread.currentThread();
-            if (firstReader == current)
+            if (LockContext.threadProcessId.get() == null) {
+                throw new RuntimeException("ThreadLocal variable LockContext.threadProcessId is not set");
+            }
+            String current = LockContext.threadProcessId.get();
+            if (firstReader.equals(current))
                 return firstReaderHoldCount;
             HoldCounter rh = cachedHoldCounter;
-            if (rh != null && rh.tid == getThreadId(current))
+            if (rh != null && rh.tid.equals(current))
                 return rh.count;
             int count = readHolds.get().count;
             if (count == 0)
@@ -351,13 +384,29 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
     public static class ReadLock implements Lock, java.io.Serializable {
         private static final long serialVersionUID = -5992448646407690164L;
         private final Sync sync;
+        Timer lockReleaser;
+        long lockTimeoutInMs;
+        String lockName;
 
-        protected ReadLock(DistributedReentrantReadWriteLock lock) {
+        protected ReadLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
         }
 
         public void lock() {
             sync.acquireShared(1);
+        }
+
+        void scheduleLockReleaser() {
+            lockReleaser = new Timer();
+            lockReleaser.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    String lockingProcessId = sync.getOwnerThread();
+                    LockContext.threadProcessId.set(lockingProcessId);
+                    LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
+                    unlock();
+                }
+            }, lockTimeoutInMs);
         }
 
         public void lockInterruptibly() throws InterruptedException {
@@ -389,13 +438,29 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
     public static class WriteLock implements Lock, java.io.Serializable {
         private static final long serialVersionUID = -4992448646407690164L;
         private final Sync sync;
+        Timer lockReleaser;
+        long lockTimeoutInMs;
+        String lockName;
 
-        protected WriteLock(DistributedReentrantReadWriteLock lock) {
+        protected WriteLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
         }
 
         public void lock() {
             sync.acquire(1);
+        }
+
+        void scheduleLockReleaser() {
+            lockReleaser = new Timer();
+            lockReleaser.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    String lockingProcessId = sync.getOwnerThread();
+                    LockContext.threadProcessId.set(lockingProcessId);
+                    LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
+                    unlock();
+                }
+            }, lockTimeoutInMs);
         }
 
         public void lockInterruptibly() throws InterruptedException {
@@ -411,6 +476,10 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         }
 
         public void unlock() {
+            if (lockReleaser != null) {
+                lockReleaser.cancel();
+                lockReleaser = null;
+            }
             sync.release(1);
         }
 
@@ -419,8 +488,8 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         }
 
         public String toString() {
-            Thread o = sync.getOwner();
-            return super.toString() + ((o == null) ? "[Unlocked]" : "[Locked by thread " + o.getName() + "]");
+            String o = sync.getOwner();
+            return super.toString() + ((o == null) ? "[Unlocked]" : "[Locked by thread " + o + "]");
         }
 
         public boolean isHeldByCurrentThread() {
@@ -432,7 +501,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         }
     }
 
-    protected Thread getOwner() {
+    protected String getOwner() {
         return sync.getOwner();
     }
 
@@ -509,28 +578,5 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock, java.io
         int w = Sync.exclusiveCount(c);
         int r = Sync.sharedCount(c);
         return super.toString() + "[Write locks = " + w + ", Read locks = " + r + "]";
-    }
-
-    /**
-     * Returns the thread id for the given thread. We must access this directly
-     * rather than via method Thread.getId() because getId() is not final, and
-     * has been known to be overridden in ways that do not preserve unique
-     * mappings.
-     */
-    static final long getThreadId(Thread thread) {
-        return UNSAFE.getLongVolatile(thread, TID_OFFSET);
-    }
-
-    // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long TID_OFFSET;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class<?> tk = Thread.class;
-            TID_OFFSET = UNSAFE.objectFieldOffset(tk.getDeclaredField("tid"));
-        } catch (Exception e) {
-            throw new Error(e);
-        }
     }
 }
