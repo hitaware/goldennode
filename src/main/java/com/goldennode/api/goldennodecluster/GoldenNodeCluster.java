@@ -279,9 +279,18 @@ public class GoldenNodeCluster extends Cluster {
         MultiResponse responses = tcpMulticast(clusteredServerManager.getAllServers(), operation, new RequestOptions());
         try {
             Response response = responses.getResponseAssertAllResponsesSameAndSuccessful();
-            return response.getReturnValue();
+            operation = new Operation(operation.getObjectPublicName(), "commit", operation.getParams());
+            responses = tcpMulticast(clusteredServerManager.getAllServers(), operation, new RequestOptions());
+            try {
+                response = responses.getResponseAssertAllResponsesSameAndSuccessful();
+                return response;
+            } catch (ClusterException e) {
+                throw e;
+            }
         } catch (ClusterException e) {
-            // TODO Rollback successful servers
+            operation = new Operation(operation.getObjectPublicName(), "rollback", operation.getParams());
+            tcpMulticast(responses.getServersWithNoErrorAndExpectedResult(Boolean.TRUE), operation,
+                    new RequestOptions());
             throw e;
         }
     }

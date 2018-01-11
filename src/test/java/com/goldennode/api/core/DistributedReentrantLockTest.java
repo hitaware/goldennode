@@ -82,7 +82,7 @@ public class DistributedReentrantLockTest extends GoldenNodeJunitRunner {
     @Test(expected = UnsupportedOperationException.class)
     @RepeatTest(times = 1)
     public void newCondition() {
-        throw new UnsupportedOperationException();
+        lock.newCondition();
     }
 
     @Test(expected = InterruptedException.class)

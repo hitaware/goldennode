@@ -10,7 +10,6 @@ import java.util.ListIterator;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements List<E> {
-    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryList.class);
     protected List<E> innerList = Collections.synchronizedList(new ArrayList<E>());
 
@@ -24,16 +23,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 
     @Override
     public boolean add(E e) {
-        if (getCluster() == null) {
-            return _add(e);
-        }
         return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
     }
 
     public boolean _add(E e) {
-        Boolean b = _base_add(e);
-        createUndoRecord(new Operation(getPublicName(), "base_remove", e));
-        return b;
+        return addToUncommited(new Operation(getPublicName(), "base_add", e));
     }
 
     public boolean _base_add(E e) {
@@ -43,16 +37,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
     @SuppressWarnings("unchecked")
     @Override
     public E set(int index, E element) {
-        if (getCluster() == null) {
-            return _set(index, element);
-        }
         return (E) safeOperate(new Operation(getPublicName(), "set", index, element));
     }
 
-    public E _set(int index, E element) {
-        E e = _base_set(index, element);
-        createUndoRecord(new Operation(getPublicName(), "base_set", index, e));
-        return e;
+    public boolean _set(int index, E element) {
+        return addToUncommited(new Operation(getPublicName(), "base_set", index, element));
     }
 
     public E _base_set(int index, E element) {
@@ -62,16 +51,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 
     @Override
     public void add(int index, E element) {
-        if (getCluster() == null) {
-            _add(index, element);
-            return;
-        }
         safeOperate(new Operation(getPublicName(), "add", index, element));
     }
 
-    public void _add(int index, E element) {
-        _base_add(index, element);
-        createUndoRecord(new Operation(getPublicName(), "base_remove", index));
+    public boolean _add(int index, E element) {
+        return addToUncommited(new Operation(getPublicName(), "base_add", index));
     }
 
     public void _base_add(int index, E element) {
@@ -81,16 +65,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
     @SuppressWarnings("unchecked")
     @Override
     public E remove(int index) {
-        if (getCluster() == null) {
-            return _remove(index);
-        }
         return (E) safeOperate(new Operation(getPublicName(), "remove", index));
     }
 
-    public E _remove(int index) {
-        E e = _base_remove(index);
-        createUndoRecord(new Operation(getPublicName(), "base_add", index, e));
-        return e;
+    public boolean _remove(int index) {
+        return addToUncommited(new Operation(getPublicName(), "base_remove", index));
     }
 
     public E _base_remove(int index) {
@@ -100,17 +79,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 
     @Override
     public void clear() {
-        if (getCluster() == null) {
-            _clear();
-            return;
-        }
         safeOperate(new Operation(getPublicName(), "clear"));
     }
 
-    public void _clear() {
-        ArrayList<E> al = new ArrayList<E>(innerList);
-        _base_clear();
-        createUndoRecord(new Operation(getPublicName(), "base_addAll", al));
+    public boolean _clear() {
+        return addToUncommited(new Operation(getPublicName(), "clear"));
     }
 
     public void _base_clear() {
@@ -119,16 +92,11 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
 
     @Override
     public boolean remove(Object o) {
-        if (getCluster() == null) {
-            return _remove(o);
-        }
         return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
     }
 
     public boolean _remove(Object o) {
-        Boolean b = _base_remove(o);
-        createUndoRecord(new Operation(getPublicName(), "base_add", o));
-        return b;
+        return addToUncommited(new Operation(getPublicName(), "remove", o));
     }
 
     public boolean _base_remove(Object o) {
@@ -138,10 +106,6 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
     @Override
     public boolean addAll(Collection<? extends E> c) {
         throw new UnsupportedOperationException();
-    }
-
-    public boolean _base_addAll(Collection<? extends E> c) {
-        return innerList.addAll(c);
     }
 
     @Override

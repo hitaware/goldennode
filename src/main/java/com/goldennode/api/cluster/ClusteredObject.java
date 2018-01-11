@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 
-public abstract class ClusteredObject extends UndoableObject {
+public abstract class ClusteredObject {
     private static final long serialVersionUID = 1L;
     private String ownerId;
     private String publicName;
@@ -94,24 +94,5 @@ public abstract class ClusteredObject extends UndoableObject {
             return false;
         }
         return true;
-    }
-
-    public Object safeOperate(Operation o) {
-        boolean locked = false;
-        try {
-            getCluster().lock(this);
-            locked = true;
-            return getCluster().safeMulticast(o);
-        } catch (ClusterException e1) {
-            throw new RuntimeException(e1);
-        } finally {
-            if (locked) {
-                try {
-                    getCluster().unlock(this);
-                } catch (ClusterException e1) {
-                    throw new RuntimeException(e1);
-                }
-            }
-        }
     }
 }

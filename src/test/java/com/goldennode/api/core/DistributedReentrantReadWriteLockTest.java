@@ -1,7 +1,6 @@
 package com.goldennode.api.core;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.junit.Assert;
@@ -30,70 +29,110 @@ public class DistributedReentrantReadWriteLockTest extends GoldenNodeJunitRunner
     @Test
     @RepeatTest(times = 1)
     public void getLockTimeoutInMs() {
-        Assert.assertEquals(lockTimeOut, ((DistributedReentrantReadWriteLock) lock).getLockTimeoutInMs());
+        Assert.assertEquals(lockTimeOut, ((DistributedReentrantReadWriteLock) lock).readLock().getLockTimeoutInMs());
+        Assert.assertEquals(lockTimeOut, ((DistributedReentrantReadWriteLock) lock).writeLock().getLockTimeoutInMs());
     }
 
     @Test
     @RepeatTest(times = 1)
     public void getLockName() {
-        Assert.assertEquals(lockName, ((DistributedReentrantReadWriteLock) lock).getLockName());
+        Assert.assertEquals(lockName+"_r", ((DistributedReentrantReadWriteLock) lock).readLock().getLockName());
+        Assert.assertEquals(lockName+"_w", ((DistributedReentrantReadWriteLock) lock).writeLock().getLockName());
     }
 
     @Test(expected = RuntimeException.class)
     @RepeatTest(times = 1)
-    public void lock1_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
+    public void readLock_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
         LockContext.threadProcessId.set(null);
-        lock.lock();
+        lock.readLock().lock();
+    }
+    
+    @Test(expected = RuntimeException.class)
+    @RepeatTest(times = 1)
+    public void writeLock_should_throw_RuntimeException_if_threadProcessId_is_not_set() {
+        LockContext.threadProcessId.set(null);
+        lock.writeLock().lock();
     }
 
     @Test
     @RepeatTest(times = 1)
-    public void lock2_lockReleaser_should_be_null_after_unlocking_the_lock() {
+    public void lock_lockReleaser_should_be_null_after_unlocking_the_lock() {
         LockContext.threadProcessId.set("1");
-        lock.lock();
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser != null);
+        lock.readLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser != null);
         LockContext.threadProcessId.set("1");
-        lock.unlock();
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser == null);
+        lock.readLock().unlock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser == null);
+        LockContext.threadProcessId.set("1");
+        lock.writeLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser != null);
+        LockContext.threadProcessId.set("1");
+        lock.writeLock().unlock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser == null);
     }
-
+    
     @Test(expected = IllegalMonitorStateException.class)
     @RepeatTest(times = 1)
-    public void lock3_unlocking_the_lock_with_another_thread_should_throw_exception() {
+    public void readLock_unlocking_the_lock_with_another_thread_should_throw_exception() {
         LockContext.threadProcessId.set("3");
-        lock.lock();
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser != null);
+        lock.readLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser != null);
         LockContext.threadProcessId.set("4");
-        lock.unlock();
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser == null);
+        lock.readLock().unlock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser == null);
+    }
+    
+    @Test(expected = IllegalMonitorStateException.class)
+    @RepeatTest(times = 1)
+    public void writeLock_unlocking_the_lock_with_another_thread_should_throw_exception() {
+        LockContext.threadProcessId.set("3");
+        lock.writeLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser != null);
+        LockContext.threadProcessId.set("4");
+        lock.writeLock().unlock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser == null);
     }
 
     @Test()
     @RepeatTest(times = 1)
-    public void lock4_autorelease_should_happen() {
+    public void lock_autorelease_should_happen() {
         LockContext.threadProcessId.set("5");
-        lock.lock();
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser != null);
+        lock.readLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser != null);
         LockHelper.sleep(lockTimeOut / 2);
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser != null);
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser != null);
         LockHelper.sleep((int) (lockTimeOut * 1.1));
-        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).lockReleaser == null);
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser == null);
+        lock.readLock().unlock();
+        LockContext.threadProcessId.set("5");
+        lock.writeLock().lock();
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser != null);
+        LockHelper.sleep(lockTimeOut / 2);
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser != null);
+        LockHelper.sleep((int) (lockTimeOut * 1.1));
+        Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser == null);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     @RepeatTest(times = 1)
-    public void newCondition() {
-        throw new UnsupportedOperationException();
+    public void newConditionForReadLock() {
+        lock.readLock().newCondition();
+    }
+    
+    @Test(expected = UnsupportedOperationException.class)
+    @RepeatTest(times = 1)
+    public void newConditionForWriteLock() {
+        lock.writeLock().newCondition();
     }
 
     @Test(expected = InterruptedException.class)
     @RepeatTest(times = 1)
     public void lockInterruptibly() throws InterruptedException {
         LockContext.threadProcessId.set("6");
-        lock.lock();
+        lock.writeLock().lockInterruptibly();
         ThreadUtils.threadInterrupter(Thread.currentThread(), 10);
         LockContext.threadProcessId.set("7");
-        lock.lockInterruptibly();
+        lock.writeLock().lockInterruptibly();
         Assert.fail();
     }
 
@@ -101,21 +140,21 @@ public class DistributedReentrantReadWriteLockTest extends GoldenNodeJunitRunner
     @RepeatTest(times = 1)
     public void tryLock() {
         LockContext.threadProcessId.set("8");
-        Assert.assertTrue(lock.readLock().l);
+        Assert.assertTrue(lock.writeLock().tryLock());
         LockContext.threadProcessId.set("9");
-        Assert.assertFalse(lock.tryLock());
+        Assert.assertFalse(lock.writeLock().tryLock());
         LockContext.threadProcessId.set("8");
-        lock..unlock();
+        lock.writeLock().unlock();
     }
 
     @Test(expected = InterruptedException.class)
     @RepeatTest(times = 1)
     public void tryLockTimeOut() throws InterruptedException {
         LockContext.threadProcessId.set("10");
-        lock.lock();
+        lock.writeLock().lock();
         ThreadUtils.threadInterrupter(Thread.currentThread(), lockTimeOut / 2);
         LockContext.threadProcessId.set("11");
-        lock.tryLock(lockTimeOut, TimeUnit.MILLISECONDS);
+        lock.writeLock().tryLock(lockTimeOut, TimeUnit.MILLISECONDS);
         Assert.fail();
     }
 }

@@ -390,10 +390,13 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         protected ReadLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
+            this.lockName = lockName;
+            this.lockTimeoutInMs = lockTimeoutInMs;
         }
 
         public void lock() {
             sync.acquireShared(1);
+            scheduleLockReleaser();
         }
 
         void scheduleLockReleaser() {
@@ -411,17 +414,30 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         public void lockInterruptibly() throws InterruptedException {
             sync.acquireSharedInterruptibly(1);
+            scheduleLockReleaser();
         }
 
         public boolean tryLock() {
-            return sync.tryReadLock();
+            boolean result = sync.tryReadLock();
+            if (result) {
+                scheduleLockReleaser();
+            }
+            return result;
         }
 
         public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
-            return sync.tryAcquireSharedNanos(1, unit.toNanos(timeout));
+            boolean result = sync.tryAcquireSharedNanos(1, unit.toNanos(timeout));
+            if (result) {
+                scheduleLockReleaser();
+            }
+            return result;
         }
 
         public void unlock() {
+            if (lockReleaser != null) {
+                lockReleaser.cancel();
+                lockReleaser = null;
+            }
             sync.releaseShared(1);
         }
 
@@ -432,6 +448,15 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
         public String toString() {
             int r = sync.getReadLockCount();
             return super.toString() + "[Read locks = " + r + "]";
+        }
+
+        public Object getLockTimeoutInMs() {
+            return lockTimeoutInMs;
+        }
+
+        public Object getLockName() {
+            // TODO Auto-generated method stub
+            return lockName + "_r";
         }
     }
 
@@ -444,10 +469,13 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         protected WriteLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
+            this.lockName = lockName;
+            this.lockTimeoutInMs = lockTimeoutInMs;
         }
 
         public void lock() {
             sync.acquire(1);
+            scheduleLockReleaser();
         }
 
         void scheduleLockReleaser() {
@@ -465,14 +493,23 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         public void lockInterruptibly() throws InterruptedException {
             sync.acquireInterruptibly(1);
+            scheduleLockReleaser();
         }
 
         public boolean tryLock() {
-            return sync.tryWriteLock();
+            boolean result = sync.tryWriteLock();
+            if (result) {
+                scheduleLockReleaser();
+            }
+            return result;
         }
 
         public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
-            return sync.tryAcquireNanos(1, unit.toNanos(timeout));
+            boolean result = sync.tryAcquireNanos(1, unit.toNanos(timeout));
+            if (result) {
+                scheduleLockReleaser();
+            }
+            return result;
         }
 
         public void unlock() {
@@ -484,7 +521,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
         }
 
         public Condition newCondition() {
-            return sync.newCondition();
+            throw new UnsupportedOperationException();
         }
 
         public String toString() {
@@ -498,6 +535,14 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         public int getHoldCount() {
             return sync.getWriteHoldCount();
+        }
+
+        public Object getLockTimeoutInMs() {
+            return lockTimeoutInMs;
+        }
+
+        public Object getLockName() {
+            return lockName + "_w";
         }
     }
 

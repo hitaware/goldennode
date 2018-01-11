@@ -140,38 +140,4 @@ public class ReplicatedMemorySetTest extends GoldenNodeJunitRunner {
             }
         }
     }
-
-    @Test
-    @RepeatTest(times = 1)
-    public void testUndo() throws ClusterException, InterruptedException {
-        Set<String> s = new ReplicatedMemorySet<String>();
-        Assert.assertEquals(1, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s));
-        s.add("1");
-        Assert.assertEquals(2, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s, "1"));
-        s.clear();
-        Assert.assertEquals(3, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s));
-        s.add("2");
-        s.add("3");
-        Assert.assertEquals(5, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s, "2", "3"));
-        s.remove("2");
-        Assert.assertEquals(6, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s, "3"));
-        ((ClusteredObject) s).undo(6);
-        Assert.assertEquals(5, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s, "2", "3"));
-        ((ClusteredObject) s).undo(5);
-        ((ClusteredObject) s).undo(4);
-        Assert.assertEquals(3, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s));
-        ((ClusteredObject) s).undo(3);
-        Assert.assertEquals(2, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s, "1"));
-        ((ClusteredObject) s).undo(2);
-        Assert.assertEquals(1, ((ClusteredObject) s).getVersion());
-        Assert.assertTrue(CollectionUtils.verifySetContents(s));
-    }
 }

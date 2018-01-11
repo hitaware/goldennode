@@ -8,7 +8,6 @@ import java.util.Set;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements Map<K, V> {
-    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryMap.class);
     protected Hashtable<K, V> innerMap = new Hashtable<K, V>();
 
@@ -23,23 +22,11 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
     @SuppressWarnings("unchecked")
     @Override
     public V put(K key, V value) {
-        if (getCluster() == null) {
-            return _put(key, value);
-        }
         return (V) safeOperate(new Operation(getPublicName(), "put", key, value));
     }
 
-    public V _put(K key, V value) {
-        V previousValue = null;
-        if (innerMap.containsKey(key)) {
-            previousValue = _base_put(key, value);
-            createUndoRecord(new Operation(getPublicName(), "base_put", key, previousValue));
-            return previousValue;
-        } else {
-            _base_put(key, value);
-            createUndoRecord(new Operation(getPublicName(), "base_remove", key));
-            return null;
-        }
+    public boolean _put(K key, V value) {
+        return addToUncommited(new Operation(getPublicName(), "base_put", key, value));
     }
 
     public V _base_put(K key, V value) {
@@ -49,20 +36,11 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
     @SuppressWarnings("unchecked")
     @Override
     public V remove(Object key) {
-        if (getCluster() == null) {
-            return _remove(key);
-        }
         return (V) safeOperate(new Operation(getPublicName(), "remove", key));
     }
 
-    public V _remove(Object key) {
-        V previousValue = null;
-        if (innerMap.containsKey(key)) {
-            previousValue = _base_remove(key);
-            createUndoRecord(new Operation(getPublicName(), "base_put", key, previousValue));
-            return previousValue;
-        }
-        return null;
+    public boolean _remove(Object key) {
+        return addToUncommited(new Operation(getPublicName(), "base_remove", key));
     }
 
     public V _base_remove(Object key) {
@@ -71,18 +49,11 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 
     @Override
     public void clear() {
-        if (getCluster() == null) {
-            _clear();
-            return;
-        }
         safeOperate(new Operation(getPublicName(), "clear"));
     }
 
-    public void _clear() {
-        @SuppressWarnings("unchecked")
-        Hashtable<K, V> ht = (Hashtable<K, V>) innerMap.clone();
-        _base_clear();
-        createUndoRecord(new Operation(getPublicName(), "base_putAll", ht));
+    public boolean _clear() {
+        return addToUncommited(new Operation(getPublicName(), "base_clear"));
     }
 
     public void _base_clear() {
@@ -92,10 +63,6 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         throw new UnsupportedOperationException();
-    }
-
-    public void _base_putAll(Map<? extends K, ? extends V> m) {
-        innerMap.putAll(m);
     }
 
     @Override

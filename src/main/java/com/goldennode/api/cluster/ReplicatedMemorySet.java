@@ -1,6 +1,5 @@
 package com.goldennode.api.cluster;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,7 +9,6 @@ import java.util.Set;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Set<E> {
-    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemorySet.class);
     protected Set<E> innerSet = Collections.synchronizedSet(new HashSet<E>());
 
@@ -24,16 +22,11 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
     @Override
     public boolean add(E e) {
-        if (getCluster() == null) {
-            return _add(e);
-        }
         return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
     }
 
     public boolean _add(E e) {
-        Boolean b = _base_add(e);
-        createUndoRecord(new Operation(getPublicName(), "base_remove", e));
-        return b;
+        return addToUncommited(new Operation(getPublicName(), "base_add", e));
     }
 
     public boolean _base_add(E e) {
@@ -42,16 +35,11 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
     @Override
     public boolean remove(Object o) {
-        if (getCluster() == null) {
-            return _remove(o);
-        }
         return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
     }
 
     public boolean _remove(Object o) {
-        Boolean b = _base_remove(o);
-        createUndoRecord(new Operation(getPublicName(), "base_add", o));
-        return b;
+        return addToUncommited(new Operation(getPublicName(), "base_remove", o));
     }
 
     public boolean _base_remove(Object o) {
@@ -60,17 +48,11 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
 
     @Override
     public void clear() {
-        if (getCluster() == null) {
-            _clear();
-            return;
-        }
         safeOperate(new Operation(getPublicName(), "clear"));
     }
 
-    public void _clear() {
-        ArrayList<E> al = new ArrayList<E>(innerSet);
-        _base_clear();
-        createUndoRecord(new Operation(getPublicName(), "base_addAll", al));
+    public boolean _clear() {
+        return addToUncommited(new Operation(getPublicName(), "base_clear"));
     }
 
     public void _base_clear() {
@@ -80,10 +62,6 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     @Override
     public boolean addAll(Collection<? extends E> c) {
         throw new UnsupportedOperationException();
-    }
-
-    public boolean _base_addAll(Collection<? extends E> c) {
-        return innerSet.addAll(c);
     }
 
     @Override
