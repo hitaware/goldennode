@@ -46,6 +46,10 @@ public abstract class Cluster {
 
     public abstract Collection<Server> getPeers();
 
+    protected abstract void readlock(ClusteredObject co) throws ClusterException;
+    
+    protected abstract void writelock(ClusteredObject co) throws ClusterException;
+    
     protected abstract void lock(ClusteredObject co) throws ClusterException;
 
     protected abstract void unlock(ClusteredObject co) throws ClusterException;

@@ -3,6 +3,7 @@ package com.goldennode.api.core;
 import java.util.concurrent.TimeUnit;
 
 public interface LockService {
+    
     void lock(String lockName, String processId);
 
     void unlock(String lockName, String processId);

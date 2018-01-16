@@ -40,7 +40,7 @@ public class GoldenNodeCluster extends Cluster {
     private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
             "com.goldennode.api.goldennodecluster.GoldenNodeCluster.lockTimeout"));
     ClusteredObjectManager clusteredObjectManager;
-    ClusteredServerManager clusteredServerManager;
+    ClusteredServerManager cDistributedReentrantReadWriteLocklusteredServerManager;
     LeaderSelector leaderSelector;
     HeartbeatTimer heartBeatTimer;
     ServerAnnounceTimer serverAnnounceTimer;
