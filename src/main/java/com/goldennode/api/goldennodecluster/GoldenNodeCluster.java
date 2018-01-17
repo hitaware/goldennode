@@ -40,7 +40,7 @@ public class GoldenNodeCluster extends Cluster {
     private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
             "com.goldennode.api.goldennodecluster.GoldenNodeCluster.lockTimeout"));
     ClusteredObjectManager clusteredObjectManager;
-    ClusteredServerManager cDistributedReentrantReadWriteLocklusteredServerManager;
+    ClusteredServerManager clusteredServerManager;
     LeaderSelector leaderSelector;
     HeartbeatTimer heartBeatTimer;
     ServerAnnounceTimer serverAnnounceTimer;
@@ -125,7 +125,7 @@ public class GoldenNodeCluster extends Cluster {
     @SuppressWarnings("PMD")
     private ClusteredObject initClusteredObject(ClusteredObject co) throws ClusterException {
         try {
-            lock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
+            writeLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
             LOGGER.debug("Get List");
             if (clusteredObjectManager.contains(co.getPublicName())) {
                 LOGGER.debug("Contains list > " + co.getPublicName());
@@ -133,11 +133,11 @@ public class GoldenNodeCluster extends Cluster {
             } else {
                 Server server = getOwnerOf(co.getPublicName());
                 if (server != null) {
-                    lock(server, co.getPublicName());
+                    writeLock(server, co.getPublicName());
                     addClusteredObject((ClusteredObject) unicastTCP(server,
                             new Operation(null, "receiveClusteredObject", co.getPublicName()), new RequestOptions())
                                     .getReturnValue());
-                    unlock(server, co.getPublicName());
+                    unlockWriteLock(server, co.getPublicName());
                     return clusteredObjectManager.getClusteredObject(co.getPublicName());
                 } else {
                     LOGGER.debug("Will create list. Doesn't Contain list > " + co.getPublicName());
@@ -146,7 +146,7 @@ public class GoldenNodeCluster extends Cluster {
                 }
             }
         } finally {
-            unlock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
+            unlockWriteLock(LockTypes.CLUSTERED_OBJECT_MANAGER.toString());
         }
     }
 
@@ -310,7 +310,10 @@ public class GoldenNodeCluster extends Cluster {
                                                                                                          // in
                                                                                                          // threads
                 } catch (ClusterException e) {
-                    if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {// TODO
+                    mr.addErroneusResponse(remoteServer, e);
+                    LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
+                            + e.toString());
+                    /*if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {// TODO
                                                                                                  // what
                                                                                                  // the
                                                                                                  // hell
@@ -322,7 +325,7 @@ public class GoldenNodeCluster extends Cluster {
                         mr.addErroneusResponse(remoteServer, e);
                         LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
                                 + e.toString());
-                    }
+                    }*/
                 }
             }
             return mr;
@@ -339,53 +342,55 @@ public class GoldenNodeCluster extends Cluster {
         lockService.deleteLock(lockName);
     }
 
-    private void lock(Server server, String lockName) throws ClusterException {
-        unicastTCP(server, new Operation(null, "lock", lockName), new RequestOptions());
-    }
-
-    private void lock(String lockName) throws ClusterException {
-        unicastTCP(clusteredServerManager.getServer(leaderSelector.getLeaderId()),
-                new Operation(null, "lock", lockName), new RequestOptions());
-    }
-
     @Override
-    protected void lock(ClusteredObject co) throws ClusterException {
-        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()), new Operation(null, "lock", co.getPublicName()),
-                new RequestOptions());
-    }
-
-    private void unlock(String lockName) throws ClusterException {
-        unicastTCP(clusteredServerManager.getServer(leaderSelector.getLeaderId()),
-                new Operation(null, "unlock", lockName), new RequestOptions());
-    }
-
-    private void unlock(Server server, String lockName) throws ClusterException {
-        unicastTCP(server, new Operation(null, "unlock", lockName), new RequestOptions());
-    }
-
-    @Override
-    protected void unlock(ClusteredObject co) throws ClusterException {
-        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()), new Operation(null, "unlock", co.getPublicName()),
-                new RequestOptions());
-    }
-
-    @Override
-    protected void lockInterruptibly(ClusteredObject co) throws ClusterException {
+    protected void readLock(ClusteredObject co) throws ClusterException {
         unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "lockInterruptibly", co.getPublicName()), new RequestOptions());
+                new Operation(null, "readLock", co.getPublicName()), new RequestOptions());
+    }
+
+    void writeLock(Server server, String lockName) throws ClusterException {
+        unicastTCP(server, new Operation(null, "writeLock", lockName), new RequestOptions());
+    }
+
+    void writeLock(String lockName) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(leaderSelector.getLeaderId()),
+                new Operation(null, "writeLock", lockName), new RequestOptions());
     }
 
     @Override
-    protected boolean tryLock(ClusteredObject co) throws ClusterException {
-        return (boolean) unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "tryLock", co.getPublicName()), new RequestOptions()).getReturnValue();
+    protected void writeLock(ClusteredObject co) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
+                new Operation(null, "writeLock", co.getPublicName()), new RequestOptions());
+    }
+
+    void unlockReadLock(String lockName) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(leaderSelector.getLeaderId()),
+                new Operation(null, "unlockReadLock", lockName), new RequestOptions());
+    }
+
+    void unlockReadLock(Server server, String lockName) throws ClusterException {
+        unicastTCP(server, new Operation(null, "unlockReadLock", lockName), new RequestOptions());
     }
 
     @Override
-    protected boolean tryLock(ClusteredObject co, long timeout, TimeUnit unit) throws ClusterException {
-        return (boolean) unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
-                new Operation(null, "tryLock", co.getPublicName(), timeout, unit), new RequestOptions())
-                        .getReturnValue();
+    protected void unlockReadLock(ClusteredObject co) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
+                new Operation(null, "unlockReadLock", co.getPublicName()), new RequestOptions());
+    }
+
+    void unlockWriteLock(String lockName) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(leaderSelector.getLeaderId()),
+                new Operation(null, "unlockWriteLock", lockName), new RequestOptions());
+    }
+
+    void unlockWriteLock(Server server, String lockName) throws ClusterException {
+        unicastTCP(server, new Operation(null, "unlockWriteLock", lockName), new RequestOptions());
+    }
+
+    @Override
+    protected void unlockWriteLock(ClusteredObject co) throws ClusterException {
+        unicastTCP(clusteredServerManager.getServer(co.getOwnerId()),
+                new Operation(null, "unlockWriteLock", co.getPublicName()), new RequestOptions());
     }
 
     @Override

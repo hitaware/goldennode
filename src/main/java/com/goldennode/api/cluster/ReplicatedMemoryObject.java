@@ -41,7 +41,7 @@ public class ReplicatedMemoryObject extends ClusteredObject {
     public Object safeOperate(Operation o) {
         boolean locked = false;
         try {
-            getCluster().lock(this);
+            getCluster().writeLock(this);
             locked = true;
             return getCluster().safeMulticast(o);
         } catch (ClusterException e1) {
@@ -49,7 +49,7 @@ public class ReplicatedMemoryObject extends ClusteredObject {
         } finally {
             if (locked) {
                 try {
-                    getCluster().unlock(this);
+                    getCluster().unlockWriteLock(this);
                 } catch (ClusterException e1) {
                     throw new RuntimeException(e1);
                 }

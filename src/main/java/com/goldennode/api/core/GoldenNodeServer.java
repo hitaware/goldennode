@@ -514,7 +514,7 @@ public class GoldenNodeServer extends Server {
                 outToServer.writeObject(request);
                 Response response = (Response) inFromServer.readObject();
                 //LOGGER.trace("Received " + request.getRequestType() + " " + response);
-                if (response.getReturnValue() instanceof Exception) {
+                if (response.getReturnValue() instanceof NoOperationBaseException) {
                     throw new ServerException((Exception) response.getReturnValue());
                 }
                 return response;

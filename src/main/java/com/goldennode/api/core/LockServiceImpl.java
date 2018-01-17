@@ -16,9 +16,21 @@ public class LockServiceImpl implements LockService {
     }
 
     @Override
-    public void unlock(String lockName, String processId) {
+    public void unlockReadLock(String lockName, String processId) {
         LockContext.threadProcessId.set(processId);
-        Lock lb = locks.get(lockName);
+        Lock lb = locks.get(lockName + "_r");
+        if (lb != null) {
+            lb.unlock();
+            LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
+        } else {
+            throw new LockNotFoundException(lockName);
+        }
+    }
+
+    @Override
+    public void unlockWriteLock(String lockName, String processId) {
+        LockContext.threadProcessId.set(processId);
+        Lock lb = locks.get(lockName + "_w");
         if (lb != null) {
             lb.unlock();
             LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
@@ -40,79 +52,30 @@ public class LockServiceImpl implements LockService {
 
     @Override
     public synchronized void deleteLock(String lockName) {
-        LockContext.threadProcessId.set("self");
-        Lock lb = locks.get(lockName);
-        if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + "self");
-            boolean result = lb.tryLock();
-            if (result) {
-                locks.remove(lockName);
-                lb.unlock();
-                LOGGER.debug("unlocked > " + lockName + " processId > " + "self");
-                LOGGER.debug("removed lock > " + lockName);
-            } else {
-                LOGGER.warn("can't delete Lock as it can't be acquired > " + lockName);
-                throw new LockException("can't delete Lock as it can't be acquired > " + lockName);
-            }
+        Lock lock = locks.remove(lockName + "_r");
+        locks.remove(lockName + "_w");
+        if (lock == null)
+            throw new LockNotFoundException(lockName);
+    }
+
+    @Override
+    public void readLock(String lockName, String processId) {
+        LockContext.threadProcessId.set(processId);
+        Lock lockBag = locks.get(lockName + "_r");
+        if (lockBag != null) {
+            LOGGER.debug("will lock > " + lockName + " processId > " + processId);
+            lockBag.lock();
+            LOGGER.debug("locked > " + lockName + " processId > " + processId);
         } else {
+            LOGGER.warn("lock not found > " + lockName);
             throw new LockNotFoundException(lockName);
         }
     }
 
     @Override
-    public void lockInterruptibly(String lockName, String processId) throws InterruptedException {
+    public void writeLock(String lockName, String processId) {
         LockContext.threadProcessId.set(processId);
-        Lock lb = locks.get(lockName);
-        if (lb != null) {
-            LOGGER.debug("will lock(lockInterruptibly) > " + lockName + " processId > " + processId);
-            lb.lockInterruptibly();
-            LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
-        } else {
-            throw new LockNotFoundException(lockName);
-        }
-    }
-
-    @Override
-    public boolean tryLock(String lockName, String processId, long timeout) {
-        LockContext.threadProcessId.set(processId);
-        Lock lb = locks.get(lockName);
-        if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
-            boolean result = lb.tryLock();
-            if (result) {
-                LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
-            } else {
-                LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
-            }
-            return result;
-        } else {
-            throw new LockNotFoundException(lockName);
-        }
-    }
-
-    @Override
-    public boolean tryLock(String lockName, String processId, long timeout, TimeUnit unit)
-            throws InterruptedException {
-        LockContext.threadProcessId.set(processId);
-        Lock lb = locks.get(lockName);
-        if (lb != null) {
-            LOGGER.debug("will lock(trylock) > " + lockName + " processId > " + processId);
-            boolean result = lb.tryLock(timeout, unit);
-            if (result) {
-                LOGGER.debug("acquired lock > " + lockName + " processId > " + processId);
-            } else {
-                LOGGER.debug("failed to acquire lock > " + lockName + " processId > " + processId);
-            }
-            return result;
-        } else {
-            throw new LockNotFoundException(lockName);
-        }
-    }
-
-    @Override
-    public void lock(String lockName, String processId) {
-        LockContext.threadProcessId.set(processId);
-        Lock lockBag = locks.get(lockName);
+        Lock lockBag = locks.get(lockName + "_w");
         if (lockBag != null) {
             LOGGER.debug("will lock > " + lockName + " processId > " + processId);
             lockBag.lock();

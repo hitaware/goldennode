@@ -143,7 +143,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test(expected = ServerException.class, timeout = 1000)
+    @Test(timeout = 1000)
     @RepeatTest(times = 1)
     public void testUnicastTCP() throws ServerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
@@ -179,7 +179,6 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             r = server.prepareRequest("_getSumException", new RequestOptions(), new Integer(3), new Integer(4));
             resp = server.unicastTCP(server2, r);
             resp = server.unicastTCP(server2, r);
-            Assert.fail("_getSumException call should have failed");
         } catch (ServerException e) {
             Assert.assertTrue(e.getCause().getCause() instanceof RuntimeException);
             throw e;
@@ -191,7 +190,7 @@ public class GoldenNodeServerTest extends GoldenNodeJunitRunner {
             Assert.assertEquals(0, ((OperationBaseImpl) proxy1).getGetSumExceptionCalled());
             Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getGetSumCalled());
             Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getEchoCalled());
-            Assert.assertEquals(1, ((OperationBaseImpl) proxy2).getGetSumExceptionCalled());
+            Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getGetSumExceptionCalled());
             Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         }
     }

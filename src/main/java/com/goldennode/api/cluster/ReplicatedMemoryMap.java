@@ -67,41 +67,161 @@ public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements
 
     @Override
     public int size() {
-        return innerMap.size();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.size();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public boolean isEmpty() {
-        return innerMap.isEmpty();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.isEmpty();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public boolean containsKey(Object key) {
-        return innerMap.containsKey(key);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.containsKey(key);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return innerMap.containsValue(value);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.containsValue(value);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public V get(Object key) {
-        return innerMap.get(key);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.get(key);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public Set<K> keySet() {
-        return innerMap.keySet();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.keySet();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public Collection<V> values() {
-        return innerMap.values();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.values();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return innerMap.entrySet();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerMap.entrySet();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 }

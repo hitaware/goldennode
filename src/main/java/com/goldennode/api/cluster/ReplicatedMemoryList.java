@@ -126,66 +126,274 @@ public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements L
     // Methods below don't modify list.
     @Override
     public int size() {
-        return innerList.size();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.size();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+      
     }
 
     @Override
     public boolean isEmpty() {
-        return innerList.isEmpty();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.isEmpty();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public boolean contains(Object o) {
-        return innerList.contains(o);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.contains(o);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+       
     }
 
     @Override
     public Iterator<E> iterator() {
-        return innerList.iterator();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.iterator();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public Object[] toArray() {
-        return innerList.toArray();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.toArray();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+       
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return innerList.toArray(a);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.toArray(a);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+       
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return innerList.containsAll(c);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.containsAll(c);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public E get(int index) {
-        return innerList.get(index);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.get(index);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public int indexOf(Object o) {
-        return innerList.indexOf(o);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.indexOf(o);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        return innerList.lastIndexOf(o);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.lastIndexOf(o);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public ListIterator<E> listIterator() {
-        return innerList.listIterator();
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.listIterator();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public ListIterator<E> listIterator(int index) {
-        return innerList.listIterator(index);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.listIterator(index);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        return innerList.subList(fromIndex, toIndex);
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return innerList.subList(fromIndex, toIndex);
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+        
     }
 }

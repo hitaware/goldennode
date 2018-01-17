@@ -4,9 +4,25 @@ import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 
-public class ReplicatedMemoryCounter extends ClusteredObject {
+public class ReplicatedMemoryCounter extends ReplicatedMemoryObject {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounter.class);
-    private int counter = 0;
+    private Counter counter = new Counter();
+
+    class Counter {
+        private int counter = 0;
+
+        public synchronized int getCounter() {
+            return counter;
+        }
+
+        public synchronized void setCounter(int counter) {
+            this.counter = counter;
+        }
+
+        public synchronized int incrementAndGet() {
+            return ++counter;
+        }
+    }
 
     public ReplicatedMemoryCounter() {
         super(UUID.randomUUID().toString());
@@ -16,8 +32,23 @@ public class ReplicatedMemoryCounter extends ClusteredObject {
         super(publicName);
     }
 
-    public synchronized int getcounter() {
-        return counter;
+    public int getcounter() throws ClusterException {
+        boolean locked = false;
+        try {
+            getCluster().readLock(this);
+            locked = true;
+            return counter.getCounter();
+        } catch (ClusterException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getCluster().unlockReadLock(this);
+                } catch (ClusterException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
     }
 
     public int inccounter() {
@@ -28,8 +59,7 @@ public class ReplicatedMemoryCounter extends ClusteredObject {
         return _base_inccounter();
     }
 
-    public synchronized int _base_inccounter() {
-        counter = counter + 1;
-        return counter;
+    public int _base_inccounter() {
+        return counter.incrementAndGet();
     }
 }

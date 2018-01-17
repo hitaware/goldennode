@@ -390,7 +390,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         protected ReadLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
-            this.lockName = lockName;
+            this.lockName = lockName + "_r";
             this.lockTimeoutInMs = lockTimeoutInMs;
         }
 
@@ -454,9 +454,8 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
             return lockTimeoutInMs;
         }
 
-        public Object getLockName() {
-            // TODO Auto-generated method stub
-            return lockName + "_r";
+        public String getLockName() {
+            return lockName;
         }
     }
 
@@ -469,7 +468,7 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
 
         protected WriteLock(DistributedReentrantReadWriteLock lock, String lockName, long lockTimeoutInMs) {
             sync = lock.sync;
-            this.lockName = lockName;
+            this.lockName = lockName + "_w";
             this.lockTimeoutInMs = lockTimeoutInMs;
         }
 
@@ -541,8 +540,8 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
             return lockTimeoutInMs;
         }
 
-        public Object getLockName() {
-            return lockName + "_w";
+        public String getLockName() {
+            return lockName;
         }
     }
 

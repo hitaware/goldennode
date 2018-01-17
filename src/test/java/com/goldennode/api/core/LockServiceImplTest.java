@@ -19,8 +19,8 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
     public void testLockUsageEndToEnd1() {
         LockService service = new LockServiceImpl();
         service.createLock("lock1", 60000);
-        service.lock("lock1", Thread.currentThread().getName());
-        service.unlock("lock1", Thread.currentThread().getName());
+        service.writeLock("lock1", Thread.currentThread().getName());
+        service.unlockWriteLock("lock1", Thread.currentThread().getName());
         service.deleteLock("lock1");
     }
 
@@ -29,8 +29,8 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
     public void testLockUsageEndToEnd2() {
         LockService service = new LockServiceImpl();
         service.createLock("lock1", 60000);
-        service.lock("lock2", Thread.currentThread().getName());
-        service.unlock("lock1", Thread.currentThread().getName());
+        service.writeLock("lock2", Thread.currentThread().getName());
+        service.unlockWriteLock("lock1", Thread.currentThread().getName());
         service.deleteLock("lock1");
     }
 
@@ -38,8 +38,8 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
     @RepeatTest(times = 1)
     public void testLockUsageEndToEnd3() {
         LockService service = new LockServiceImpl();
-        service.lock("lock1", Thread.currentThread().getName());
-        service.unlock("lock1", Thread.currentThread().getName());
+        service.writeLock("lock1", Thread.currentThread().getName());
+        service.unlockWriteLock("lock1", Thread.currentThread().getName());
         service.deleteLock("lock1");
     }
 
@@ -47,11 +47,11 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
     @RepeatTest(times = 1)
     public void testLockUsageEndToEnd4() {
         LockService service = new LockServiceImpl();
-        service.unlock("lock1", Thread.currentThread().getName());
+        service.unlockWriteLock("lock1", Thread.currentThread().getName());
         service.deleteLock("lock1");
     }
 
-    @Test(expected = LockException.class)
+    @Test(expected = LockNotFoundException.class)
     @RepeatTest(times = 1)
     public void testLockUsageEndToEnd5() {
         LockService service = new LockServiceImpl();
@@ -63,8 +63,8 @@ public class LockServiceImplTest extends GoldenNodeJunitRunner {
     public void testLockUsageEndToEnd6() {
         LockService service = new LockServiceImpl();
         service.createLock("lock1", 60000);
-        service.lock("lock1", Thread.currentThread().getName());
-        service.unlock("lock1", "dummyId");
+        service.writeLock("lock1", Thread.currentThread().getName());
+        service.unlockWriteLock("lock1", "dummyId");
         service.deleteLock("lock1");
     }
 
