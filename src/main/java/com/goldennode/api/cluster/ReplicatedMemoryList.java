@@ -1,5 +1,6 @@
 package com.goldennode.api.cluster;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,7 +10,9 @@ import java.util.ListIterator;
 
 import org.slf4j.LoggerFactory;
 
-public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements List<E> {
+public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements List<E>,Serializable {
+   
+    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryList.class);
     protected List<E> innerList = Collections.synchronizedList(new ArrayList<E>());
 

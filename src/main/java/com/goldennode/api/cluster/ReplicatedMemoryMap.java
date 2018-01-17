@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemoryMap<K, V> extends ReplicatedMemoryObject implements Map<K, V> {
+    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryMap.class);
     protected Hashtable<K, V> innerMap = new Hashtable<K, V>();
 

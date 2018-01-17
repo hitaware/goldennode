@@ -276,8 +276,9 @@ public class GoldenNodeCluster extends Cluster {
 
     @Override
     public Object safeMulticast(Operation operation) throws ClusterException {
-        MultiResponse responses = tcpMulticast(clusteredServerManager.getAllServers(), operation, new RequestOptions());
+        MultiResponse responses = null;
         try {
+            responses = tcpMulticast(clusteredServerManager.getAllServers(), operation, new RequestOptions());
             Response response = responses.getResponseAssertAllResponsesSameAndSuccessful();
             operation = new Operation(operation.getObjectPublicName(), "commit", operation.getParams());
             responses = tcpMulticast(clusteredServerManager.getAllServers(), operation, new RequestOptions());
@@ -310,10 +311,10 @@ public class GoldenNodeCluster extends Cluster {
                                                                                                          // in
                                                                                                          // threads
                 } catch (ClusterException e) {
-                    mr.addErroneusResponse(remoteServer, e);
-                    LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
-                            + e.toString());
-                    /*if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {// TODO
+                    // mr.addErroneusResponse(remoteServer, e);
+                    // LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
+                    //         + e.toString());
+                    if (ExceptionUtils.hasCause(e, ClusteredObjectNotAvailableException.class)) {// TODO
                                                                                                  // what
                                                                                                  // the
                                                                                                  // hell
@@ -325,7 +326,7 @@ public class GoldenNodeCluster extends Cluster {
                         mr.addErroneusResponse(remoteServer, e);
                         LOGGER.error("Error occured while processing operation" + operation + "on server" + remoteServer
                                 + e.toString());
-                    }*/
+                    }
                 }
             }
             return mr;

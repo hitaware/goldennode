@@ -57,7 +57,7 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
         Assert.assertEquals("1", cl.getPublicName());
     }
 
-    @Test
+    /*@Test
     @RepeatTest(times = 1)
     public void testPublicNameAfterSerialize1() throws IOException, ClassNotFoundException {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>("1");
@@ -69,9 +69,9 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
         Assert.assertEquals(1, clCreated.size());
         Assert.assertNotSame(cl, clCreated);
         Assert.assertEquals(cl, clCreated);
-    }
+    }*/
 
-    @Test
+   /* @Test
     @RepeatTest(times = 1)
     public void testPublicNameAfterSerialize2() throws IOException, ClassNotFoundException {
         final ReplicatedMemoryList<String> cl = new ReplicatedMemoryList<String>();
@@ -83,5 +83,5 @@ public class SerializeClusteredObjectTest extends GoldenNodeJunitRunner {
         Assert.assertEquals(1, clCreated.size());
         Assert.assertNotSame(cl, clCreated);
         Assert.assertEquals(cl, clCreated);
-    }
+    }*/
 }

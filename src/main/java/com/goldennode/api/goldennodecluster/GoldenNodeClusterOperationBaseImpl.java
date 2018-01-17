@@ -1,5 +1,7 @@
 package com.goldennode.api.goldennodecluster;
 
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,29 @@ import com.goldennode.api.helper.ReflectionUtils;
 public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GoldenNodeClusterOperationBaseImpl.class);
     GoldenNodeCluster cluster;
+    protected Queue<Operation> uncommitted = new ArrayBlockingQueue<>(1);
+
+    public boolean addToUncommited(Operation operation) {
+        uncommitted.add(operation);
+        return true;
+    }
+
+    public Object _commit() {
+        Operation operation = uncommitted.poll();
+        if (operation != null) {
+            try {
+                return ReflectionUtils.callMethod(this, operation.getObjectMethod(), operation.getParams());
+            } catch (Exception e) {
+                throw new OperationException(e);
+            }
+        } else {
+            throw new RuntimeException("No operation to commit");
+        }
+    }
+
+    public void _rollback() {
+        uncommitted.clear();
+    }
 
     GoldenNodeClusterOperationBaseImpl(GoldenNodeCluster cluster) {
         this.cluster = cluster;
@@ -92,7 +117,7 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
     public void _readLock(String publicName) {
         cluster.lockService.readLock(publicName, Server.processId.get());
     }
-    
+
     public void _writeLock(String publicName) {
         cluster.lockService.writeLock(publicName, Server.processId.get());
     }
@@ -104,6 +129,4 @@ public class GoldenNodeClusterOperationBaseImpl extends ClusterOperationBase {
     public void _unlockWriteLock(String publicName) {
         cluster.lockService.unlockWriteLock(publicName, Server.processId.get());
     }
-
-  
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public class ReplicatedMemoryObject extends ClusteredObject {
+    private static final long serialVersionUID = 1L;
     public ReplicatedMemoryObject(String publicName) {
         super(publicName);
     }

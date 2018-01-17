@@ -9,6 +9,7 @@ import java.util.Set;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Set<E> {
+    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemorySet.class);
     protected Set<E> innerSet = Collections.synchronizedSet(new HashSet<E>());
 

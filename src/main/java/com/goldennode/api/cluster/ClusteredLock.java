@@ -7,6 +7,7 @@ import java.util.concurrent.locks.Lock;
 import org.slf4j.LoggerFactory;
 
 public class ClusteredLock extends ClusteredObject implements Lock {
+    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ClusteredLock.class);
 
     public ClusteredLock() {

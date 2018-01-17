@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.slf4j.LoggerFactory;
 
 public class ReplicatedMemoryCounter extends ReplicatedMemoryObject {
+    private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounter.class);
     private Counter counter = new Counter();
 
