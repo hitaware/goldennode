@@ -9,7 +9,7 @@ public class Response implements Serializable {
     private static final long serialVersionUID = 1L;
     private Object returnValue;
     private Exception exception;
-    private Server serverFrom;
+    private Peer peerFrom;
     private Request request;
 
     public Response() {//
@@ -23,12 +23,12 @@ public class Response implements Serializable {
         this.request = request;
     }
 
-    public Server getServerFrom() {
-        return serverFrom;
+    public Peer getPeerFrom() {
+        return peerFrom;
     }
 
-    public void setServerFrom(Server serverFrom) {
-        this.serverFrom = serverFrom;
+    public void setPeerFrom(Peer peerFrom) {
+        this.peerFrom = peerFrom;
     }
 
     public Object getReturnValue() {
@@ -41,7 +41,7 @@ public class Response implements Serializable {
 
     @Override
     public String toString() {
-        return " > Response [returnValue=" + returnValue + ", exception=" + exception + ", serverFrom=" + serverFrom
+        return " > Response [returnValue=" + returnValue + ", exception=" + exception + ", peerFrom=" + peerFrom
                 + "] ";
     }
 

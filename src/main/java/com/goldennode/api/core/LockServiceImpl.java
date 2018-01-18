@@ -2,11 +2,11 @@ package com.goldennode.api.core;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import org.slf4j.LoggerFactory;
+
+import com.goldennode.api.helper.StringUtils;
 
 public class LockServiceImpl implements LockService {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LockServiceImpl.class);
@@ -21,7 +21,7 @@ public class LockServiceImpl implements LockService {
         Lock lb = locks.get(lockName + "_r");
         if (lb != null) {
             lb.unlock();
-            LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
+            LOGGER.debug("unlocked > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
         } else {
             throw new LockNotFoundException(lockName);
         }
@@ -33,7 +33,7 @@ public class LockServiceImpl implements LockService {
         Lock lb = locks.get(lockName + "_w");
         if (lb != null) {
             lb.unlock();
-            LOGGER.debug("unlocked > " + lockName + " processId > " + processId);
+            LOGGER.debug("unlocked > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
         } else {
             throw new LockNotFoundException(lockName);
         }
@@ -42,9 +42,8 @@ public class LockServiceImpl implements LockService {
     @Override
     public synchronized void createLock(String lockName, long lockTimeoutInMs) {
         if (!locks.containsKey(lockName)) {
-            DistributedReentrantReadWriteLock lock = new DistributedReentrantReadWriteLock(lockName, lockTimeoutInMs);
-            locks.put(lock.writeLock().lockName, lock.writeLock());
-            locks.put(lock.readLock().lockName, lock.readLock());
+            DistributedReentrantLock lock = new DistributedReentrantLock(lockName, lockTimeoutInMs);
+            locks.put(lock.lockName + "_w", lock);
         } else {
             throw new LockException("lock has already been created > " + lockName);
         }
@@ -52,8 +51,8 @@ public class LockServiceImpl implements LockService {
 
     @Override
     public synchronized void deleteLock(String lockName) {
-        Lock lock = locks.remove(lockName + "_r");
-        locks.remove(lockName + "_w");
+        //Lock lock = locks.remove(lockName + "_r");
+        Lock lock = locks.remove(lockName + "_w");
         if (lock == null)
             throw new LockNotFoundException(lockName);
     }
@@ -63,9 +62,9 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lockBag = locks.get(lockName + "_r");
         if (lockBag != null) {
-            LOGGER.debug("will lock > " + lockName + " processId > " + processId);
+            LOGGER.debug("will lock > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
             lockBag.lock();
-            LOGGER.debug("locked > " + lockName + " processId > " + processId);
+            LOGGER.debug("locked > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
         } else {
             LOGGER.warn("lock not found > " + lockName);
             throw new LockNotFoundException(lockName);
@@ -77,9 +76,9 @@ public class LockServiceImpl implements LockService {
         LockContext.threadProcessId.set(processId);
         Lock lockBag = locks.get(lockName + "_w");
         if (lockBag != null) {
-            LOGGER.debug("will lock > " + lockName + " processId > " + processId);
+            LOGGER.debug("will lock > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
             lockBag.lock();
-            LOGGER.debug("locked > " + lockName + " processId > " + processId);
+            LOGGER.debug("locked > " + lockName + " processId > " + StringUtils.shortProcessId(processId));
         } else {
             LOGGER.warn("lock not found > " + lockName);
             throw new LockNotFoundException(lockName);

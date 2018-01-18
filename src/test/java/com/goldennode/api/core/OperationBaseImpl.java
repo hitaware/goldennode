@@ -3,7 +3,7 @@ package com.goldennode.api.core;
 import org.junit.Assert;
 import org.slf4j.LoggerFactory;
 
-public class OperationBaseImpl implements OperationBase, ServerStateListener {
+public class OperationBaseImpl implements OperationBase, PeerStateListener {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(OperationBaseImpl.class);
     private int getSumCalled = 0;
     private int getSumExceptionCalled = 0;
@@ -44,22 +44,22 @@ public class OperationBaseImpl implements OperationBase, ServerStateListener {
     }
 
     @Override
-    public void serverStarted(Server server) {
-        LOGGER.debug("Server started." + server.toString());
+    public void peerStarted(Peer peer) {
+        LOGGER.debug("Peer started." + peer.toString());
     }
 
     @Override
-    public void serverStopping(Server server) {
-        LOGGER.debug("Server stopped." + server.toString());
+    public void peerStopping(Peer peer) {
+        LOGGER.debug("Peer stopped." + peer.toString());
     }
 
     @Override
-    public void serverStopped(Server server) {
+    public void peerStopped(Peer peer) {
         //
     }
 
     @Override
-    public void serverStarting(Server server) {
+    public void peerStarting(Peer peer) {
         //
     }
 }

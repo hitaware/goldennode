@@ -6,13 +6,15 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import com.goldennode.api.helper.StringUtils;
+
 public class Request implements Serializable {
     private static final long serialVersionUID = 1L;
     private String id;
     private String method;
     private ArrayList<Object> params = new ArrayList<Object>();
     private RequestType requestType;
-    private Server serverFrom;
+    private Peer peerFrom;
     private int timeout;// seconds
     private String processId;
 
@@ -22,10 +24,6 @@ public class Request implements Serializable {
 
     public String getId() {
         return id;
-    }
-
-    public String getShortId() {
-        return id.toString().substring(id.length() - 4, id.length());
     }
 
     public String getMethod() {
@@ -71,12 +69,12 @@ public class Request implements Serializable {
         }
     }
 
-    public Server getServerFrom() {
-        return serverFrom;
+    public Peer getPeerFrom() {
+        return peerFrom;
     }
 
-    void setServerFrom(Server serverFrom) {
-        this.serverFrom = serverFrom;
+    void setPeerFrom(Peer peerFrom) {
+        this.peerFrom = peerFrom;
     }
 
     public int getTimeout() {
@@ -97,7 +95,7 @@ public class Request implements Serializable {
 
     @Override
     public String toString() {
-        return " > Request [id=" + getShortId() + ", method=" + method + ", params=" + params + ", requestType="
-                + requestType + ", serverFrom=" + serverFrom + "] ";
+        return " > Request [id=" + StringUtils.shortId(id) + ", method=" + method + ", params=" + params
+                + ", requestType=" + requestType + ", peerFrom=" + peerFrom + "] ";
     }
 }

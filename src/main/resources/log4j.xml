@@ -11,7 +11,7 @@
         </appender>
 
 
-        <logger name="com.goldennode.api.core.GoldenNodeServer" additivity="false">
+        <logger name="com.goldennode.api.core.GoldenNodePeer" additivity="false">
                 <priority value="debug" />
                 <appender-ref ref="console" />
         </logger>

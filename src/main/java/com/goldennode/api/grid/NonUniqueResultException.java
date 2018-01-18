@@ -1,0 +1,9 @@
+package com.goldennode.api.grid;
+
+public class NonUniqueResultException extends GridException {
+    private static final long serialVersionUID = 1L;
+
+    public NonUniqueResultException(String string) {
+        super(string);
+    }
+}

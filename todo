@@ -1,2 +1,2 @@
-when a server crashes reassign clusteredobjects to another server
+when a peer crashes reassign distributedobject to another peer
 
