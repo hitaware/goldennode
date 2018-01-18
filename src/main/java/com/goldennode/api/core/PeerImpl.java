@@ -454,14 +454,10 @@ public class PeerImpl extends Peer {
                 LOGGER.error("join interrupted");
                 Thread.currentThread().interrupt();
             }
-            Iterator<TCPProcessor> iter = tcpProcessors.iterator();
-            while (iter.hasNext()) {
-                TCPProcessor processor = iter.next();
+            for (TCPProcessor processor : tcpProcessors.toArray(new TCPProcessor[0])) {
                 processor.stop();
             }
-            Iterator<UDPProcessor> iter2 = udpProcessors.iterator();
-            while (iter2.hasNext()) {
-                UDPProcessor processor = iter2.next();
+            for (UDPProcessor processor : udpProcessors.toArray(new UDPProcessor[0])) {
                 processor.stop();
             }
             for (PeerStateListener listener : getPeerStateListeners()) {
