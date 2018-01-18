@@ -13,16 +13,18 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java-version>1.8</java-version>
-		<pmd-version>3.8</pmd-version>
-		<maven-jxr-version>2.3</maven-jxr-version>
-		<cobertura-version>2.7</cobertura-version>
-		<javadoc-version>3.0.0</javadoc-version>
-		<slf4j-version>1.7.10</slf4j-version>
-		<log4j-version>1.2.17</log4j-version>
-		<junit-version>4.12</junit-version>
-		<findbugs-version>3.0.1</findbugs-version>
-		<surefire-version>2.20.1</surefire-version>
+		<java.version>1.8</java.version>
+		<pmd.version>3.8</pmd.version>
+		<maven-jxr.version>2.3</maven-jxr.version>
+		<cobertura.version>2.7</cobertura.version>
+		<javadoc.version>3.0.0</javadoc.version>
+		<slf4j.version>1.7.10</slf4j.version>
+		<log4j.version>1.2.17</log4j.version>
+		<junit.version>4.12</junit.version>
+		<findbugs.version>3.0.1</findbugs.version>
+		<surefire.version>2.20.1</surefire.version>
+		<mockito.version>1.9.5</mockito.version>
+
 	</properties>
 
 
@@ -33,19 +35,27 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
-				<version>${slf4j-version}</version>
+				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
-				<version>${log4j-version}</version>
+				<version>${log4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>${junit-version}</version>
+				<version>${junit.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -63,6 +73,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 	<build>
@@ -72,8 +87,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<source>${java-version}</source>
-						<target>${java-version}</target>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -83,22 +98,22 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-pmd-plugin</artifactId>
-					<version>${pmd-version}</version>
+					<version>${pmd.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>cobertura-maven-plugin</artifactId>
-					<version>${cobertura-version}</version>
+					<version>${cobertura.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>${javadoc-version}</version>
+					<version>${javadoc.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${surefire-version}</version>
+					<version>${surefire.version}</version>
 					<configuration>
 						<forkMode>once</forkMode>
 						<argLine>-Xms256m -Xmx4096m -Djava.net.preferIPv4Stack=true</argLine>
@@ -107,7 +122,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>findbugs-maven-plugin</artifactId>
-					<version>${findbugs-version}</version>
+					<version>${findbugs.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -157,7 +172,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
-				<version>${maven-jxr-version}</version>
+				<version>${maven-jxr.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
