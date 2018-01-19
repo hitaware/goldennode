@@ -86,6 +86,8 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     @Override
     public Object _op_(Operation operation) throws OperationException {
         if (operation.getObjectPublicName() != null) {
+            if(!grid.isDistributedObjectOperationEnabled())
+                throw new OperationException("Operation on distributed objects disabled");
             DistributedObject co = grid.distributedObjectManager.getDistributedObject(operation.getObjectPublicName());
             if (co != null) {
                 try {

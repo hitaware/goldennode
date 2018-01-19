@@ -100,6 +100,7 @@ public class PeerImpl extends Peer {
                     Object s = ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
                     rs.setReturnValue(s);
                 } catch (Exception e) {
+                    LOGGER.error("Error occured on blocking request", e);
                     rs.setReturnValue(e);
                 }
             } else {
@@ -136,6 +137,7 @@ public class PeerImpl extends Peer {
                 try {
                     ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
                 } catch (Exception e) {
+                    LOGGER.error("Error occured on non-blocking request", e);
                     throw new PeerException(e);
                 }
             } else {
@@ -230,6 +232,7 @@ public class PeerImpl extends Peer {
                             Object s = ReflectionUtils.callMethod(getOperationBase(), r.getMethod(), r.getParams());
                             rs.setReturnValue(s);
                         } catch (Exception e) {
+                            LOGGER.error("Error occured on tcp request", e);
                             rs.setReturnValue(e);
                         }
                         outToClient.writeObject(rs);

@@ -37,14 +37,15 @@ public class GoldenNodeGrid extends Grid {
                     "com.goldennode.api.goldennodegrid.GoldenNodeGrid.peerAnnouncingDelay"));
     static final int WAITFORMASTER_DELAY = Integer.parseInt(SystemUtils.getSystemProperty("10000",
             "com.goldennode.api.goldennodegrid.GoldenNodeGrid.waitForMasterDelay"));
-    private static final int LOCK_TIMEOUT = Integer.parseInt(SystemUtils.getSystemProperty("60000",
-            "com.goldennode.api.goldennodegrid.GoldenNodeGrid.lockTimeout"));
+    private static final int LOCK_TIMEOUT = Integer.parseInt(
+            SystemUtils.getSystemProperty("60000", "com.goldennode.api.goldennodegrid.GoldenNodeGrid.lockTimeout"));
     DistributedObjectManager distributedObjectManager;
     PeerManager peerManager;
     LeaderSelector leaderSelector;
     HeartbeatTimer heartBeatTimer;
     PeerAnnounceTimer peerAnnounceTimer;
     LockService lockService;
+    private boolean distributedObjectOperationEnabled = true;
 
     public GoldenNodeGrid(Peer peer, LockService lockService) {
         this.lockService = lockService;
@@ -244,8 +245,7 @@ public class GoldenNodeGrid extends Grid {
     }
 
     @Override
-    public Response unicastUDP(Peer remotePeer, Operation operation, RequestOptions options)
-            throws GridException {
+    public Response unicastUDP(Peer remotePeer, Operation operation, RequestOptions options) throws GridException {
         try {
             return getOwner().unicastUDP(remotePeer,
                     getOwner().prepareRequest(operation.getMethod(), options, operation));
@@ -255,8 +255,7 @@ public class GoldenNodeGrid extends Grid {
     }
 
     @Override
-    public Response unicastTCP(Peer remotePeer, Operation operation, RequestOptions options)
-            throws GridException {
+    public Response unicastTCP(Peer remotePeer, Operation operation, RequestOptions options) throws GridException {
         try {
             return getOwner().unicastTCP(remotePeer,
                     getOwner().prepareRequest(operation.getMethod(), options, operation));
@@ -291,8 +290,7 @@ public class GoldenNodeGrid extends Grid {
             }
         } catch (GridException e) {
             operation = new Operation(operation.getObjectPublicName(), "rollback");
-            tcpMulticast(responses.getPeersWithNoErrorAndExpectedResult(Boolean.TRUE), operation,
-                    new RequestOptions());
+            tcpMulticast(responses.getPeersWithNoErrorAndExpectedResult(Boolean.TRUE), operation, new RequestOptions());
             throw e;
         }
     }
@@ -306,28 +304,20 @@ public class GoldenNodeGrid extends Grid {
                 try {
                     LOGGER.debug("Operation is in progress. " + operation + " on peer " + remotePeer);
                     mr.addSuccessfulResponse(remotePeer, unicastTCP(remotePeer, operation, options));// TODO
-                                                                                                         // run
-                                                                                                         // tcp
-                                                                                                         // requests
-                                                                                                         // in
-                                                                                                         // threads
+                                                                                                     // run
+                                                                                                     // tcp
+                                                                                                     // requests
+                                                                                                     // in
+                                                                                                     // threads
                 } catch (GridException e) {
                     // mr.addErroneusResponse(remotePeer, e);
                     // LOGGER.error("Error occured while processing operation" + operation + "on peer" + remotePeer
                     //         + e.toString());
-                    if (ExceptionUtils.hasCause(e, DistriburedObjectNotAvailableException.class)) {// TODO
-                                                                                                 // what
-                                                                                                 // the
-                                                                                                 // hell
-                                                                                                 // distributedobject
-                                                                                                 // related
-                                                                                                 // things are here?
-                        LOGGER.debug("DistributedObjectNotAvailable " + operation + "peer " + remotePeer);
-                    } else {
-                        mr.addErroneusResponse(remotePeer, e);
-                        LOGGER.error("Error occured while processing operation" + operation + "on peer " + remotePeer
-                                + e.toString());
-                    }
+
+                    mr.addErroneusResponse(remotePeer, e);
+                    LOGGER.error("Error occured while processing operation" + operation + "on peer " + remotePeer
+                            + e.toString());
+
                 }
             }
             return mr;
@@ -354,14 +344,14 @@ public class GoldenNodeGrid extends Grid {
     }
 
     void writeLock(String lockName) throws GridException {
-        unicastTCP(peerManager.getServer(leaderSelector.getLeaderId()),
-                new Operation(null, "writeLock", lockName), new RequestOptions());
+        unicastTCP(peerManager.getServer(leaderSelector.getLeaderId()), new Operation(null, "writeLock", lockName),
+                new RequestOptions());
     }
 
     @Override
     protected void writeLock(DistributedObject co) throws GridException {
-        unicastTCP(peerManager.getServer(co.getOwnerId()),
-                new Operation(null, "writeLock", co.getPublicName()), new RequestOptions());
+        unicastTCP(peerManager.getServer(co.getOwnerId()), new Operation(null, "writeLock", co.getPublicName()),
+                new RequestOptions());
     }
 
     void unlockReadLock(String lockName) throws GridException {
@@ -388,8 +378,8 @@ public class GoldenNodeGrid extends Grid {
 
     @Override
     protected void unlockWriteLock(DistributedObject co) throws GridException {
-        unicastTCP(peerManager.getServer(co.getOwnerId()),
-                new Operation(null, "unlockWriteLock", co.getPublicName()), new RequestOptions());
+        unicastTCP(peerManager.getServer(co.getOwnerId()), new Operation(null, "unlockWriteLock", co.getPublicName()),
+                new RequestOptions());
     }
 
     @Override
@@ -428,4 +418,14 @@ public class GoldenNodeGrid extends Grid {
     public Peer getCandidatePeer() {
         return peerManager.getCandidatePeer();
     }
+
+    public boolean isDistributedObjectOperationEnabled() {
+
+        return distributedObjectOperationEnabled;
+    }
+
+    public void setDistributedObjectOperationEnabled(boolean distributedObjectOperationEnabled) {
+        this.distributedObjectOperationEnabled = distributedObjectOperationEnabled;
+    }
+
 }
