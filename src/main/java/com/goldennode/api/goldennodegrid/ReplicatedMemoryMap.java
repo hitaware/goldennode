@@ -1,42 +1,54 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
 
-public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Set<E> {
-    private static final long serialVersionUID = 1L;
-    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemorySet.class);
-    protected Set<E> innerSet = Collections.synchronizedSet(new HashSet<E>());
+import com.goldennode.api.grid.GridException;
 
-    public ReplicatedMemorySet() {
+public class ReplicatedMemoryMap<K, V> extends DistributedObject implements Map<K, V> {
+    private static final long serialVersionUID = 1L;
+    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryMap.class);
+    Hashtable<K, V> innerMap = new Hashtable<K, V>();
+
+    public ReplicatedMemoryMap() {
         super();
     }
 
-    public ReplicatedMemorySet(String publicName) {
+    public ReplicatedMemoryMap(String publicName) {
         super(publicName);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean add(E e) {
-        return (boolean) safeOperate(new Operation(getPublicName(), "add", e));
+    public V put(K key, V value) {
+        return (V) safeOperate(new Operation(getPublicName(), "put", key, value));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public V putLocal(K key, V value) {
+        return innerMap.put(key, value);
     }
 
-    public boolean _add(E e) {
-        return innerSet.add(e);
+    public V _put(K key, V value) {
+        return innerMap.put(key, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean remove(Object o) {
-        return (boolean) safeOperate(new Operation(getPublicName(), "remove", o));
+    public V remove(Object key) {
+        return (V) safeOperate(new Operation(getPublicName(), "remove", key));
+    }
+    
+    public V removeLocal(Object key) {
+        return innerMap.remove(key);
     }
 
-    public boolean _remove(Object o) {
-        return innerSet.remove(o);
+    public V _remove(Object key) {
+        return innerMap.remove(key);
     }
 
     @Override
@@ -45,21 +57,11 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     public void _clear() {
-        innerSet.clear();
+        innerMap.clear();
     }
 
     @Override
-    public boolean addAll(Collection<? extends E> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
+    public void putAll(Map<? extends K, ? extends V> m) {
         throw new UnsupportedOperationException();
     }
 
@@ -69,7 +71,7 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.size();
+            return innerMap.size();
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -89,7 +91,7 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.isEmpty();
+            return innerMap.isEmpty();
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -104,12 +106,12 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     @Override
-    public boolean contains(Object o) {
+    public boolean containsKey(Object key) {
         boolean locked = false;
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.contains(o);
+            return innerMap.containsKey(key);
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -124,12 +126,12 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     @Override
-    public Iterator<E> iterator() {
+    public boolean containsValue(Object value) {
         boolean locked = false;
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.iterator();
+            return innerMap.containsValue(value);
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -144,12 +146,12 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     @Override
-    public Object[] toArray() {
+    public V get(Object key) {
         boolean locked = false;
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.toArray();
+            return innerMap.get(key);
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -164,12 +166,12 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public Set<K> keySet() {
         boolean locked = false;
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.toArray(a);
+            return innerMap.keySet();
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {
@@ -184,12 +186,32 @@ public class ReplicatedMemorySet<E> extends ReplicatedMemoryObject implements Se
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public Collection<V> values() {
         boolean locked = false;
         try {
             getGrid().readLock(this);
             locked = true;
-            return innerSet.containsAll(c);
+            return innerMap.values();
+        } catch (GridException e1) {
+            throw new RuntimeException(e1);
+        } finally {
+            if (locked) {
+                try {
+                    getGrid().unlockReadLock(this);
+                } catch (GridException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        boolean locked = false;
+        try {
+            getGrid().readLock(this);
+            locked = true;
+            return innerMap.entrySet();
         } catch (GridException e1) {
             throw new RuntimeException(e1);
         } finally {

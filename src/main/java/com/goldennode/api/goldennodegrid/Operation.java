@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.io.Serializable;
 import java.util.ArrayList;

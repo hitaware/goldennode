@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.goldennode.api.grid.ReplicatedMemoryList;
+import com.goldennode.api.goldennodegrid.ReplicatedMemoryList;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.SerializationUtils;

@@ -1,11 +1,13 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 
-public class ReplicatedMemoryCounter extends ReplicatedMemoryObject {
+import com.goldennode.api.grid.GridException;
+
+public class ReplicatedMemoryCounter extends DistributedObject {
     private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryCounter.class);
     private Counter counter = new Counter();

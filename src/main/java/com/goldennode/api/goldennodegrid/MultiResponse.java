@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.Response;
+import com.goldennode.api.grid.GridException;
 import com.goldennode.api.core.Peer;
 
 public class MultiResponse {

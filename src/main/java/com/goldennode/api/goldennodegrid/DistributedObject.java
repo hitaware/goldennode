@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.io.Serializable;
 import java.util.Queue;
@@ -7,6 +7,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.grid.Grid;
+import com.goldennode.api.grid.GridException;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public abstract class DistributedObject implements Serializable {

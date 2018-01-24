@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +10,9 @@ import java.util.ListIterator;
 
 import org.slf4j.LoggerFactory;
 
-public class ReplicatedMemoryList<E> extends ReplicatedMemoryObject implements List<E>, Serializable {
+import com.goldennode.api.grid.GridException;
+
+public class ReplicatedMemoryList<E> extends DistributedObject implements List<E> {
     private static final long serialVersionUID = 1L;
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReplicatedMemoryList.class);
     protected List<E> innerList = Collections.synchronizedList(new ArrayList<E>());

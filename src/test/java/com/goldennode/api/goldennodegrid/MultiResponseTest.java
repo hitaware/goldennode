@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.MockPeerImpl;
 import com.goldennode.api.core.Response;
+import com.goldennode.api.goldennodegrid.MultiResponse;
+import com.goldennode.api.goldennodegrid.NoResponseException;
+import com.goldennode.api.goldennodegrid.NonUniqueResultException;
 import com.goldennode.api.grid.GridException;
-import com.goldennode.api.grid.MultiResponse;
-import com.goldennode.api.grid.NoResponseException;
-import com.goldennode.api.grid.NonUniqueResultException;
 import com.goldennode.api.core.Peer;
 import com.goldennode.api.core.PeerException;
 import com.goldennode.testutils.GoldenNodeJunitRunner;

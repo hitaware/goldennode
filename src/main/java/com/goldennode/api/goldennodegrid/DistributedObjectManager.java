@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.grid.Grid;
-import com.goldennode.api.grid.DistributedObject;
 
 public class DistributedObjectManager {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedObjectManager.class);
