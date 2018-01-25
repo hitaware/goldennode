@@ -19,7 +19,8 @@ public abstract class Grid {
 
     public abstract Peer getCandidatePeer();
 
-    //public abstract <T extends DistributedObject> T attach(T t) throws GridException;
+    public abstract <T extends DistributedObject> T attach(T t, String publicName) throws GridException;
+
     public abstract <T extends DistributedObject> T newDistributedObjectInstance(String publicName, Class<T> claz)
             throws GridException;
 

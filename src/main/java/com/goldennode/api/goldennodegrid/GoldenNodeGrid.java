@@ -4,21 +4,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.LockService;
-import com.goldennode.api.core.RequestOptions;
-import com.goldennode.api.core.Response;
-import com.goldennode.api.grid.Grid;
-import com.goldennode.api.grid.GridException;
 import com.goldennode.api.core.Peer;
 import com.goldennode.api.core.PeerAlreadyStartedException;
 import com.goldennode.api.core.PeerAlreadyStoppedException;
 import com.goldennode.api.core.PeerException;
-import com.goldennode.api.helper.ExceptionUtils;
+import com.goldennode.api.core.RequestOptions;
+import com.goldennode.api.core.Response;
+import com.goldennode.api.grid.Grid;
+import com.goldennode.api.grid.GridException;
 import com.goldennode.api.helper.SystemUtils;
 
 public class GoldenNodeGrid extends Grid {
@@ -76,30 +73,18 @@ public class GoldenNodeGrid extends Grid {
         return newDistributedObjectInstance(publicName, ReplicatedMemoryMap.class);
     }
 
-    /*@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends DistributedObject> T attach(T t) throws GridException {
-        try {// TODO test
-            lock(LockTypes.DISTRIBUTED_OBJECT_MANAGER.toString());
-            if (t.getGrid() != null) {
-                throw new GridException("DistributedObject already attached" + t);
-            }
-            if (distributedObjectManager.contains(t)) {
-                throw new GridException("DistributedObject already exists" + t);
-            }
-            Peer peer = getOwnerOf(t.getPublicName());
-            if (peer != null) {
-                throw new GridException("DistributedObject already exists" + t);
-            }
-            t.setOwnerId(getOwner().getId());
-            t.setGrid(this);
-            LOGGER.debug("will create object" + t);
-            safeMulticast(new Operation(null, "addDistributedObject", t));
-            return (T) distributedObjectManager.getDistributedObject(t.getPublicName());
-        } finally {
-            unlock(LockTypes.DISTRIBUTED_OBJECT_MANAGER.toString());
+    public <T extends DistributedObject> T attach(T t, String publicName) throws GridException {
+        writeLock(LockTypes.DISTRUBUTED_OBJECT_MANAGER.toString());
+        if (t.getGrid() != null) {
+            throw new GridException("DistributedObject already attached" + t);
         }
-    }*/
+        t.setOwnerId(getOwner().getId());
+        t.setPublicName(publicName);
+        return (T) initDistributedObject(t);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T extends DistributedObject> T newDistributedObjectInstance(String publicName, Class<T> claz)
@@ -306,11 +291,9 @@ public class GoldenNodeGrid extends Grid {
                     // mr.addErroneusResponse(remotePeer, e);
                     // LOGGER.error("Error occured while processing operation" + operation + "on peer" + remotePeer
                     //         + e.toString());
-
                     mr.addErroneusResponse(remotePeer, e);
                     LOGGER.error("Error occured while processing operation" + operation + "on peer " + remotePeer
                             + e.toString());
-
                 }
             }
             return mr;
@@ -413,12 +396,10 @@ public class GoldenNodeGrid extends Grid {
     }
 
     public boolean isDistributedObjectOperationEnabled() {
-
         return distributedObjectOperationEnabled;
     }
 
     public void setDistributedObjectOperationEnabled(boolean distributedObjectOperationEnabled) {
         this.distributedObjectOperationEnabled = distributedObjectOperationEnabled;
     }
-
 }
