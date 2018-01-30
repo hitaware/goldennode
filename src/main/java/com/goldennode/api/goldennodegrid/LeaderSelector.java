@@ -20,11 +20,11 @@ public class LeaderSelector {
         this.listener = listener;
     }
 
-    public void candidateDecisionLogic() {
+    public void candidateDecisionLogic(boolean rejoined) {
         if (leaderId == null) {
             if (grid.getCandidatePeer().equals(grid.getOwner())) {
                 LOGGER.debug("I am candidate for leadership");
-                getLeadership();
+                getLeadership(rejoined);
             } else {
                 LOGGER.debug("I am not candidate for leadership. Waiting for master to contact me.");
             }
@@ -50,7 +50,7 @@ public class LeaderSelector {
         }
     }
 
-    private void getLeadership() {
+    private void getLeadership(boolean rejoined) {
         try {
             LOGGER.trace("begin getLeadership.");
             LOGGER.debug("trying to get leadership");
@@ -67,7 +67,7 @@ public class LeaderSelector {
                         {
                             if (responses.isSuccessfulCall(true)) {
                                 setLeaderId(grid.getOwner().getId());
-                                listener.iAmSelectedAsLead();
+                                listener.iAmSelectedAsLead(rejoined);
                                 LOGGER.debug("Got leadership.");
                                 return;
                             }
@@ -163,7 +163,7 @@ public class LeaderSelector {
 
     public void rejoinElection() {
         reset();
-        candidateDecisionLogic();
+        candidateDecisionLogic(true);
     }
 
     public String getLeaderId() {

@@ -44,15 +44,7 @@ public class PeerManager {
         return peers;
     }
 
-    public Peer getPeer(String key) {
-        for (Peer peer : peers) {
-            if (key.equals(peer.getId())) {
-                return peer;
-            }
-        }
-        return null;
-    }
-
+   
     public Peer getCandidatePeer() {
         StringBuffer sb = new StringBuffer();
         for (Peer s : all.clone()) {
@@ -74,7 +66,7 @@ public class PeerManager {
         return owner;
     }
 
-    public synchronized Peer getServer(String id) {
+    public Peer getPeer(String id) {
         for (Peer peer : getAllPeers()) {
             if (peer.getId().equals(id)) {
                 return peer;

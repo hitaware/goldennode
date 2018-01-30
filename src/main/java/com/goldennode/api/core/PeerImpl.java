@@ -547,7 +547,7 @@ public class PeerImpl extends Peer {
                 LOGGER.debug("Sending " + request.getRequestType() + " " + request);
                 byte[] bytes = request.getBytes();
                 if (bytes.length > MAX_UDPPACKET_SIZE) {
-                    throw new PacketSizeExceededException();
+                    //throw new PacketSizeExceededException();
                 }
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length, remotePeer.getHost(),
                         remotePeer.getUnicastUDPPort());

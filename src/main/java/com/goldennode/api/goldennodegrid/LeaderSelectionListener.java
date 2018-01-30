@@ -1,5 +1,5 @@
 package com.goldennode.api.goldennodegrid;
 
 public interface LeaderSelectionListener {
-    void iAmSelectedAsLead();
+    void iAmSelectedAsLead(boolean rejoined);
 }

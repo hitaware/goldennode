@@ -1,7 +1,10 @@
 package com.goldennode.api.core;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -9,6 +12,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.helper.ExceptionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.ThreadUtils;
@@ -244,6 +248,77 @@ public class PeerImplTest extends GoldenNodeJunitRunner {
             Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getGetSumCalled());
             Assert.assertEquals(2, ((OperationBaseImpl) proxy2).getEchoCalled());
             Assert.assertEquals(1, ((OperationBaseImpl) proxy2).getGetSumExceptionCalled());
+            Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
+        }
+    }
+
+    @Test(expected = PeerException.class)
+    @RepeatTest(times = 1)
+    public void testUnicastUDPBigData() throws PeerException {
+        Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
+        PeerImpl peer = null;
+        PeerImpl peer2 = null;
+        OperationBase proxy1 = new OperationBaseImpl();
+        OperationBase proxy2 = new OperationBaseImpl();
+        try {
+            peer = new PeerImpl("srv1");
+            peer.addPeerStateListener((PeerStateListener) proxy1);
+            peer.setOperationBase(proxy1);
+            peer.start();
+            peer2 = new PeerImpl("srv2");
+            peer2.addPeerStateListener((PeerStateListener) proxy2);
+            peer2.setOperationBase(proxy2);
+            peer2.start();
+            Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
+            Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv2"));
+            Map map = new HashMap<>();
+            for (int i = 0; i < 100000; i++) {
+                map.put(i, i);
+            }
+            Request r = peer.prepareRequest("_putMap", new RequestOptions(), map);
+            Response resp = peer.unicastUDP(peer2, r);
+            Assert.assertEquals(100000, ((Integer) resp.getReturnValue()).intValue());
+        } catch (PeerException e) {
+            Assert.assertTrue(ExceptionUtils.hasCause(e, IOException.class));
+            throw e;
+        } finally {
+            peer.stop();
+            peer2.stop();
+            Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
+        }
+    }
+    
+    @Test()
+    @RepeatTest(times = 1)
+    public void testUnicastTCPBigData() throws PeerException {
+        Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
+        PeerImpl peer = null;
+        PeerImpl peer2 = null;
+        OperationBase proxy1 = new OperationBaseImpl();
+        OperationBase proxy2 = new OperationBaseImpl();
+        try {
+            peer = new PeerImpl("srv1");
+            peer.addPeerStateListener((PeerStateListener) proxy1);
+            peer.setOperationBase(proxy1);
+            peer.start();
+            peer2 = new PeerImpl("srv2");
+            peer2.addPeerStateListener((PeerStateListener) proxy2);
+            peer2.setOperationBase(proxy2);
+            peer2.start();
+            Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv1"));
+            Assert.assertTrue(ThreadUtils.hasThreadNamedLike("srv2"));
+            Map map = new HashMap<>();
+            for (int i = 0; i < 100000; i++) {
+                map.put(i, i);
+            }
+            Request r = peer.prepareRequest("_putMap", new RequestOptions(), map);
+            Response resp = peer.unicastTCP(peer2, r);
+            Assert.assertEquals(100000, ((Integer) resp.getReturnValue()).intValue());
+        } catch (PeerException e) {
+            throw e;
+        } finally {
+            peer.stop();
+            peer2.stop();
             Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));
         }
     }

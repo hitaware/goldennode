@@ -30,7 +30,7 @@ public class GoldenNodeGridPeerStateListenerImpl implements PeerStateListener {
         grid.peerAnnounceTimer.schedule();
         LockHelper.sleep(GoldenNodeGrid.PEER_ANNOUNCING_DELAY);
         grid.peerAnnounceTimer.stop();
-        grid.leaderSelector.candidateDecisionLogic();
+        grid.leaderSelector.candidateDecisionLogic(false);
     }
 
     @Override

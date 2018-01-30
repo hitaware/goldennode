@@ -1,5 +1,7 @@
 package com.goldennode.api.core;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,11 @@ public class OperationBaseImpl implements OperationBase, PeerStateListener {
         LOGGER.debug("echo " + param);
     }
 
+    public int _putMap(Map map) {
+        LOGGER.debug("map.size() = " + map.size());
+        return map.size();
+    }
+    
     public String _nullParamTest(String param) {
         Assert.assertNull(param);
         LOGGER.debug("Param is null? param = " + null);

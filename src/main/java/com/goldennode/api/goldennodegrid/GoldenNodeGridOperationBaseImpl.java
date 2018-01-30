@@ -19,6 +19,10 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
         return true;
     }
 
+    public void _adoptOprphanObject(String publicName, Peer peer) {
+        grid.distributedObjectManager.adoptOrphanObject(publicName, peer);
+    }
+
     public Object _commit() {
         LOGGER.debug("Committing");
         if (uncommitted.size() > 1) {
@@ -46,7 +50,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     }
 
     public void _announcePeerJoining(Peer s) throws GridException {
-        if (grid.peerManager.getServer(s.getId()) == null) {
+        if (grid.peerManager.getPeer(s.getId()) == null) {
             LOGGER.debug("Peer announced that it is joining. Peer: " + s);
             grid.incomingPeer(s);
             grid.sendOwnPeerIdentiy(s);
@@ -64,7 +68,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     }
 
     public void _sendOwnPeerIdentity(Peer s) throws GridException {
-        if (grid.peerManager.getServer(s.getId()) == null) {
+        if (grid.peerManager.getPeer(s.getId()) == null) {
             LOGGER.debug("Peer sent its identity: " + s);
             grid.incomingPeer(s);
         }
@@ -81,7 +85,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     @Override
     public Object _op_(Operation operation) throws OperationException {
         if (operation.getObjectPublicName() != null) {
-            if(!grid.isDistributedObjectOperationEnabled())
+            if (!grid.isDistributedObjectOperationEnabled())
                 throw new OperationException("Operation on distributed objects disabled");
             DistributedObject co = grid.distributedObjectManager.getDistributedObject(operation.getObjectPublicName());
             if (co != null) {
