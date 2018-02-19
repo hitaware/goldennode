@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.grid.GridException;
-import com.goldennode.api.grid.Operation;
 import com.goldennode.api.core.Peer;
 import com.goldennode.api.core.PeerStateListener;
 import com.goldennode.api.helper.LockHelper;
@@ -31,7 +30,7 @@ public class GoldenNodeGridPeerStateListenerImpl implements PeerStateListener {
         grid.peerAnnounceTimer.schedule();
         LockHelper.sleep(GoldenNodeGrid.PEER_ANNOUNCING_DELAY);
         grid.peerAnnounceTimer.stop();
-        grid.leaderSelector.candidateDecisionLogic();
+        grid.leaderSelector.candidateDecisionLogic(false);
     }
 
     @Override

@@ -482,10 +482,15 @@ public class DistributedReentrantReadWriteLock implements ReadWriteLock {
             lockReleaser.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    String lockingProcessId = sync.getOwnerThread();
-                    LockContext.threadProcessId.set(lockingProcessId);
-                    LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
-                    unlock();
+                    try {
+                        String lockingProcessId = sync.getOwnerThread();
+                        LockContext.threadProcessId.set(lockingProcessId);
+                        LOGGER.debug("auto-released lock > " + lockName + " processId > " + lockingProcessId);
+                        unlock();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             }, lockTimeoutInMs);
         }

@@ -6,12 +6,7 @@ import java.util.Vector;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.core.Peer;
-import com.goldennode.api.grid.DistriburedObjectNotAvailableException;
-import com.goldennode.api.grid.DistributedObject;
 import com.goldennode.api.grid.GridException;
-import com.goldennode.api.grid.GridOperationBase;
-import com.goldennode.api.grid.Operation;
-import com.goldennode.api.grid.OperationException;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
@@ -22,6 +17,10 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     public boolean addToUncommited(Operation operation) {
         uncommitted.add(operation);
         return true;
+    }
+
+    public void _adoptOprphanObject(String publicName, Peer peer) {
+        grid.distributedObjectManager.adoptOrphanObject(publicName, peer);
     }
 
     public Object _commit() {
@@ -51,7 +50,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     }
 
     public void _announcePeerJoining(Peer s) throws GridException {
-        if (grid.peerManager.getServer(s.getId()) == null) {
+        if (grid.peerManager.getPeer(s.getId()) == null) {
             LOGGER.debug("Peer announced that it is joining. Peer: " + s);
             grid.incomingPeer(s);
             grid.sendOwnPeerIdentiy(s);
@@ -69,7 +68,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     }
 
     public void _sendOwnPeerIdentity(Peer s) throws GridException {
-        if (grid.peerManager.getServer(s.getId()) == null) {
+        if (grid.peerManager.getPeer(s.getId()) == null) {
             LOGGER.debug("Peer sent its identity: " + s);
             grid.incomingPeer(s);
         }
@@ -86,7 +85,7 @@ public class GoldenNodeGridOperationBaseImpl extends GridOperationBase {
     @Override
     public Object _op_(Operation operation) throws OperationException {
         if (operation.getObjectPublicName() != null) {
-            if(!grid.isDistributedObjectOperationEnabled())
+            if (!grid.isDistributedObjectOperationEnabled())
                 throw new OperationException("Operation on distributed objects disabled");
             DistributedObject co = grid.distributedObjectManager.getDistributedObject(operation.getObjectPublicName());
             if (co != null) {

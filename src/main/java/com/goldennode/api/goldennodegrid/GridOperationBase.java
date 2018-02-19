@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import com.goldennode.api.core.OperationBase;
 

@@ -13,8 +13,6 @@ import com.goldennode.api.goldennodegrid.GoldenNodeGrid;
 import com.goldennode.api.grid.Grid;
 import com.goldennode.api.grid.GridException;
 import com.goldennode.api.grid.GridFactory;
-import com.goldennode.api.grid.DistributedObject;
-import com.goldennode.api.grid.ReplicatedMemoryMap;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
@@ -103,5 +101,4 @@ public class ReplicatedMemoryMapTest extends GoldenNodeJunitRunner {
         c1.stop();
         c2.stop();
     }
-
 }

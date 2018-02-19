@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.goldennodegrid.GoldenNodeGrid;
-import com.goldennode.api.grid.DistributedLock;
 import com.goldennode.testutils.CollectionUtils;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;

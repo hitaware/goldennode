@@ -104,7 +104,7 @@ public class DistributedReentrantReadWriteLockTest extends GoldenNodeJunitRunner
         LockHelper.sleep((int) (lockTimeOut * 1.1));
         Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).readLock().lockReleaser == null);
         lock.readLock().unlock();
-        LockContext.threadProcessId.set("5");
+        LockContext.threadProcessId.set("66");
         lock.writeLock().lock();
         Assert.assertTrue(((DistributedReentrantReadWriteLock) lock).writeLock().lockReleaser != null);
         LockHelper.sleep(lockTimeOut / 2);

@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import java.io.Serializable;
 import java.util.Queue;
@@ -7,6 +7,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
+import com.goldennode.api.grid.Grid;
+import com.goldennode.api.grid.GridException;
 import com.goldennode.api.helper.ReflectionUtils;
 
 public abstract class DistributedObject implements Serializable {
@@ -18,7 +20,7 @@ public abstract class DistributedObject implements Serializable {
     static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedObject.class);
 
     public DistributedObject() {
-        publicName = getClass().getName() + "_" + UUID.randomUUID().toString();
+        publicName = getClass().getName() + "_" + "default";
     }
 
     public DistributedObject(String publicName) {
@@ -34,17 +36,23 @@ public abstract class DistributedObject implements Serializable {
     }
 
     public void setOwnerId(String ownerId) {
-        if (ownerId != null) {
-            synchronized (lockDistributedObject) {
-                if (this.ownerId == null) {
-                    this.ownerId = ownerId;
-                    lockDistributedObject.notifyAll();
-                } else {
+        synchronized (lockDistributedObject) {
+            if (this.ownerId == null) {
+                this.ownerId = ownerId;
+                lockDistributedObject.notifyAll();
+            } else {
+                if (ownerId != null) {
                     LOGGER.error("ownerid is not null");
                     throw new RuntimeException("Illegal operation");
+                } else {
+                    this.ownerId = null;
                 }
             }
         }
+    }
+
+    public boolean hasOwner() {
+        return ownerId != null;
     }
 
     public String getOwnerId() {

@@ -1,4 +1,4 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 public class OperationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

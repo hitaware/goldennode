@@ -7,7 +7,10 @@ import java.util.Set;
 
 import com.goldennode.api.core.RequestOptions;
 import com.goldennode.api.core.Response;
+import com.goldennode.api.goldennodegrid.DistributedObject;
 import com.goldennode.api.goldennodegrid.HeartbeatTimer;
+import com.goldennode.api.goldennodegrid.MultiResponse;
+import com.goldennode.api.goldennodegrid.Operation;
 import com.goldennode.api.core.Peer;
 import com.goldennode.api.helper.LockHelper;
 
@@ -16,16 +19,48 @@ public abstract class Grid {
 
     public abstract Peer getCandidatePeer();
 
-    //public abstract <T extends DistributedObject> T attach(T t) throws GridException;
+    public abstract <T extends DistributedObject> DistributedObject attach(T t, boolean eagerPropagation)
+            throws GridException;
+
+    public abstract <T extends DistributedObject> T attach(T t) throws GridException;
+
+    public abstract <T extends DistributedObject> T newDistributedObjectInstance(String publicName, Class<T> claz,
+            boolean eagerPropagation) throws GridException;
 
     public abstract <T extends DistributedObject> T newDistributedObjectInstance(String publicName, Class<T> claz)
             throws GridException;
 
+    public abstract <K, V> Map<K, V> newReplicatedMemoryMapInstance(String publicName, boolean eagerPropagation)
+            throws GridException;
+
     public abstract <K, V> Map<K, V> newReplicatedMemoryMapInstance(String publicName) throws GridException;
+
+    public abstract <E> List<E> newReplicatedMemoryListInstance(String publicName, boolean eagerPropagation)
+            throws GridException;
 
     public abstract <E> List<E> newReplicatedMemoryListInstance(String publicName) throws GridException;
 
+    public abstract <E> Set<E> newReplicatedMemorySetInstance(String publicName, boolean eagerPropagation)
+            throws GridException;
+
     public abstract <E> Set<E> newReplicatedMemorySetInstance(String publicName) throws GridException;
+
+    public abstract <K, V> Map<K, V> newReplicatedMemoryMapInstance(boolean eagerPropagation) throws GridException;
+
+    public abstract <K, V> Map<K, V> newReplicatedMemoryMapInstance() throws GridException;
+
+    public abstract <T extends DistributedObject> T newDistributedObjectInstance(Class<T> claz,
+            boolean eagerPropagation) throws GridException;
+
+    public abstract <T extends DistributedObject> T newDistributedObjectInstance(Class<T> claz) throws GridException;
+
+    public abstract <E> Set<E> newReplicatedMemorySetInstance(boolean eagerPropagation) throws GridException;
+
+    public abstract <E> Set<E> newReplicatedMemorySetInstance() throws GridException;
+
+    public abstract <E> List<E> newReplicatedMemoryListInstance(boolean eagerPropagation) throws GridException;
+
+    public abstract <E> List<E> newReplicatedMemoryListInstance() throws GridException;
 
     public abstract void multicast(Operation operation, RequestOptions options) throws GridException;
 
@@ -45,14 +80,13 @@ public abstract class Grid {
 
     public abstract Collection<Peer> getPeers();
 
-    protected abstract void readLock(DistributedObject co) throws GridException;
-    
-    protected abstract void writeLock(DistributedObject co) throws GridException;
+    public abstract void readLock(DistributedObject co) throws GridException;
 
-    protected abstract void unlockReadLock(DistributedObject co) throws GridException;
-    
-    protected abstract void unlockWriteLock(DistributedObject co) throws GridException;
+    public abstract void writeLock(DistributedObject co) throws GridException;
 
+    public abstract void unlockReadLock(DistributedObject co) throws GridException;
+
+    public abstract void unlockWriteLock(DistributedObject co) throws GridException;
 
     @Override
     public String toString() {
@@ -64,8 +98,8 @@ public abstract class Grid {
             stop();
             LockHelper.sleep(HeartbeatTimer.TASK_PERIOD * 2);
             start();
-        } catch (Exception e) {//NOPMD
-            //Nothing to do
+        } catch (Exception e) {// NOPMD
+            // Nothing to do
         }
     }
 }

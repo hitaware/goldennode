@@ -1,10 +1,10 @@
-package com.goldennode.api.grid;
+package com.goldennode.api.goldennodegrid;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.goldennode.api.grid.Operation;
+import com.goldennode.api.goldennodegrid.Operation;
 import com.goldennode.testutils.GoldenNodeJunitRunner;
 import com.goldennode.testutils.RepeatTest;
 
