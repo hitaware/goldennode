@@ -119,8 +119,7 @@ public class PeerImpl extends Peer {
             gos.writeObject(rs);
             gos.close();
             byte[] bytes = bos.toByteArray();
-            if (bytes.length > MAX_UDPPACKET_SIZE) {// TODO do we need?
-                                                    // MAX_UDPPACKET_SIZE
+            if (bytes.length > MAX_UDPPACKET_SIZE) {// TODO do we need?Yes
                 throw new PacketSizeExceededException();
             }
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, remoteAddress, remotePort);

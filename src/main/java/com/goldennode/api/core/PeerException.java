@@ -1,7 +1,7 @@
 package com.goldennode.api.core;
 
 public class PeerException extends Exception {
-    private static final long serialVersionUID = 4558751574175980501L;
+    private static final long serialVersionUID = 1L;
 
     public PeerException(String str) {
         super(str);
