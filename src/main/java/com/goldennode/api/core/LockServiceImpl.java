@@ -42,8 +42,9 @@ public class LockServiceImpl implements LockService {
     @Override
     public synchronized void createLock(String lockName, long lockTimeoutInMs) {
         if (!locks.containsKey(lockName)) {
-            DistributedReentrantLock lock = new DistributedReentrantLock(lockName, lockTimeoutInMs);
-            locks.put(lock.lockName + "_w", lock);
+            DistributedReentrantReadWriteLock lock = new DistributedReentrantReadWriteLock(lockName, lockTimeoutInMs);
+            locks.put(lockName + "_w", lock.writeLock());
+            locks.put(lockName + "_r", lock.readLock());
         } else {
             throw new LockException("lock has already been created > " + lockName);
         }
@@ -51,9 +52,7 @@ public class LockServiceImpl implements LockService {
 
     @Override
     public synchronized void deleteLock(String lockName) {
-        //Lock lock = locks.remove(lockName + "_r");
-        Lock lock = locks.remove(lockName + "_w");
-        if (lock == null)
+        if (locks.remove(lockName + "_w") == null || locks.remove(lockName + "_r") == null)
             throw new LockNotFoundException(lockName);
     }
 

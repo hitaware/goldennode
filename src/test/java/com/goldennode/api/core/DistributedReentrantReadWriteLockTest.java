@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.model.TestTimedOutException;
 import org.slf4j.LoggerFactory;
 
 import com.goldennode.api.helper.LockHelper;
@@ -14,7 +15,7 @@ import com.goldennode.testutils.RepeatTest;
 import com.goldennode.testutils.ThreadUtils;
 
 public class DistributedReentrantReadWriteLockTest extends GoldenNodeJunitRunner {
-    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantLockTest.class);
+    static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(DistributedReentrantReadWriteLock.class);
     private ReadWriteLock lock;
     private long lockTimeOut;
     private String lockName;
@@ -156,5 +157,64 @@ public class DistributedReentrantReadWriteLockTest extends GoldenNodeJunitRunner
         LockContext.threadProcessId.set("11");
         lock.writeLock().tryLock(lockTimeOut, TimeUnit.MILLISECONDS);
         Assert.fail();
+    }
+    
+    
+    @Test(timeout=50)
+    @RepeatTest(times = 1)
+    public void canAcquireMultipleReadLocks() throws InterruptedException {
+        LockContext.threadProcessId.set("12");
+        lock.readLock().lock();
+        LockContext.threadProcessId.set("13");
+        lock.readLock().lock();
+        LockContext.threadProcessId.set("14");
+        lock.readLock().tryLock();
+    }
+    
+    @Test(timeout=50)
+    @RepeatTest(times = 1)
+    public void shouldntAcquireMultipleWriteLocks() throws InterruptedException {
+        LockContext.threadProcessId.set("15");
+        lock.writeLock().lock();
+        LockContext.threadProcessId.set("16");
+        Assert.assertFalse(lock.writeLock().tryLock());
+    }
+    
+    @Test(timeout=50)
+    @RepeatTest(times = 1)
+    public void shouldntAcquireMultipleWriteLocks2() throws InterruptedException {
+        LockContext.threadProcessId.set("17");
+        lock.writeLock().lock();
+        LockContext.threadProcessId.set("18");
+        Assert.assertFalse(lock.writeLock().tryLock());
+        LockContext.threadProcessId.set("17");
+        lock.writeLock().unlock();
+        LockContext.threadProcessId.set("19");
+        Assert.assertTrue(lock.writeLock().tryLock());
+        lock.writeLock().unlock();
+        LockContext.threadProcessId.set("20");
+        lock.writeLock().lock();
+        LockContext.threadProcessId.set("21");
+        Assert.assertFalse(lock.writeLock().tryLock());
+    }
+    
+    @Test(timeout=50)
+    @RepeatTest(times = 1)
+    public void readLockAfterWriteLock() throws InterruptedException {
+        LockContext.threadProcessId.set("22");
+        lock.writeLock().lock();
+        LockContext.threadProcessId.set("23");
+        Assert.assertFalse(lock.readLock().tryLock());
+        
+    }
+    
+    @Test(timeout=50)
+    @RepeatTest(times = 1)
+    public void readLockBeforeWriteLock() throws InterruptedException {
+        LockContext.threadProcessId.set("24");
+        lock.readLock().lock();
+        LockContext.threadProcessId.set("25");
+        Assert.assertFalse(lock.writeLock().tryLock());
+        
     }
 }

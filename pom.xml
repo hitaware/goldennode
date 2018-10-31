@@ -24,6 +24,8 @@
 		<findbugs.version>3.0.1</findbugs.version>
 		<surefire.version>2.20.1</surefire.version>
 		<mockito.version>1.9.5</mockito.version>
+		<jackson.version>2.9.7</jackson.version>
+		<spring.version>5.1.1.RELEASE</spring.version>
 
 	</properties>
 
@@ -55,11 +57,27 @@
 				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
 
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
+	<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+            <version>${spring.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
@@ -78,7 +96,10 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<pluginManagement>

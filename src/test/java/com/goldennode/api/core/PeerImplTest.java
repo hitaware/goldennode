@@ -147,7 +147,7 @@ public class PeerImplTest extends GoldenNodeJunitRunner {
         }
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = 1500)
     @RepeatTest(times = 1)
     public void testUnicastTCP() throws PeerException {
         Assert.assertFalse(ThreadUtils.hasThreadNamedLike("srv"));

@@ -16,7 +16,7 @@ public class ReplicatedMemoryMapLoadTest extends GoldenNodeJunitRunner {
 
     @Test()
     public void testLoad() throws GridException, InterruptedException {
-        int items = 5000000;
+        int items = 500000;
         final Grid c1 = GridFactory.getGrid();
         c1.start();
         ReplicatedMemoryMap<Integer, Integer> map = new ReplicatedMemoryMap<>();
